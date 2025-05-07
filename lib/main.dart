@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'screens/home_screen.dart';
 import 'api/pddikti_api.dart';
-import 'utils/constants.dart';
+import 'utils/constants.dart';  // Fix: Add this import
 
 void main() {
   runApp(const MyApp());

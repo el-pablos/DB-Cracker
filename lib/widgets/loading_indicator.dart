@@ -27,3 +27,4 @@ class CustomLoadingIndicator extends StatelessWidget {
       ),
     );
   }
+}
