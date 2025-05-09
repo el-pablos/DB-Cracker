@@ -114,7 +114,15 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
     try {
       final api = Provider.of<PddiktiApi>(context, listen: false);
-      final results = await api.searchMahasiswa(query);
+
+      // Lakukan pencarian dengan penanganan kesalahan yang lebih baik
+      List<Mahasiswa> results = [];
+      try {
+        results = await api.searchMahasiswa(query);
+      } catch (e) {
+        print('Error dalam pencarian: $e');
+        throw Exception('Terjadi kesalahan dalam pencarian: $e');
+      }
       
       // Delay showing results to simulate "hacking"
       await Future.delayed(const Duration(milliseconds: 3500));
@@ -215,13 +223,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         ],
       ),
       body: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: NetworkImage("/api/placeholder/400/800"),
-            fit: BoxFit.cover,
-            opacity: 0.08,
-          ),
-        ),
+        // PERBAIKAN: Ganti NetworkImage dengan warna latar belakang
+        color: HackerColors.background,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [

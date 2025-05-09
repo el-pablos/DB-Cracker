@@ -145,13 +145,8 @@ class _DetailScreenState extends State<DetailScreen> with SingleTickerProviderSt
         ),
       ),
       body: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: NetworkImage("/api/placeholder/400/800"),
-            fit: BoxFit.cover,
-            opacity: 0.08,
-          ),
-        ),
+        // PERBAIKAN: Gunakan warna solid alih-alih gambar
+        color: HackerColors.background,
         child: Column(
           children: [
             Container(
@@ -463,7 +458,10 @@ class _DetailScreenState extends State<DetailScreen> with SingleTickerProviderSt
       case 2:
         return "SYSTEM: PDDIKTI-SEC | NODE: ${_getRandomHexValue(4)}-${_getRandomHexValue(4)} | SESSION: $hexCode";
       case 3:
-        return "LAST UPDATE: ${DateTime.now().toString().substring(0, 16)} | RECORD ID: ${mahasiswa.id.substring(0, 10)}...";
+        // Get a safe substring length
+        int length = min(10, mahasiswa.id.length);
+        String idPrefix = length > 0 ? mahasiswa.id.substring(0, length) : "UNKNOWN";
+        return "LAST UPDATE: ${DateTime.now().toString().substring(0, 16)} | RECORD ID: $idPrefix...";
       case 4:
         return "STATUS: ${_random.nextBool() ? "SECURE" : "MONITORING"} | CHECKSUM: ${_getRandomHexValue(8)} | AUTH: ${_getRandomHexValue(6)}";
       default:

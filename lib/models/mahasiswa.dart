@@ -18,14 +18,26 @@ class Mahasiswa {
   });
 
   factory Mahasiswa.fromJson(Map<String, dynamic> json) {
-    return Mahasiswa(
-      id: json['id'] ?? '',
-      nama: json['nama'] ?? '',
-      nim: json['nim'] ?? '',
-      namaPt: json['nama_pt'] ?? '',
-      singkatanPt: json['singkatan_pt'] ?? '',
-      namaProdi: json['nama_prodi'] ?? '',
-    );
+    try {
+      return Mahasiswa(
+        id: _ensureString(json['id']),
+        nama: _ensureString(json['nama']),
+        nim: _ensureString(json['nim']),
+        namaPt: _ensureString(json['nama_pt']),
+        singkatanPt: _ensureString(json['singkatan_pt']),
+        namaProdi: _ensureString(json['nama_prodi']),
+      );
+    } catch (e) {
+      print('Error parsing Mahasiswa: $e');
+      print('JSON data: $json');
+      throw Exception('Failed to parse Mahasiswa data: $e');
+    }
+  }
+
+  // Helper method to ensure all values are strings
+  static String _ensureString(dynamic value) {
+    if (value == null) return '';
+    return value.toString();
   }
 }
 
@@ -63,21 +75,33 @@ class MahasiswaDetail {
   });
 
   factory MahasiswaDetail.fromJson(Map<String, dynamic> json) {
-    return MahasiswaDetail(
-      id: json['id'] ?? '',
-      namaPt: json['nama_pt'] ?? '',
-      kodePt: json['kode_pt'] ?? '',
-      kodeProdi: json['kode_prodi'] ?? '',
-      prodi: json['prodi'] ?? '',
-      nama: json['nama'] ?? '',
-      nim: json['nim'] ?? '',
-      jenisDaftar: json['jenis_daftar'] ?? '',
-      idPt: json['id_pt'] ?? '',
-      idSms: json['id_sms'] ?? '',
-      jenisKelamin: json['jenis_kelamin'] ?? '',
-      jenjang: json['jenjang'] ?? '',
-      statusSaatIni: json['status_saat_ini'] ?? '',
-      tahunMasuk: json['tahun_masuk'] ?? '',
-    );
+    try {
+      return MahasiswaDetail(
+        id: _ensureString(json['id']),
+        namaPt: _ensureString(json['nama_pt']),
+        kodePt: _ensureString(json['kode_pt']),
+        kodeProdi: _ensureString(json['kode_prodi']),
+        prodi: _ensureString(json['prodi']),
+        nama: _ensureString(json['nama']),
+        nim: _ensureString(json['nim']),
+        jenisDaftar: _ensureString(json['jenis_daftar']),
+        idPt: _ensureString(json['id_pt']),
+        idSms: _ensureString(json['id_sms']),
+        jenisKelamin: _ensureString(json['jenis_kelamin']),
+        jenjang: _ensureString(json['jenjang']),
+        statusSaatIni: _ensureString(json['status_saat_ini']),
+        tahunMasuk: _ensureString(json['tahun_masuk']),
+      );
+    } catch (e) {
+      print('Error parsing MahasiswaDetail: $e');
+      print('JSON data: $json');
+      throw Exception('Failed to parse MahasiswaDetail data: $e');
+    }
+  }
+
+  // Helper method to ensure all values are strings
+  static String _ensureString(dynamic value) {
+    if (value == null) return '';
+    return value.toString();
   }
 }
