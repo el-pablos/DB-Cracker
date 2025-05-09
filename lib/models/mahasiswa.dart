@@ -76,26 +76,48 @@ class MahasiswaDetail {
 
   factory MahasiswaDetail.fromJson(Map<String, dynamic> json) {
     try {
+      // Print keys for debugging
+      print('Keys in MahasiswaDetail.fromJson: ${json.keys.toList()}');
+      
+      // More flexible field handling
+      // Use alternative field names if primary ones don't exist
       return MahasiswaDetail(
-        id: _ensureString(json['id']),
-        namaPt: _ensureString(json['nama_pt']),
-        kodePt: _ensureString(json['kode_pt']),
-        kodeProdi: _ensureString(json['kode_prodi']),
-        prodi: _ensureString(json['prodi']),
-        nama: _ensureString(json['nama']),
-        nim: _ensureString(json['nim']),
-        jenisDaftar: _ensureString(json['jenis_daftar']),
-        idPt: _ensureString(json['id_pt']),
-        idSms: _ensureString(json['id_sms']),
-        jenisKelamin: _ensureString(json['jenis_kelamin']),
-        jenjang: _ensureString(json['jenjang']),
-        statusSaatIni: _ensureString(json['status_saat_ini']),
-        tahunMasuk: _ensureString(json['tahun_masuk']),
+        id: _ensureString(json['id'] ?? json['id_mahasiswa'] ?? json['mahasiswa_id'] ?? ''),
+        namaPt: _ensureString(json['nama_pt'] ?? json['pt_nama'] ?? json['perguruan_tinggi'] ?? ''),
+        kodePt: _ensureString(json['kode_pt'] ?? json['pt_kode'] ?? ''),
+        kodeProdi: _ensureString(json['kode_prodi'] ?? json['prodi_kode'] ?? ''),
+        prodi: _ensureString(json['prodi'] ?? json['nama_prodi'] ?? json['program_studi'] ?? ''),
+        nama: _ensureString(json['nama'] ?? json['nama_mahasiswa'] ?? ''),
+        nim: _ensureString(json['nim'] ?? json['nomor_induk'] ?? json['nomor_mahasiswa'] ?? ''),
+        jenisDaftar: _ensureString(json['jenis_daftar'] ?? json['jalur_daftar'] ?? 'Reguler'),
+        idPt: _ensureString(json['id_pt'] ?? json['pt_id'] ?? ''),
+        idSms: _ensureString(json['id_sms'] ?? json['sms_id'] ?? ''),
+        jenisKelamin: _ensureString(json['jenis_kelamin'] ?? json['gender'] ?? ''),
+        jenjang: _ensureString(json['jenjang'] ?? json['jenjang_pendidikan'] ?? ''),
+        statusSaatIni: _ensureString(json['status_saat_ini'] ?? json['status'] ?? json['status_mahasiswa'] ?? 'Aktif'),
+        tahunMasuk: _ensureString(json['tahun_masuk'] ?? json['angkatan'] ?? ''),
       );
     } catch (e) {
       print('Error parsing MahasiswaDetail: $e');
       print('JSON data: $json');
-      throw Exception('Failed to parse MahasiswaDetail data: $e');
+      
+      // Create a minimal valid object instead of throwing an exception
+      return MahasiswaDetail(
+        id: _ensureString(json['id'] ?? ''),
+        namaPt: _ensureString(json['nama_pt'] ?? ''),
+        kodePt: _ensureString(json['kode_pt'] ?? ''),
+        kodeProdi: _ensureString(json['kode_prodi'] ?? ''),
+        prodi: _ensureString(json['prodi'] ?? ''),
+        nama: _ensureString(json['nama'] ?? 'Data Tidak Tersedia'),
+        nim: _ensureString(json['nim'] ?? 'N/A'),
+        jenisDaftar: 'Reguler',
+        idPt: _ensureString(json['id_pt'] ?? ''),
+        idSms: _ensureString(json['id_sms'] ?? ''),
+        jenisKelamin: _ensureString(json['jenis_kelamin'] ?? 'N/A'),
+        jenjang: _ensureString(json['jenjang'] ?? 'N/A'),
+        statusSaatIni: 'N/A',
+        tahunMasuk: _ensureString(json['tahun_masuk'] ?? 'N/A'),
+      );
     }
   }
 

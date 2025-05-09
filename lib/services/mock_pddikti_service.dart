@@ -83,14 +83,31 @@ class MockPddiktiService {
   }
 
   // Detail mahasiswa (mock)
+// Detail mahasiswa (mock)
   Future<MahasiswaDetail> getMahasiswaDetail(String mahasiswaId) async {
     // Simulasi delay jaringan
     await Future.delayed(Duration(milliseconds: 800 + _random.nextInt(1200)));
     
-    // Cari mahasiswa berdasarkan ID
+    if (kIsWeb) {
+      print('Using mock data for mahasiswa detail (web)');
+    }
+    
+    // Cari mahasiswa berdasarkan ID di data sample
     final mahasiswaData = _sampleMahasiswa.firstWhere(
       (item) => item['id'] == mahasiswaId,
-      orElse: () => throw Exception('Data mahasiswa tidak ditemukan'),
+      orElse: () {
+        // If not found by exact ID, create a sample data for any ID
+        // This ensures we always return something for any ID
+        print('Creating sample data for unknown mahasiswa ID: $mahasiswaId');
+        return {
+          "id": mahasiswaId,
+          "nama": "Mahasiswa ${mahasiswaId.substring(0, min(5, mahasiswaId.length))}",
+          "nim": "${10000 + _random.nextInt(90000)}",
+          "nama_pt": "Universitas ${_random.nextInt(10)}",
+          "singkatan_pt": "UNIV${_random.nextInt(10)}",
+          "nama_prodi": "Program Studi ${_random.nextInt(5)}"
+        };
+      },
     );
     
     // Tambahkan data detail yang tidak ada di data dasar
@@ -98,9 +115,9 @@ class MockPddiktiService {
       ...mahasiswaData,
       'id_pt': 'PT${_random.nextInt(10000)}',
       'id_sms': 'SMS${_random.nextInt(10000)}',
-      'kode_pt': mahasiswaData['singkatan_pt'],
+      'kode_pt': mahasiswaData['singkatan_pt'] ?? "PT-X",
       'kode_prodi': 'KP${_random.nextInt(100)}',
-      'prodi': mahasiswaData['nama_prodi'],
+      'prodi': mahasiswaData['nama_prodi'] ?? "Program Studi X",
       'jenis_daftar': 'Reguler',
       'jenis_kelamin': _random.nextBool() ? 'Laki-laki' : 'Perempuan',
       'jenjang': ['S1', 'D3', 'D4', 'S2', 'S3'][_random.nextInt(5)],

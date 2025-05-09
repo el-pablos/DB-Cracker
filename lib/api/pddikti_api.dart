@@ -338,42 +338,89 @@ class PddiktiApi {
   }
 
   // Detail mahasiswa
+// Detail mahasiswa
   Future<MahasiswaDetail> getMahasiswaDetail(String mahasiswaId) async {
     try {
-      final Uri url = Uri.parse('$baseUrl/detail/mhs/${_parseString(mahasiswaId)}');
+      print('Fetching mahasiswa detail for ID: $mahasiswaId');
+      
+      // The API might expect a different format of ID, let's try to handle both formats
+      String processedId = mahasiswaId;
+      // If the ID is base64, we keep it as is, otherwise we might need to encode it
+      // This step is precautionary in case the ID format is different
+
+      final Uri url = Uri.parse('$baseUrl/detail/mhs/${_parseString(processedId)}');
+      print('Detail URL: ${url.toString()}');
       
       final response = await _makeApiRequest(url);
+      print('Detail response status: ${response.statusCode}');
+      
+      // Log the response body for debugging
+      print('Response body: ${response.body.substring(0, min(100, response.body.length))}...');
 
       if (response.statusCode == 200) {
-        // Parse response - handle both Map and List formats
+        // Try to parse the response
         final dynamic responseData = json.decode(response.body);
+        print('Response type: ${responseData.runtimeType}');
         
-        List<dynamic> mahasiswaList = [];
-        
+        // Handle different response formats
         if (responseData is List) {
-          mahasiswaList = responseData;
-        } else if (responseData is Map<String, dynamic> && responseData.containsKey('mahasiswa')) {
-          mahasiswaList = responseData['mahasiswa'] as List<dynamic>;
-        } else {
-          throw Exception('Data mahasiswa tidak ditemukan');
+          // Direct list response
+          print('Detail response is a List with ${responseData.length} items');
+          if (responseData.isEmpty) {
+            throw Exception('Detail mahasiswa kosong');
+          }
+          
+          final item = responseData[0];
+          if (item is! Map<String, dynamic>) {
+            throw Exception('Format data tidak valid (item bukan Map)');
+          }
+          
+          // Log the keys available in the item
+          print('Available keys: ${(item as Map<String, dynamic>).keys.toList()}');
+          
+          return MahasiswaDetail.fromJson(item);
+        } 
+        else if (responseData is Map<String, dynamic>) {
+          // Map with mahasiswa field
+          print('Detail response is a Map');
+          
+          // Check for mahasiswa field
+          if (!responseData.containsKey('mahasiswa')) {
+            // Try direct parsing if no mahasiswa field
+            print('No mahasiswa field, trying direct parsing');
+            
+            // Log the keys available in the response
+            print('Available keys: ${responseData.keys.toList()}');
+            
+            // Some APIs might return the detail directly without a mahasiswa field
+            // Let's try to parse it directly if it has essential fields
+            if (responseData.containsKey('nama') || responseData.containsKey('nim')) {
+              return MahasiswaDetail.fromJson(responseData);
+            }
+            
+            throw Exception('Data mahasiswa tidak ditemukan dalam respons');
+          }
+          
+          final mahasiswaData = responseData['mahasiswa'];
+          if (mahasiswaData is! List || mahasiswaData.isEmpty) {
+            throw Exception('Data mahasiswa kosong atau tidak valid');
+          }
+          
+          final item = mahasiswaData[0];
+          if (item is! Map<String, dynamic>) {
+            throw Exception('Format data tidak valid');
+          }
+          
+          return MahasiswaDetail.fromJson(item);
         }
-        
-        if (mahasiswaList.isEmpty) {
-          throw Exception('Detail mahasiswa kosong');
+        else {
+          throw Exception('Format respons tidak dikenali: ${responseData.runtimeType}');
         }
-        
-        final item = mahasiswaList.first;
-        
-        if (item is! Map<String, dynamic>) {
-          throw Exception('Format data tidak valid');
-        }
-        
-        return MahasiswaDetail.fromJson(item);
       } else {
         throw Exception('Gagal mendapatkan detail: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error: $e');
+      print('Error in getMahasiswaDetail: $e');
       if (e.toString().contains('403')) {
         throw Exception('Server menolak akses (403 Forbidden). Coba gunakan VPN atau gunakan versi mobile.');
       } else {

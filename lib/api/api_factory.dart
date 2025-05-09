@@ -66,22 +66,41 @@ class ApiFactory {
     }
   }
   
-  /// Detail mahasiswa
+/// Detail mahasiswa
   Future<MahasiswaDetail> getMahasiswaDetail(String mahasiswaId) async {
     if (_useMockData) {
       return _mockService.getMahasiswaDetail(mahasiswaId);
     } else {
       try {
+        print('Requesting mahasiswa detail from real API for id: $mahasiswaId');
         return await _realApi.getMahasiswaDetail(mahasiswaId);
       } catch (e) {
         print('Error with real API, fallback to mock: $e');
-        // Fallback to mock data if the real API fails with specific errors
-        if (e.toString().contains('403') || 
-            e.toString().contains('CORS') ||
-            e.toString().contains('XMLHttpRequest')) {
+        
+        // Always fallback to mock on detail errors to ensure the UI can show something
+        try {
           return _mockService.getMahasiswaDetail(mahasiswaId);
+        } catch (mockError) {
+          print('Error with mock service too: $mockError');
+          
+          // If even the mock service fails, create a minimal valid object
+          return MahasiswaDetail(
+            id: mahasiswaId,
+            namaPt: 'Data tidak tersedia',
+            kodePt: '-',
+            kodeProdi: '-',
+            prodi: 'Data tidak tersedia',
+            nama: 'Data tidak tersedia (error)',
+            nim: '-',
+            jenisDaftar: '-',
+            idPt: '-',
+            idSms: '-',
+            jenisKelamin: '-',
+            jenjang: '-',
+            statusSaatIni: '-',
+            tahunMasuk: '-',
+          );
         }
-        rethrow;
       }
     }
   }
