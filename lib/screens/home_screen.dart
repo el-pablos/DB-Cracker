@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../api/pddikti_api.dart';
+import '../api/api_factory.dart';
 import '../models/mahasiswa.dart';
 import '../widgets/hacker_search_bar.dart';
 import '../widgets/hacker_result_item.dart';
@@ -115,7 +115,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     }
 
     try {
-      final api = Provider.of<PddiktiApi>(context, listen: false);
+      // Gunakan ApiFactory sebagai pengganti PddiktiApi langsung
+      final api = Provider.of<ApiFactory>(context, listen: false);
 
       // Tambahan indikator loading
       _addConsoleMessageWithDelay("MENGAKSES SERVER PDDIKTI...", 1000);
@@ -133,6 +134,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           throw Exception('Gagal terhubung ke server. Periksa koneksi internet atau coba lagi nanti.');
         } else if (errorMsg.contains('Timeout')) {
           throw Exception('Koneksi timeout. Server sibuk, silakan coba lagi.');
+        } else if (errorMsg.contains('403')) {
+          throw Exception('Akses ditolak oleh server (403 Forbidden). Menggunakan data offline.');
         } else {
           throw Exception('Error: $e');
         }

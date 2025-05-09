@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'screens/home_screen.dart';
-import 'api/pddikti_api.dart';
-import 'utils/constants.dart';  // Fix: Add this import
+import 'api/api_factory.dart';
+import 'utils/constants.dart';
 
 void main() {
+  // Enable Flutter Web error logging in console
+  FlutterError.onError = (FlutterErrorDetails details) {
+    FlutterError.presentError(details);
+    print('Flutter error: ${details.exception}');
+  };
+  
   runApp(const MyApp());
 }
 
@@ -13,8 +19,8 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Provider<PddiktiApi>(
-      create: (_) => PddiktiApi(),
+    return Provider<ApiFactory>(
+      create: (_) => ApiFactory(),
       child: MaterialApp(
         title: 'DB Cracker - Tamaengs',
         theme: ThemeData(

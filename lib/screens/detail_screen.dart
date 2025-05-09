@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../api/pddikti_api.dart';
+import '../api/api_factory.dart';
 import '../models/mahasiswa.dart';
 import '../widgets/hacker_loading_indicator.dart';
 import '../widgets/console_text.dart';
@@ -74,8 +74,10 @@ class _DetailScreenState extends State<DetailScreen> with SingleTickerProviderSt
   }
 
   void _fetchMahasiswaDetail() {
-    final api = Provider.of<PddiktiApi>(context, listen: false);
+    // Gunakan ApiFactory sebagai pengganti PddiktiApi langsung
+    final api = Provider.of<ApiFactory>(context, listen: false);
     _mahasiswaFuture = api.getMahasiswaDetail(widget.mahasiswaId);
+    
     _mahasiswaFuture.then((_) {
       setState(() {
         _isDecrypting = false;
