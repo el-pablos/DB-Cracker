@@ -40,7 +40,7 @@ class _DetailScreenState extends State<DetailScreen> with SingleTickerProviderSt
     );
     _animationController.repeat(reverse: true);
     
-    // Start decryption sequence
+    // Mulai sequence dekripsi
     _simulateDecryption();
   }
 
@@ -50,14 +50,14 @@ class _DetailScreenState extends State<DetailScreen> with SingleTickerProviderSt
       _isDecrypting = true;
     });
 
-    _addConsoleMessageWithDelay("ACCESSING SECURE DATABASE...", 300);
-    _addConsoleMessageWithDelay("LOCATING SUBJECT: ${widget.subjectName}", 800);
-    _addConsoleMessageWithDelay("DECRYPTING PERSONAL DATA...", 1400);
-    _addConsoleMessageWithDelay("APPLYING ENCRYPTION BYPASS...", 2000);
-    _addConsoleMessageWithDelay("EXTRACTING INSTITUTIONAL RECORDS...", 2600);
-    _addConsoleMessageWithDelay("CLEANING DATA STREAMS...", 3200);
+    _addConsoleMessageWithDelay("AKSES DATABASE AMAN...", 300);
+    _addConsoleMessageWithDelay("MENCARI SUBJEK: ${widget.subjectName}", 800);
+    _addConsoleMessageWithDelay("DEKRIPSI DATA PRIBADI...", 1400);
+    _addConsoleMessageWithDelay("MELEWATI ENKRIPSI...", 2000);
+    _addConsoleMessageWithDelay("EKSTRAKSI CATATAN INSTITUSI...", 2600);
+    _addConsoleMessageWithDelay("MEMBERSIHKAN DATA...", 3200);
     
-    // After simulation, actually fetch the data
+    // Fetch data setelah simulasi
     _decryptTimer = Timer(const Duration(milliseconds: 4000), () {
       _fetchMahasiswaDetail();
     });
@@ -80,14 +80,14 @@ class _DetailScreenState extends State<DetailScreen> with SingleTickerProviderSt
       setState(() {
         _isDecrypting = false;
       });
-      _addConsoleMessageWithDelay("DATA EXTRACTION COMPLETE", 300);
-      _addConsoleMessageWithDelay("ACCESS GRANTED", 600);
+      _addConsoleMessageWithDelay("EKSTRAKSI DATA SELESAI", 300);
+      _addConsoleMessageWithDelay("AKSES DIBERIKAN", 600);
     }).catchError((error) {
       setState(() {
         _isDecrypting = false;
       });
-      _addConsoleMessageWithDelay("ERROR: DATA EXTRACTION FAILED", 300);
-      _addConsoleMessageWithDelay("ACCESS DENIED", 600);
+      _addConsoleMessageWithDelay("ERROR: EKSTRAKSI DATA GAGAL", 300);
+      _addConsoleMessageWithDelay("AKSES DITOLAK", 600);
     });
   }
 
@@ -145,7 +145,6 @@ class _DetailScreenState extends State<DetailScreen> with SingleTickerProviderSt
         ),
       ),
       body: Container(
-        // PERBAIKAN: Gunakan warna solid alih-alih gambar
         color: HackerColors.background,
         child: Column(
           children: [
@@ -167,7 +166,7 @@ class _DetailScreenState extends State<DetailScreen> with SingleTickerProviderSt
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    'CONFIDENTIAL - ACCESS LEVEL 3 - SUBJECT: ${widget.subjectName}',
+                    'RAHASIA - LEVEL AKSES 3 - SUBJEK: ${widget.subjectName}',
                     style: const TextStyle(
                       color: HackerColors.highlight,
                       fontFamily: 'Courier',
@@ -181,13 +180,13 @@ class _DetailScreenState extends State<DetailScreen> with SingleTickerProviderSt
             Expanded(
               child: _isDecrypting
                 ? TerminalWindow(
-                    title: "DATA DECRYPTION",
+                    title: "DEKRIPSI DATA",
                     child: ListView.builder(
                       padding: const EdgeInsets.all(16.0),
                       itemCount: _consoleMessages.length,
                       itemBuilder: (context, index) {
                         bool isSuccess = index == _consoleMessages.length - 1 && 
-                                      _consoleMessages[index].contains("COMPLETE");
+                                      _consoleMessages[index].contains("SELESAI");
                         bool isError = index == _consoleMessages.length - 1 && 
                                      _consoleMessages[index].contains("ERROR");
                         
@@ -280,7 +279,7 @@ class _DetailScreenState extends State<DetailScreen> with SingleTickerProviderSt
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        'SECURITY KEY: ${_getRandomHexValue(8)}-${_getRandomHexValue(4)}-${_getRandomHexValue(4)}',
+                        'KUNCI: ${_getRandomHexValue(8)}-${_getRandomHexValue(4)}-${_getRandomHexValue(4)}',
                         style: const TextStyle(
                           color: HackerColors.text,
                           fontSize: 10,
@@ -319,15 +318,15 @@ class _DetailScreenState extends State<DetailScreen> with SingleTickerProviderSt
                 Expanded(
                   flex: 1,
                   child: _buildDataTerminal(
-                    title: "PERSONAL DATA",
+                    title: "DATA PRIBADI",
                     icon: Icons.person,
                     content: [
-                      _buildDataRow("IDENTITY", mahasiswa.nama),
-                      _buildDataRow("SUBJECT ID", mahasiswa.nim),
-                      _buildDataRow("BIOLOGICAL TYPE", mahasiswa.jenisKelamin),
-                      _buildDataRow("RECRUITMENT DATE", mahasiswa.tahunMasuk),
-                      _buildDataRow("ENTRY PROTOCOL", mahasiswa.jenisDaftar),
-                      _buildDataRow("ACTIVE STATUS", mahasiswa.statusSaatIni),
+                      _buildDataRow("IDENTITAS", mahasiswa.nama),
+                      _buildDataRow("ID SUBJEK", mahasiswa.nim),
+                      _buildDataRow("JENIS KELAMIN", mahasiswa.jenisKelamin),
+                      _buildDataRow("TAHUN MASUK", mahasiswa.tahunMasuk),
+                      _buildDataRow("JENIS DAFTAR", mahasiswa.jenisDaftar),
+                      _buildDataRow("STATUS", mahasiswa.statusSaatIni),
                     ],
                   ),
                 ),
@@ -335,14 +334,14 @@ class _DetailScreenState extends State<DetailScreen> with SingleTickerProviderSt
                 Expanded(
                   flex: 1,
                   child: _buildDataTerminal(
-                    title: "INSTITUTIONAL DATA",
+                    title: "DATA INSTITUSI",
                     icon: Icons.school,
                     content: [
-                      _buildDataRow("INSTITUTION", mahasiswa.namaPt),
-                      _buildDataRow("INST CODE", mahasiswa.kodePt),
+                      _buildDataRow("INSTITUSI", mahasiswa.namaPt),
+                      _buildDataRow("KODE PT", mahasiswa.kodePt),
                       _buildDataRow("PROGRAM", mahasiswa.prodi),
-                      _buildDataRow("PROG CODE", mahasiswa.kodeProdi),
-                      _buildDataRow("EDUCATION TIER", mahasiswa.jenjang),
+                      _buildDataRow("KODE PRODI", mahasiswa.kodeProdi),
+                      _buildDataRow("JENJANG", mahasiswa.jenjang),
                     ],
                   ),
                 ),
@@ -417,7 +416,7 @@ class _DetailScreenState extends State<DetailScreen> with SingleTickerProviderSt
               borderRadius: BorderRadius.circular(2),
             ),
             child: const Text(
-              "SECURITY ANALYSIS",
+              "ANALISIS KEAMANAN",
               style: TextStyle(
                 color: HackerColors.warning,
                 fontFamily: 'Courier',
@@ -452,18 +451,17 @@ class _DetailScreenState extends State<DetailScreen> with SingleTickerProviderSt
     
     switch (index) {
       case 0:
-        return "ACCESS LEVEL: ${_random.nextInt(3) + 2} | IP: 192.168.${_random.nextInt(255)}.${_random.nextInt(255)} | PORT: ${_random.nextInt(9000) + 1000}";
+        return "LEVEL AKSES: ${_random.nextInt(3) + 2} | IP: 192.168.${_random.nextInt(255)}.${_random.nextInt(255)} | PORT: ${_random.nextInt(9000) + 1000}";
       case 1:
-        return "DATA INTEGRITY: ${_random.nextInt(30) + 70}% | ENCRYPTION: AES-256 | HASH: SHA3-${_random.nextInt(2) == 0 ? "256" : "512"}";
+        return "INTEGRITAS DATA: ${_random.nextInt(30) + 70}% | ENKRIPSI: AES-256 | HASH: SHA3-${_random.nextInt(2) == 0 ? "256" : "512"}";
       case 2:
-        return "SYSTEM: PDDIKTI-SEC | NODE: ${_getRandomHexValue(4)}-${_getRandomHexValue(4)} | SESSION: $hexCode";
+        return "SISTEM: PDDIKTI-SEC | NODE: ${_getRandomHexValue(4)}-${_getRandomHexValue(4)} | SESI: $hexCode";
       case 3:
-        // Get a safe substring length
         int length = min(10, mahasiswa.id.length);
         String idPrefix = length > 0 ? mahasiswa.id.substring(0, length) : "UNKNOWN";
-        return "LAST UPDATE: ${DateTime.now().toString().substring(0, 16)} | RECORD ID: $idPrefix...";
+        return "UPDATE TERAKHIR: ${DateTime.now().toString().substring(0, 16)} | ID RECORD: $idPrefix...";
       case 4:
-        return "STATUS: ${_random.nextBool() ? "SECURE" : "MONITORING"} | CHECKSUM: ${_getRandomHexValue(8)} | AUTH: ${_getRandomHexValue(6)}";
+        return "STATUS: ${_random.nextBool() ? "AMAN" : "MONITOR"} | CHECKSUM: ${_getRandomHexValue(8)} | AUTH: ${_getRandomHexValue(6)}";
       default:
         return "";
     }
@@ -512,7 +510,7 @@ class _DetailScreenState extends State<DetailScreen> with SingleTickerProviderSt
               ),
             ),
             child: Text(
-              value.isNotEmpty ? value : "-REDACTED-",
+              value.isNotEmpty ? value : "-DISENSOR-",
               style: const TextStyle(
                 color: HackerColors.primary,
                 fontFamily: 'Courier',

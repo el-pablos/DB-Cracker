@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 import 'package:http/http.dart' as http;
 import '../models/mahasiswa.dart';
 import '../models/dosen.dart';
@@ -6,142 +7,123 @@ import '../models/prodi.dart';
 import '../models/pt.dart';
 
 class PddiktiApi {
-  // Base URL for the API
+  // Base URL API
   final String baseUrl = 'https://api-pddikti.kemdiktisaintek.go.id';
   
-  // Headers to mimic the browser request
+  // Header untuk request
   Map<String, String> get _headers => {
-    'Accept': 'application/json, text/plain, */*',
-    'Accept-Encoding': 'gzip, deflate, br, zstd',
-    'Accept-Language': 'en-US,en;q=0.9,mt;q=0.8',
-    'Connection': 'keep-alive',
-    'DNT': '1',
-    'Host': 'api-pddikti.kemdiktisaintek.go.id',
+    'Accept': 'application/json',
     'Origin': 'https://pddikti.kemdiktisaintek.go.id',
     'Referer': 'https://pddikti.kemdiktisaintek.go.id/',
-    'Sec-Fetch-Dest': 'empty',
-    'Sec-Fetch-Mode': 'cors',
-    'Sec-Fetch-Site': 'same-site',
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0',
-    'X-User-IP': '103.47.132.29', // This should be dynamic in a real app
-    'sec-ch-ua': '"Microsoft Edge";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
-    'sec-ch-ua-mobile': '?0',
-    'sec-ch-ua-platform': '"Windows"'
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+    'Content-Type': 'application/json',
   };
 
-  // Helper method to parse strings for URL
+  // Encode parameter URL
   String _parseString(String text) {
     return Uri.encodeComponent(text);
   }
 
-  // Fungsi aman untuk mengambil list dari JSON
+  // Ambil list data aman
   List<dynamic> _safeGetList(Map<String, dynamic> data, String key) {
     final value = data[key];
     if (value == null) return [];
     if (value is List) return value;
-    return []; // Return list kosong jika bukan list
+    return [];
   }
 
-  // Helper method untuk mengecek respons API
+  // Proses response API
   Future<Map<String, dynamic>> _processApiResponse(http.Response response, String errorMessage) async {
     if (response.statusCode == 200) {
       try {
-        final data = json.decode(response.body);
-        return data;
+        return json.decode(response.body);
       } catch (e) {
         print('Error parsing JSON: $e');
-        print('Response body: ${response.body.substring(0, min(200, response.body.length))}...');
-        throw Exception('Error parsing JSON: $e');
+        throw Exception('Format data tidak valid: $e');
       }
     } else {
+      print('HTTP Error: ${response.statusCode}');
       throw Exception('$errorMessage: ${response.statusCode}');
     }
   }
 
-  // Search for all entities (mahasiswa, dosen, pt, prodi)
-  Future<Map<String, dynamic>> searchAll(String keyword) async {
-    try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/pencarian/all/${_parseString(keyword)}'),
-        headers: _headers,
-      );
-
-      return await _processApiResponse(response, 'Gagal mencari data');
-    } catch (e) {
-      print('Error dalam searchAll: $e');
-      throw Exception('Error mencari semua data: $e');
-    }
-  }
-
-  // Search specifically for students
+  // Pencarian mahasiswa
   Future<List<Mahasiswa>> searchMahasiswa(String keyword) async {
     try {
       print('Mencari mahasiswa: $keyword');
       
+      final Uri url = Uri.parse('$baseUrl/pencarian/mhs/${_parseString(keyword)}');
+      print('URL Request: ${url.toString()}');
+      
+      // Request dengan timeout
       final response = await http.get(
-        Uri.parse('$baseUrl/pencarian/mhs/${_parseString(keyword)}'),
+        url,
         headers: _headers,
+      ).timeout(
+        const Duration(seconds: 15),
+        onTimeout: () {
+          throw Exception('Koneksi timeout - Coba lagi nanti');
+        },
       );
 
-      print('Status kode response: ${response.statusCode}');
+      print('Status kode: ${response.statusCode}');
       
       if (response.statusCode == 200) {
-        final String jsonString = response.body;
+        final Map<String, dynamic> data = json.decode(response.body);
         
-        try {
-          // Coba parse JSON
-          final Map<String, dynamic> data = json.decode(jsonString);
-          
-          // Periksa apakah field 'mahasiswa' ada dan berupa list
-          if (!data.containsKey('mahasiswa')) {
-            print('Tidak ada field mahasiswa dalam respons');
-            return [];
+        // Cek field mahasiswa
+        if (!data.containsKey('mahasiswa')) {
+          print('Data mahasiswa tidak ditemukan');
+          return [];
+        }
+        
+        // Ambil dan olah data mahasiswa
+        final List<dynamic> mhsList = _safeGetList(data, 'mahasiswa');
+        print('Ditemukan ${mhsList.length} mahasiswa');
+        
+        return mhsList.map((item) {
+          if (item is! Map<String, dynamic>) {
+            return Mahasiswa.fromJson({});
           }
           
-          // Dapatkan list mahasiswa dengan aman
-          final List<dynamic> mahasiswaList = _safeGetList(data, 'mahasiswa');
-          print('Ditemukan ${mahasiswaList.length} record mahasiswa');
-          
-          // Konversi setiap item ke objek Mahasiswa
-          return mahasiswaList.map((item) {
-            if (item is! Map<String, dynamic>) {
-              print('Item bukan Map: $item');
-              // Buat Map kosong untuk menghindari error
-              return Mahasiswa.fromJson({});
-            }
-            
-            try {
-              return Mahasiswa.fromJson(item);
-            } catch (e) {
-              print('Error membuat objek Mahasiswa: $e');
-              print('Data item: $item');
-              // Return objek kosong daripada melempar error
-              return Mahasiswa.fromJson({});
-            }
-          }).where((m) => m.id.isNotEmpty).toList(); // Filter objek kosong
-          
-        } catch (e) {
-          print('Error parsing JSON: $e');
-          print('Raw JSON: ${jsonString.substring(0, min(200, jsonString.length))}...');
-          throw Exception('Error parsing JSON: $e');
-        }
+          try {
+            return Mahasiswa.fromJson(item);
+          } catch (e) {
+            print('Error: $e');
+            return Mahasiswa.fromJson({});
+          }
+        }).where((m) => m.id.isNotEmpty).toList();
+        
       } else {
-        throw Exception('Gagal mencari mahasiswa: ${response.statusCode}');
+        throw Exception('Gagal mencari data: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error dalam searchMahasiswa: $e');
-      throw Exception('Error mencari mahasiswa: $e');
+      print('Error: $e');
+      if (e.toString().contains('XMLHttpRequest')) {
+        throw Exception('Gagal terhubung ke server. Periksa koneksi internet atau coba lagi nanti.');
+      } else if (e.toString().contains('Timeout')) {
+        throw Exception('Koneksi timeout. Server mungkin sibuk, silakan coba lagi.');
+      } else {
+        throw Exception('Error: $e');
+      }
     }
   }
 
-  // Search specifically for lecturers
+  // Pencarian dosen
   Future<List<Dosen>> searchDosen(String keyword) async {
     try {
       print('Mencari dosen: $keyword');
       
+      final Uri url = Uri.parse('$baseUrl/pencarian/dosen/${_parseString(keyword)}');
+      
       final response = await http.get(
-        Uri.parse('$baseUrl/pencarian/dosen/${_parseString(keyword)}'),
+        url,
         headers: _headers,
+      ).timeout(
+        const Duration(seconds: 15),
+        onTimeout: () {
+          throw Exception('Koneksi timeout - Coba lagi nanti');
+        },
       );
       
       if (response.statusCode == 200) {
@@ -151,23 +133,19 @@ class PddiktiApi {
         );
         
         if (!data.containsKey('dosen')) {
-          print('Tidak ada field dosen dalam respons');
           return [];
         }
         
         final List<dynamic> dosenList = _safeGetList(data, 'dosen');
-        print('Ditemukan ${dosenList.length} record dosen');
         
         return dosenList.map((item) {
           if (item is! Map<String, dynamic>) {
-            print('Item bukan Map: $item');
             return Dosen.fromJson({});
           }
           
           try {
             return Dosen.fromJson(item);
           } catch (e) {
-            print('Error membuat objek Dosen: $e');
             return Dosen.fromJson({});
           }
         }).where((d) => d.id.isNotEmpty).toList();
@@ -175,19 +153,30 @@ class PddiktiApi {
         throw Exception('Gagal mencari dosen: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error dalam searchDosen: $e');
-      throw Exception('Error mencari dosen: $e');
+      print('Error: $e');
+      if (e.toString().contains('XMLHttpRequest')) {
+        throw Exception('Gagal terhubung ke server. Periksa koneksi internet atau coba lagi nanti.');
+      } else {
+        throw Exception('Error: $e');
+      }
     }
   }
 
-  // Search specifically for universities
+  // Pencarian PT
   Future<List<PerguruanTinggi>> searchPt(String keyword) async {
     try {
       print('Mencari perguruan tinggi: $keyword');
       
+      final Uri url = Uri.parse('$baseUrl/pencarian/pt/${_parseString(keyword)}');
+      
       final response = await http.get(
-        Uri.parse('$baseUrl/pencarian/pt/${_parseString(keyword)}'),
+        url,
         headers: _headers,
+      ).timeout(
+        const Duration(seconds: 15),
+        onTimeout: () {
+          throw Exception('Koneksi timeout - Coba lagi nanti');
+        },
       );
       
       if (response.statusCode == 200) {
@@ -197,23 +186,19 @@ class PddiktiApi {
         );
         
         if (!data.containsKey('pt')) {
-          print('Tidak ada field pt dalam respons');
           return [];
         }
         
         final List<dynamic> ptList = _safeGetList(data, 'pt');
-        print('Ditemukan ${ptList.length} record perguruan tinggi');
         
         return ptList.map((item) {
           if (item is! Map<String, dynamic>) {
-            print('Item bukan Map: $item');
             return PerguruanTinggi.fromJson({});
           }
           
           try {
             return PerguruanTinggi.fromJson(item);
           } catch (e) {
-            print('Error membuat objek PerguruanTinggi: $e');
             return PerguruanTinggi.fromJson({});
           }
         }).where((pt) => pt.id.isNotEmpty).toList();
@@ -221,19 +206,30 @@ class PddiktiApi {
         throw Exception('Gagal mencari perguruan tinggi: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error dalam searchPt: $e');
-      throw Exception('Error mencari perguruan tinggi: $e');
+      print('Error: $e');
+      if (e.toString().contains('XMLHttpRequest')) {
+        throw Exception('Gagal terhubung ke server. Periksa koneksi internet atau coba lagi nanti.');
+      } else {
+        throw Exception('Error: $e');
+      }
     }
   }
 
-  // Search specifically for study programs
+  // Pencarian prodi
   Future<List<Prodi>> searchProdi(String keyword) async {
     try {
       print('Mencari program studi: $keyword');
       
+      final Uri url = Uri.parse('$baseUrl/pencarian/prodi/${_parseString(keyword)}');
+      
       final response = await http.get(
-        Uri.parse('$baseUrl/pencarian/prodi/${_parseString(keyword)}'),
+        url,
         headers: _headers,
+      ).timeout(
+        const Duration(seconds: 15),
+        onTimeout: () {
+          throw Exception('Koneksi timeout - Coba lagi nanti');
+        },
       );
       
       if (response.statusCode == 200) {
@@ -243,23 +239,19 @@ class PddiktiApi {
         );
         
         if (!data.containsKey('prodi')) {
-          print('Tidak ada field prodi dalam respons');
           return [];
         }
         
         final List<dynamic> prodiList = _safeGetList(data, 'prodi');
-        print('Ditemukan ${prodiList.length} record program studi');
         
         return prodiList.map((item) {
           if (item is! Map<String, dynamic>) {
-            print('Item bukan Map: $item');
             return Prodi.fromJson({});
           }
           
           try {
             return Prodi.fromJson(item);
           } catch (e) {
-            print('Error membuat objek Prodi: $e');
             return Prodi.fromJson({});
           }
         }).where((p) => p.id.isNotEmpty).toList();
@@ -267,57 +259,76 @@ class PddiktiApi {
         throw Exception('Gagal mencari program studi: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error dalam searchProdi: $e');
-      throw Exception('Error mencari program studi: $e');
+      print('Error: $e');
+      if (e.toString().contains('XMLHttpRequest')) {
+        throw Exception('Gagal terhubung ke server. Periksa koneksi internet atau coba lagi nanti.');
+      } else {
+        throw Exception('Error: $e');
+      }
     }
   }
 
-  // Get detailed information about a specific student
+  // Detail mahasiswa
   Future<MahasiswaDetail> getMahasiswaDetail(String mahasiswaId) async {
     try {
+      final Uri url = Uri.parse('$baseUrl/detail/mhs/${_parseString(mahasiswaId)}');
+      
       final response = await http.get(
-        Uri.parse('$baseUrl/detail/mhs/${_parseString(mahasiswaId)}'),
+        url,
         headers: _headers,
+      ).timeout(
+        const Duration(seconds: 15),
+        onTimeout: () {
+          throw Exception('Koneksi timeout - Coba lagi nanti');
+        },
       );
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = json.decode(response.body);
         
-        // Periksa apakah field 'mahasiswa' ada
         if (!data.containsKey('mahasiswa')) {
           throw Exception('Data mahasiswa tidak ditemukan');
         }
         
-        // Dapatkan list mahasiswa dengan aman
         final List<dynamic> mahasiswaList = _safeGetList(data, 'mahasiswa');
         
         if (mahasiswaList.isEmpty) {
           throw Exception('Detail mahasiswa kosong');
         }
         
-        // Ambil item pertama dari list
         final item = mahasiswaList.first;
         
         if (item is! Map<String, dynamic>) {
-          throw Exception('Format data mahasiswa tidak valid');
+          throw Exception('Format data tidak valid');
         }
         
         return MahasiswaDetail.fromJson(item);
       } else {
-        throw Exception('Gagal mendapatkan detail mahasiswa: ${response.statusCode}');
+        throw Exception('Gagal mendapatkan detail: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error dalam getMahasiswaDetail: $e');
-      throw Exception('Error mendapatkan detail mahasiswa: $e');
+      print('Error: $e');
+      if (e.toString().contains('XMLHttpRequest')) {
+        throw Exception('Gagal terhubung ke server. Periksa koneksi internet atau coba lagi nanti.');
+      } else {
+        throw Exception('Error: $e');
+      }
     }
   }
 
-  // Get detailed information about a specific lecturer
+  // Detail dosen
   Future<DosenDetail> getDosenProfile(String dosenId) async {
     try {
+      final Uri url = Uri.parse('$baseUrl/dosen/profile/${_parseString(dosenId)}');
+      
       final response = await http.get(
-        Uri.parse('$baseUrl/dosen/profile/${_parseString(dosenId)}'),
+        url,
         headers: _headers,
+      ).timeout(
+        const Duration(seconds: 15),
+        onTimeout: () {
+          throw Exception('Koneksi timeout - Coba lagi nanti');
+        },
       );
 
       final Map<String, dynamic> data = await _processApiResponse(
@@ -338,22 +349,33 @@ class PddiktiApi {
       final item = dosenList.first;
       
       if (item is! Map<String, dynamic>) {
-        throw Exception('Format data dosen tidak valid');
+        throw Exception('Format data tidak valid');
       }
       
       return DosenDetail.fromJson(item);
     } catch (e) {
-      print('Error dalam getDosenProfile: $e');
-      throw Exception('Error mendapatkan profil dosen: $e');
+      print('Error: $e');
+      if (e.toString().contains('XMLHttpRequest')) {
+        throw Exception('Gagal terhubung ke server. Periksa koneksi internet atau coba lagi nanti.');
+      } else {
+        throw Exception('Error: $e');
+      }
     }
   }
 
-  // Get detailed information about a specific university
+  // Detail perguruan tinggi
   Future<PerguruanTinggiDetail> getDetailPt(String ptId) async {
     try {
+      final Uri url = Uri.parse('$baseUrl/pt/detail/${_parseString(ptId)}');
+      
       final response = await http.get(
-        Uri.parse('$baseUrl/pt/detail/${_parseString(ptId)}'),
+        url,
         headers: _headers,
+      ).timeout(
+        const Duration(seconds: 15),
+        onTimeout: () {
+          throw Exception('Koneksi timeout - Coba lagi nanti');
+        },
       );
 
       final Map<String, dynamic> data = await _processApiResponse(
@@ -374,22 +396,33 @@ class PddiktiApi {
       final item = ptList.first;
       
       if (item is! Map<String, dynamic>) {
-        throw Exception('Format data perguruan tinggi tidak valid');
+        throw Exception('Format data tidak valid');
       }
       
       return PerguruanTinggiDetail.fromJson(item);
     } catch (e) {
-      print('Error dalam getDetailPt: $e');
-      throw Exception('Error mendapatkan detail perguruan tinggi: $e');
+      print('Error: $e');
+      if (e.toString().contains('XMLHttpRequest')) {
+        throw Exception('Gagal terhubung ke server. Periksa koneksi internet atau coba lagi nanti.');
+      } else {
+        throw Exception('Error: $e');
+      }
     }
   }
 
-  // Get detailed information about a specific study program
+  // Detail program studi
   Future<ProdiDetail> getDetailProdi(String prodiId) async {
     try {
+      final Uri url = Uri.parse('$baseUrl/prodi/detail/${_parseString(prodiId)}');
+      
       final response = await http.get(
-        Uri.parse('$baseUrl/prodi/detail/${_parseString(prodiId)}'),
+        url,
         headers: _headers,
+      ).timeout(
+        const Duration(seconds: 15),
+        onTimeout: () {
+          throw Exception('Koneksi timeout - Coba lagi nanti');
+        },
       );
 
       final Map<String, dynamic> data = await _processApiResponse(
@@ -410,15 +443,21 @@ class PddiktiApi {
       final item = prodiList.first;
       
       if (item is! Map<String, dynamic>) {
-        throw Exception('Format data program studi tidak valid');
+        throw Exception('Format data tidak valid');
       }
       
-      // Coba ambil deskripsi prodi
+      // Ambil deskripsi prodi jika tersedia
       Map<String, dynamic>? descJson;
       try {
         final descResponse = await http.get(
           Uri.parse('$baseUrl/prodi/desc/${_parseString(prodiId)}'),
           headers: _headers,
+        ).timeout(
+          const Duration(seconds: 10),
+          onTimeout: () {
+            print('Timeout mengambil deskripsi prodi');
+            return http.Response('{"error": "timeout"}', 408);
+          },
         );
         
         if (descResponse.statusCode == 200) {
@@ -432,22 +471,32 @@ class PddiktiApi {
         }
       } catch (e) {
         print('Error mendapatkan deskripsi prodi: $e');
-        // Lanjutkan meskipun gagal mendapatkan deskripsi
       }
       
       return ProdiDetail.fromJson(item, descJson);
     } catch (e) {
-      print('Error dalam getDetailProdi: $e');
-      throw Exception('Error mendapatkan detail program studi: $e');
+      print('Error: $e');
+      if (e.toString().contains('XMLHttpRequest')) {
+        throw Exception('Gagal terhubung ke server. Periksa koneksi internet atau coba lagi nanti.');
+      } else {
+        throw Exception('Error: $e');
+      }
     }
   }
 
-  // Get list of study programs for a specific university
+  // List prodi untuk PT tertentu
   Future<List<ProdiPt>> getProdiPt(String ptId, int tahun) async {
     try {
+      final Uri url = Uri.parse('$baseUrl/pt/detail/${_parseString(ptId)}/${_parseString(tahun.toString())}');
+      
       final response = await http.get(
-        Uri.parse('$baseUrl/pt/detail/${_parseString(ptId)}/${_parseString(tahun.toString())}'),
+        url,
         headers: _headers,
+      ).timeout(
+        const Duration(seconds: 15),
+        onTimeout: () {
+          throw Exception('Koneksi timeout - Coba lagi nanti');
+        },
       );
 
       final Map<String, dynamic> data = await _processApiResponse(
@@ -456,33 +505,59 @@ class PddiktiApi {
       );
       
       if (!data.containsKey('prodi')) {
-        print('Tidak ada field prodi dalam respons');
         return [];
       }
       
       final List<dynamic> prodiList = _safeGetList(data, 'prodi');
-      print('Ditemukan ${prodiList.length} program studi');
       
       return prodiList.map((item) {
         if (item is! Map<String, dynamic>) {
-          print('Item bukan Map: $item');
           return ProdiPt.fromJson({});
         }
         
         try {
           return ProdiPt.fromJson(item);
         } catch (e) {
-          print('Error membuat objek ProdiPt: $e');
           return ProdiPt.fromJson({});
         }
       }).where((p) => p.idSms.isNotEmpty).toList();
     } catch (e) {
-      print('Error dalam getProdiPt: $e');
-      throw Exception('Error mendapatkan daftar program studi: $e');
+      print('Error: $e');
+      if (e.toString().contains('XMLHttpRequest')) {
+        throw Exception('Gagal terhubung ke server. Periksa koneksi internet atau coba lagi nanti.');
+      } else {
+        throw Exception('Error: $e');
+      }
     }
   }
 
-  // Helper function to limit string length for debugging
+  // Pencarian semua entitas
+  Future<Map<String, dynamic>> searchAll(String keyword) async {
+    try {
+      final Uri url = Uri.parse('$baseUrl/pencarian/all/${_parseString(keyword)}');
+      
+      final response = await http.get(
+        url,
+        headers: _headers,
+      ).timeout(
+        const Duration(seconds: 15),
+        onTimeout: () {
+          throw Exception('Koneksi timeout - Coba lagi nanti');
+        },
+      );
+
+      return await _processApiResponse(response, 'Gagal mencari data');
+    } catch (e) {
+      print('Error: $e');
+      if (e.toString().contains('XMLHttpRequest')) {
+        throw Exception('Gagal terhubung ke server. Periksa koneksi internet atau coba lagi nanti.');
+      } else {
+        throw Exception('Error: $e');
+      }
+    }
+  }
+
+  // Helper untuk limit string
   int min(int a, int b) {
     return (a < b) ? a : b;
   }

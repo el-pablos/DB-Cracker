@@ -39,7 +39,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     );
     _animationController.repeat(reverse: true);
 
-    // Show intro sequence
+    // Tampilkan intro
     _runIntroSequence();
   }
 
@@ -48,19 +48,21 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       _consoleMessages = [];
     });
 
-    _addConsoleMessageWithDelay("INITIALIZING DB CRACKER SYSTEM...", 300);
-    _addConsoleMessageWithDelay("CONNECTING TO SECURE SERVER...", 800);
-    _addConsoleMessageWithDelay("BYPASSING SECURITY PROTOCOLS...", 1500);
-    _addConsoleMessageWithDelay("ESTABLISHING DATABASE CONNECTION...", 2300);
-    _addConsoleMessageWithDelay("SCANNING FIREWALL VULNERABILITIES...", 3000);
-    _addConsoleMessageWithDelay("ACCESS GRANTED TO EDUCATIONAL DATABASE", 4000);
-    _addConsoleMessageWithDelay("DB CRACKER v2.5 READY - Author: Tamaengs", 4500);
+    _addConsoleMessageWithDelay("MEMULAI SISTEM DB CRACKER...", 300);
+    _addConsoleMessageWithDelay("MENGHUBUNGKAN KE SERVER...", 800);
+    _addConsoleMessageWithDelay("MELEWATI PROTOKOL KEAMANAN...", 1500);
+    _addConsoleMessageWithDelay("MEMBUAT KONEKSI DATABASE...", 2300);
+    _addConsoleMessageWithDelay("MEMINDAI CELAH FIREWALL...", 3000);
+    _addConsoleMessageWithDelay("AKSES DIBERIKAN KE DATABASE PENDIDIKAN", 4000);
+    _addConsoleMessageWithDelay("DB CRACKER v2.5 SIAP - Author: Tamaengs", 4500);
     
-    // Hide intro sequence after a delay
+    // Sembunyikan intro setelah selesai
     Timer(const Duration(milliseconds: 5000), () {
-      setState(() {
-        _showIntro = false;
-      });
+      if (mounted) {
+        setState(() {
+          _showIntro = false;
+        });
+      }
     });
   }
 
@@ -90,12 +92,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
     final String query = _searchController.text.trim();
     
-    _addConsoleMessageWithDelay("INITIATING DATABASE SCAN FOR TARGET: $query", 300);
-    _addConsoleMessageWithDelay("BYPASSING SECURITY LAYER 1...", 800);
-    _addConsoleMessageWithDelay("INJECTING SQL QUERIES...", 1200);
-    _addConsoleMessageWithDelay("ATTEMPTING TO CRACK ENCRYPTION...", 1800);
-    _addConsoleMessageWithDelay("BREACHING FIREWALL...", 2400);
-    _addConsoleMessageWithDelay("ACCESSING STUDENT RECORDS DATABASE...", 3000);
+    _addConsoleMessageWithDelay("MEMULAI PEMINDAIAN DATABASE UNTUK TARGET: $query", 300);
+    _addConsoleMessageWithDelay("MELEWATI LAPISAN KEAMANAN 1...", 800);
+    _addConsoleMessageWithDelay("MENYUNTIKKAN QUERY SQL...", 1200);
+    _addConsoleMessageWithDelay("MENCOBA MEMECAHKAN ENKRIPSI...", 1800);
+    _addConsoleMessageWithDelay("MENEMBUS FIREWALL...", 2400);
+    _addConsoleMessageWithDelay("MENGAKSES DATABASE MAHASISWA...", 3000);
     
     _actuallyPerformSearch();
   }
@@ -108,48 +110,62 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         _errorMessage = AppStrings.pleaseEnterSearchTerm;
         _isLoading = false;
       });
-      _addConsoleMessageWithDelay("ERROR: NO TARGET SPECIFIED", 500);
+      _addConsoleMessageWithDelay("ERROR: TARGET TIDAK DITENTUKAN", 500);
       return;
     }
 
     try {
       final api = Provider.of<PddiktiApi>(context, listen: false);
 
-      // Lakukan pencarian dengan penanganan kesalahan yang lebih baik
+      // Tambahan indikator loading
+      _addConsoleMessageWithDelay("MENGAKSES SERVER PDDIKTI...", 1000);
+      _addConsoleMessageWithDelay("MENCOBA KONEKSI AMAN...", 2000);
+
+      // Cari data dengan error handling
       List<Mahasiswa> results = [];
       try {
         results = await api.searchMahasiswa(query);
       } catch (e) {
         print('Error dalam pencarian: $e');
-        throw Exception('Terjadi kesalahan dalam pencarian: $e');
+        String errorMsg = e.toString();
+        
+        if (errorMsg.contains('XMLHttpRequest')) {
+          throw Exception('Gagal terhubung ke server. Periksa koneksi internet atau coba lagi nanti.');
+        } else if (errorMsg.contains('Timeout')) {
+          throw Exception('Koneksi timeout. Server sibuk, silakan coba lagi.');
+        } else {
+          throw Exception('Error: $e');
+        }
       }
       
-      // Delay showing results to simulate "hacking"
-      await Future.delayed(const Duration(milliseconds: 3500));
+      // Delay untuk simulasi hacking
+      await Future.delayed(const Duration(milliseconds: 3000));
       
       setState(() {
         _searchResults = results;
         _isLoading = false;
         
         if (results.isEmpty) {
-          _errorMessage = '${AppStrings.noResultsFound} "$query"';
-          _addConsoleMessageWithDelay("NO MATCH FOUND IN DATABASE", 300);
-          _addConsoleMessageWithDelay("ACCESS DENIED", 600);
+          _errorMessage = 'TIDAK DITEMUKAN HASIL UNTUK "$query"';
+          _addConsoleMessageWithDelay("TIDAK ADA DATA YANG COCOK", 300);
+          _addConsoleMessageWithDelay("AKSES DITOLAK", 600);
         } else {
           _errorMessage = null;
-          _addConsoleMessageWithDelay("MATCHING RECORDS FOUND: ${results.length}", 300);
-          _addConsoleMessageWithDelay("DECRYPTING SUBJECT DATA...", 600);
-          _addConsoleMessageWithDelay("ACCESS GRANTED", 900);
+          _addConsoleMessageWithDelay("DATA DITEMUKAN: ${results.length}", 300);
+          _addConsoleMessageWithDelay("MENDEKRIPSI DATA...", 600);
+          _addConsoleMessageWithDelay("AKSES DIBERIKAN", 900);
         }
       });
     } catch (e) {
       setState(() {
         _isLoading = false;
         _searchResults = [];
-        _errorMessage = '${AppStrings.errorSearching} ${e.toString()}';
+        // Bersihkan pesan error
+        String errorMsg = e.toString().replaceAll("Exception: ", "");
+        _errorMessage = errorMsg;
       });
-      _addConsoleMessageWithDelay("CONNECTION BREACH DETECTED", 300);
-      _addConsoleMessageWithDelay("SECURITY ALERT: DISCONNECTING...", 600);
+      _addConsoleMessageWithDelay("KONEKSI TERPUTUS", 300);
+      _addConsoleMessageWithDelay("PERINGATAN KEAMANAN: DISCONNECT...", 600);
     }
   }
 
@@ -166,7 +182,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   Widget build(BuildContext context) {
     if (_showIntro) {
       return TerminalWindow(
-        title: "DB CRACKER BOOT SEQUENCE",
+        title: "BOOT SEQUENCE DB CRACKER",
         child: ListView.builder(
           padding: const EdgeInsets.all(16.0),
           itemCount: _consoleMessages.length,
@@ -223,7 +239,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         ],
       ),
       body: Container(
-        // PERBAIKAN: Ganti NetworkImage dengan warna latar belakang
         color: HackerColors.background,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -232,7 +247,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               color: HackerColors.surface.withOpacity(0.7),
               padding: const EdgeInsets.all(8.0),
               child: Text(
-                'SECURE CONNECTION ESTABLISHED',
+                'KONEKSI AMAN TERSEDIA',
                 style: TextStyle(
                   color: HackerColors.highlight,
                   fontFamily: 'Courier',
@@ -252,7 +267,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             Expanded(
               child: _isLoading
                 ? TerminalWindow(
-                    title: "HACK IN PROGRESS",
+                    title: "HACKING SEDANG BERJALAN",
                     child: ListView.builder(
                       padding: const EdgeInsets.all(16.0),
                       itemCount: _consoleMessages.length,
@@ -263,7 +278,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   )
                 : _errorMessage != null
                   ? TerminalWindow(
-                      title: "SYSTEM ALERT",
+                      title: "PERINGATAN SISTEM",
                       child: Center(
                         child: Padding(
                           padding: const EdgeInsets.all(16.0),
@@ -293,7 +308,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                   foregroundColor: HackerColors.primary,
                                   side: const BorderSide(color: HackerColors.primary),
                                 ),
-                                child: const Text('RETRY HACK'),
+                                child: const Text('COBA LAGI'),
                               ),
                             ],
                           ),
@@ -302,7 +317,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     )
                   : _searchResults.isEmpty
                     ? TerminalWindow(
-                        title: "AWAITING INPUT",
+                        title: "MENUNGGU INPUT",
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -323,7 +338,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                             ),
                             const SizedBox(height: 8),
                             const Text(
-                              "READY FOR DATABASE BREACH",
+                              "SIAP UNTUK MEMULAI PERETASAN",
                               style: TextStyle(
                                 fontSize: 12,
                                 color: HackerColors.accent,
@@ -335,7 +350,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         ),
                       )
                     : TerminalWindow(
-                        title: "EXTRACTED RECORDS",
+                        title: "REKAMAN TEREKSTRAK",
                         child: Column(
                           children: [
                             Padding(
@@ -345,7 +360,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                   const Icon(Icons.person_search, color: HackerColors.primary, size: 16),
                                   const SizedBox(width: 8),
                                   Text(
-                                    'FOUND ${_searchResults.length} MATCHING SUBJECTS',
+                                    'DITEMUKAN ${_searchResults.length} SUBJEK YANG COCOK',
                                     style: const TextStyle(
                                       color: HackerColors.primary,
                                       fontFamily: 'Courier',
