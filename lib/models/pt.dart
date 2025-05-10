@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-
 class PerguruanTinggi {
   final String id;
   final String kode;
@@ -268,72 +266,5 @@ class ProdiPt {
     final value = json[key];
     if (value == null) return '';
     return value.toString();
-  }
-}
-
-// Model untuk data statistik PT
-class PTStatistik {
-  final String idSp;
-  final double? meanJumlahLulus;
-  final double? meanJumlahBaru;
-  final String? jenjang;
-  final double? meanMasaStudi;
-
-  PTStatistik({
-    required this.idSp,
-    this.meanJumlahLulus,
-    this.meanJumlahBaru,
-    this.jenjang,
-    this.meanMasaStudi,
-  });
-
-  factory PTStatistik.fromMahasiswaJson(Map<String, dynamic> json) {
-    try {
-      return PTStatistik(
-        idSp: _getStringValue(json, 'id_sp'),
-        meanJumlahLulus: _parseDouble(json['mean_jumlah_lulus']),
-        meanJumlahBaru: _parseDouble(json['mean_jumlah_baru']),
-      );
-    } catch (e) {
-      print('Error parsing PTStatistik (Mahasiswa): $e');
-      print('JSON data: $json');
-      return PTStatistik(idSp: _getStringValue(json, 'id_sp'));
-    }
-  }
-  
-  factory PTStatistik.fromWaktuStudiJson(Map<String, dynamic> json) {
-    try {
-      return PTStatistik(
-        idSp: _getStringValue(json, 'id_sp'),
-        jenjang: _getStringValue(json, 'jenjang'),
-        meanMasaStudi: _parseDouble(json['mean_masa_studi']),
-      );
-    } catch (e) {
-      print('Error parsing PTStatistik (Waktu Studi): $e');
-      print('JSON data: $json');
-      return PTStatistik(idSp: _getStringValue(json, 'id_sp'));
-    }
-  }
-
-  // Helper method untuk mengambil nilai string dengan aman
-  static String _getStringValue(Map<String, dynamic> json, String key) {
-    final value = json[key];
-    if (value == null) return '';
-    return value.toString();
-  }
-  
-  // Helper method untuk mengambil nilai double dengan aman
-  static double? _parseDouble(dynamic value) {
-    if (value == null) return null;
-    if (value is double) return value;
-    if (value is int) return value.toDouble();
-    if (value is String) {
-      try {
-        return double.parse(value);
-      } catch (e) {
-        return null;
-      }
-    }
-    return null;
   }
 }

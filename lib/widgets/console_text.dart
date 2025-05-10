@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../utils/constants.dart';
-import '../utils/screen_utils.dart';
 
 class ConsoleText extends StatefulWidget {
   final String text;
@@ -75,11 +74,6 @@ class _ConsoleTextState extends State<ConsoleText> with SingleTickerProviderStat
 
   @override
   Widget build(BuildContext context) {
-    // Pastikan ScreenUtils diinisialisasi
-    if (ScreenUtils.screenWidth == 0) {
-      ScreenUtils.init(context);
-    }
-    
     Color textColor = HackerColors.text;
     
     if (widget.isError) {

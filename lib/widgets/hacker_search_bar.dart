@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import '../utils/constants.dart';
-import '../utils/screen_utils.dart';
-import 'flexible_text.dart';
 
 class HackerSearchBar extends StatelessWidget {
   final TextEditingController controller;
@@ -17,8 +15,8 @@ class HackerSearchBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Adaptasi berdasarkan ukuran layar
-    final bool isMobile = ScreenUtils.isMobileScreen();
+    final size = MediaQuery.of(context).size;
+    final bool isMobile = size.width < 600;
     
     return Container(
       decoration: BoxDecoration(
@@ -38,9 +36,9 @@ class HackerSearchBar extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: ScreenUtils.responsivePadding(
+            padding: const EdgeInsets.symmetric(
               horizontal: 8, 
-              vertical: isMobile ? 3 : 4
+              vertical: 4
             ),
             decoration: BoxDecoration(
               color: HackerColors.surface.withOpacity(0.8),
@@ -52,18 +50,18 @@ class HackerSearchBar extends StatelessWidget {
               ),
             ),
             child: Row(
-              children: [
+              children: const [
                 Icon(
                   Icons.search,
                   color: HackerColors.accent,
-                  size: 14.iconSize,
+                  size: 14,
                 ),
-                SizedBox(width: 4.w),
-                FlexibleText(
+                SizedBox(width: 4),
+                Text(
                   "TARGET LOCATOR",
                   style: TextStyle(
                     color: HackerColors.accent,
-                    fontSize: 12.adaptiveFont,
+                    fontSize: 12,
                     fontFamily: 'Courier',
                     fontWeight: FontWeight.bold,
                   ),
@@ -77,34 +75,34 @@ class HackerSearchBar extends StatelessWidget {
                 Expanded(
                   child: TextField(
                     controller: controller,
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: HackerColors.primary,
                       fontFamily: 'Courier',
-                      fontSize: 14.adaptiveFont,
+                      fontSize: 14,
                     ),
                     decoration: InputDecoration(
                       hintText: hintText,
                       hintStyle: TextStyle(
                         color: HackerColors.text.withOpacity(0.5),
                         fontFamily: 'Courier',
-                        fontSize: 12.adaptiveFont,
+                        fontSize: 12,
                       ),
-                      contentPadding: ScreenUtils.responsivePadding(
+                      contentPadding: const EdgeInsets.symmetric(
                         horizontal: 16, 
                         vertical: 14
                       ),
                       border: InputBorder.none,
                       enabledBorder: InputBorder.none,
                       focusedBorder: InputBorder.none,
-                      prefixIcon: Padding(
-                        padding: ScreenUtils.responsivePadding(horizontal: 12),
+                      prefixIcon: const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 12),
                         child: Text(
                           ">",
                           style: TextStyle(
                             color: HackerColors.primary,
                             fontFamily: 'Courier',
                             fontWeight: FontWeight.bold,
-                            fontSize: 16.adaptiveFont,
+                            fontSize: 16,
                           ),
                         ),
                       ),
@@ -116,30 +114,27 @@ class HackerSearchBar extends StatelessWidget {
                   ),
                 ),
                 Container(
-                  height: 48.h,
+                  height: 48,
                   width: 1,
                   color: HackerColors.accent.withOpacity(0.5),
-                  margin: ScreenUtils.responsivePadding(vertical: 4),
+                  margin: const EdgeInsets.symmetric(vertical: 4),
                 ),
                 InkWell(
                   onTap: onSearch,
                   child: Container(
-                    padding: ScreenUtils.responsivePadding(horizontal: isMobile ? 12 : 16),
-                    height: 56.h,
+                    padding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 16),
+                    height: 56,
                     decoration: const BoxDecoration(
                       color: HackerColors.surface,
                     ),
-                    child: Center(
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          "HACK",
-                          style: TextStyle(
-                            color: HackerColors.primary,
-                            fontWeight: FontWeight.bold,
-                            fontFamily: 'Courier',
-                            fontSize: 14.adaptiveFont,
-                          ),
+                    child: const Center(
+                      child: Text(
+                        "HACK",
+                        style: TextStyle(
+                          color: HackerColors.primary,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Courier',
+                          fontSize: 14,
                         ),
                       ),
                     ),

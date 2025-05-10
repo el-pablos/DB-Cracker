@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-
 class Mahasiswa {
   final String id;
   final String nama;

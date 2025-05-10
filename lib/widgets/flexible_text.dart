@@ -23,9 +23,7 @@ class FlexibleText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Pastikan ScreenUtils diinisialisasi
-    if (ScreenUtils.screenWidth == 0) {
-      ScreenUtils.init(context);
-    }
+    ScreenUtils.init(context);
     
     // Ukuran font yang aman (adaptif dan dibatasi)
     final safeTextSize = style?.fontSize == null 

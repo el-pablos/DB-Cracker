@@ -16,7 +16,7 @@ dependencies:
   flutter_spinkit: ^5.1.0
   url_launcher: ^6.1.11
   intl: ^0.18.1
-  cupertino_icons: ^1.0.2
+  cupertino_icons: ^1.0.5 # Update ke versi terbaru yang stabil
 
 dev_dependencies:
   flutter_test:
@@ -27,3 +27,11 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/
+  
+  # Tambahkan font Courier jika belum ada
+  fonts:
+    - family: Courier
+      fonts:
+        - asset: assets/fonts/CourierPrime-Regular.ttf
+        - asset: assets/fonts/CourierPrime-Bold.ttf
+          weight: 700

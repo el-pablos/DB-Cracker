@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-
 class Dosen {
   final String id;
   final String nama;

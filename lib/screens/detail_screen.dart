@@ -1,18 +1,13 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../api/api_factory.dart';
 import '../api/multi_api_factory.dart';
 import '../api/api_services_integration.dart';
 import '../models/mahasiswa.dart';
-import '../widgets/flexible_text.dart';
 import '../widgets/hacker_loading_indicator.dart';
 import '../widgets/console_text.dart';
-import '../widgets/responsive_card.dart';
 import '../widgets/terminal_window.dart';
 import '../utils/constants.dart';
-import '../utils/screen_utils.dart';
 
 class DetailScreen extends StatefulWidget {
   final String mahasiswaId;
@@ -147,15 +142,10 @@ class _DetailScreenState extends State<DetailScreen> with SingleTickerProviderSt
     ).join();
   }
 
-  // Fungsi untuk mendeteksi jika layar berukuran kecil (mobile)
-  bool isMobileScreen(BuildContext context) {
-    return MediaQuery.of(context).size.width < 600;
-  }
-
   @override
   Widget build(BuildContext context) {
-    // Initialize ScreenUtils for responsive design
-    ScreenUtils.init(context);
+    final size = MediaQuery.of(context).size;
+    final bool isMobile = size.width < 600;
     
     return Scaffold(
       backgroundColor: HackerColors.background,
@@ -166,9 +156,9 @@ class _DetailScreenState extends State<DetailScreen> with SingleTickerProviderSt
               animation: _animationController,
               builder: (context, child) {
                 return Container(
-                  width: 12.w, // Gunakan ekstensi responsive
-                  height: 12.h, // Gunakan ekstensi responsive
-                  margin: EdgeInsets.only(right: 8.w), // Gunakan ekstensi responsive
+                  width: 12,
+                  height: 12,
+                  margin: const EdgeInsets.only(right: 8),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: _animationController.value > 0.5 
@@ -178,19 +168,19 @@ class _DetailScreenState extends State<DetailScreen> with SingleTickerProviderSt
                 );
               },
             ),
-            Text(
+            const Text(
               AppStrings.detailTitle,
               style: TextStyle(
                 fontFamily: 'Courier',
                 fontWeight: FontWeight.bold,
                 color: HackerColors.primary,
-                fontSize: 16.sp, // Gunakan ekstensi responsive
+                fontSize: 16,
               ),
             ),
           ],
         ),
         backgroundColor: HackerColors.surface,
-        iconTheme: IconThemeData(
+        iconTheme: const IconThemeData(
           color: HackerColors.primary,
         ),
         actions: [
@@ -199,7 +189,7 @@ class _DetailScreenState extends State<DetailScreen> with SingleTickerProviderSt
             icon: Icon(
               _showExternalInfo ? Icons.visibility : Icons.visibility_off,
               color: HackerColors.primary,
-              size: 20.sp, // Gunakan ekstensi responsive
+              size: 20,
             ),
             onPressed: () {
               setState(() {
@@ -215,13 +205,13 @@ class _DetailScreenState extends State<DetailScreen> with SingleTickerProviderSt
           children: [
             Container(
               color: HackerColors.surface.withOpacity(0.7),
-              padding: EdgeInsets.all(8.w), // Gunakan ekstensi responsive
+              padding: const EdgeInsets.all(8),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Container(
-                    width: 8.w, // Gunakan ekstensi responsive
-                    height: 8.h, // Gunakan ekstensi responsive
+                    width: 8,
+                    height: 8,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: _random.nextBool() 
@@ -229,13 +219,13 @@ class _DetailScreenState extends State<DetailScreen> with SingleTickerProviderSt
                           : HackerColors.accent,
                     ),
                   ),
-                  SizedBox(width: 8.w), // Gunakan ekstensi responsive
+                  const SizedBox(width: 8),
                   Text(
                     'RAHASIA - LEVEL AKSES 3 - SUBJEK: ${widget.subjectName}',
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: HackerColors.highlight,
                       fontFamily: 'Courier',
-                      fontSize: 12.sp, // Gunakan ekstensi responsive
+                      fontSize: 12,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -247,150 +237,148 @@ class _DetailScreenState extends State<DetailScreen> with SingleTickerProviderSt
                 ? TerminalWindow(
                     title: "DEKRIPSI DATA",
                     child: ListView.builder(
-                      padding: EdgeInsets.all(16.w), // Gunakan ekstensi responsive
-itemCount: _consoleMessages.length,
-                        itemBuilder: (context, index) {
-                          bool isSuccess = index == _consoleMessages.length - 1 && 
-                                        _consoleMessages[index].contains("SELESAI");
-                          bool isError = index == _consoleMessages.length - 1 && 
-                                       _consoleMessages[index].contains("ERROR");
-                          
-                          return ConsoleText(
-                            text: _consoleMessages[index], 
-                            isSuccess: isSuccess,
-                            isError: isError,
-                          );
-                        },
-                      ),
-                    )
-                  : FutureBuilder<MahasiswaDetail>(
-                      future: _mahasiswaFuture,
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
-                          return Center(child: HackerLoadingIndicator());
-                        } else if (snapshot.hasError) {
-                          return TerminalWindow(
-                            title: "ERROR",
-                            child: Center(
-                              child: Padding(
-                                padding: ScreenUtils.responsivePadding(all: 16),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.warning_amber_rounded,
-                                      color: HackerColors.error,
-                                      size: 48.iconSize,
-                                    ),
-                                    SizedBox(height: 16.h),
-                                    FlexibleText(
-                                      '${AppStrings.errorLoadingData} ${snapshot.error}',
-                                      style: TextStyle(
-                                        color: HackerColors.error,
-                                        fontSize: 16.adaptiveFont,
-                                        fontFamily: 'Courier',
-                                      ),
-                                      textAlign: TextAlign.center,
-                                      maxLines: 3,
-                                    ),
-                                    SizedBox(height: 24.h),
-                                    ElevatedButton(
-                                      onPressed: _simulateDecryption,
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: HackerColors.surface,
-                                        foregroundColor: HackerColors.primary,
-                                        padding: ScreenUtils.responsivePadding(
-                                          horizontal: 16, 
-                                          vertical: 8
-                                        ),
-                                        side: BorderSide(color: HackerColors.primary),
-                                      ),
-                                      child: FlexibleText(
-                                        AppStrings.retry,
-                                        style: TextStyle(
-                                          fontSize: 14.adaptiveFont,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          );
-                        } else if (!snapshot.hasData) {
-                          return Center(
-                            child: FlexibleText(
-                              AppStrings.noDataAvailable,
-                              style: TextStyle(
-                                color: HackerColors.error,
-                                fontFamily: 'Courier',
-                                fontSize: 16.adaptiveFont,
-                              ),
-                            ),
-                          );
-                        }
-
-                        final mahasiswa = snapshot.data!;
-                        return _buildHackerDetailView(mahasiswa);
+                      padding: const EdgeInsets.all(16),
+                      itemCount: _consoleMessages.length,
+                      itemBuilder: (context, index) {
+                        bool isSuccess = index == _consoleMessages.length - 1 && 
+                                      _consoleMessages[index].contains("SELESAI");
+                        bool isError = index == _consoleMessages.length - 1 && 
+                                     _consoleMessages[index].contains("ERROR");
+                        
+                        return ConsoleText(
+                          text: _consoleMessages[index], 
+                          isSuccess: isSuccess,
+                          isError: isError,
+                        );
                       },
                     ),
-              ),
-              Container(
-                color: HackerColors.surface,
-                padding: ScreenUtils.responsivePadding(
-                  horizontal: 16, 
-                  vertical: 8
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 8.w,
-                          height: 8.h,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: _random.nextBool() 
-                                ? HackerColors.primary 
-                                : HackerColors.accent,
+                  )
+                : FutureBuilder<MahasiswaDetail>(
+                    future: _mahasiswaFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: HackerLoadingIndicator());
+                      } else if (snapshot.hasError) {
+                        return TerminalWindow(
+                          title: "ERROR",
+                          child: Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(
+                                    Icons.warning_amber_rounded,
+                                    color: HackerColors.error,
+                                    size: 48,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    '${AppStrings.errorLoadingData} ${snapshot.error}',
+                                    style: const TextStyle(
+                                      color: HackerColors.error,
+                                      fontSize: 16,
+                                      fontFamily: 'Courier',
+                                    ),
+                                    textAlign: TextAlign.center,
+                                    maxLines: 3,
+                                  ),
+                                  const SizedBox(height: 24),
+                                  ElevatedButton(
+                                    onPressed: _simulateDecryption,
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: HackerColors.surface,
+                                      foregroundColor: HackerColors.primary,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 16, 
+                                        vertical: 8
+                                      ),
+                                      side: const BorderSide(color: HackerColors.primary),
+                                    ),
+                                    child: const Text(
+                                      AppStrings.retry,
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
-                        ),
-                        SizedBox(width: 8.w),
-                        FlexibleText(
-                          'KUNCI: ${_getRandomHexValue(8)}-${_getRandomHexValue(4)}-${_getRandomHexValue(4)}',
-                          style: TextStyle(
-                            color: HackerColors.text,
-                            fontSize: 10.adaptiveFont,
-                            fontFamily: 'Courier',
+                        );
+                      } else if (!snapshot.hasData) {
+                        return const Center(
+                          child: Text(
+                            AppStrings.noDataAvailable,
+                            style: TextStyle(
+                              color: HackerColors.error,
+                              fontFamily: 'Courier',
+                              fontSize: 16,
+                            ),
                           ),
-                          maxLines: 1,
+                        );
+                      }
+
+                      final mahasiswa = snapshot.data!;
+                      return _buildHackerDetailView(mahasiswa);
+                    },
+                  ),
+            ),
+            Container(
+              color: HackerColors.surface,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: _random.nextBool() 
+                              ? HackerColors.primary 
+                              : HackerColors.accent,
                         ),
-                      ],
-                    ),
-                    FlexibleText(
-                      'BY: TAMAENGS',
-                      style: TextStyle(
-                        color: HackerColors.text,
-                        fontSize: 10.adaptiveFont,
-                        fontFamily: 'Courier',
-                        fontWeight: FontWeight.bold,
                       ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'KUNCI: ${_getRandomHexValue(8)}-${_getRandomHexValue(4)}-${_getRandomHexValue(4)}',
+                        style: const TextStyle(
+                          color: HackerColors.text,
+                          fontSize: 10,
+                          fontFamily: 'Courier',
+                        ),
+                        maxLines: 1,
+                      ),
+                    ],
+                  ),
+                  const Text(
+                    'BY: TAMAENGS',
+                    style: TextStyle(
+                      color: HackerColors.text,
+                      fontSize: 10,
+                      fontFamily: 'Courier',
+                      fontWeight: FontWeight.bold,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
-      );
+      ),
+    );
   }
 
   Widget _buildHackerDetailView(MahasiswaDetail mahasiswa) {
-    final bool isMobile = ScreenUtils.isMobileScreen();
+    final size = MediaQuery.of(context).size;
+    final bool isMobile = size.width < 600;
     
     return Padding(
-      padding: ScreenUtils.responsivePadding(all: 12),
+      padding: const EdgeInsets.all(12),
       child: Column(
         children: [
           Expanded(
@@ -412,7 +400,7 @@ itemCount: _consoleMessages.length,
                           ],
                         ),
                       ),
-                      SizedBox(height: 8.h),
+                      const SizedBox(height: 8),
                       Expanded(
                         child: _buildDataTerminal(
                           title: "DATA INSTITUSI",
@@ -447,7 +435,7 @@ itemCount: _consoleMessages.length,
                           ],
                         ),
                       ),
-                      SizedBox(width: 8.w),
+                      const SizedBox(width: 8),
                       Expanded(
                         flex: 1,
                         child: _buildDataTerminal(
@@ -465,12 +453,12 @@ itemCount: _consoleMessages.length,
                     ],
                   ),
           ),
-          SizedBox(height: 12.h),
+          const SizedBox(height: 12),
           _buildSecurityTerminal(mahasiswa),
           
           // Tambahkan bagian informasi eksternal jika ada
           if (_showExternalInfo && _externalData.isNotEmpty) ...[
-            SizedBox(height: 12.h),
+            const SizedBox(height: 12),
             _buildExternalDataTerminal(),
           ],
         ],
@@ -483,10 +471,13 @@ itemCount: _consoleMessages.length,
     required IconData icon,
     required List<Widget> content,
   }) {
-    return ResponsiveCard(
-      color: HackerColors.surface,
-      borderColor: HackerColors.accent,
-      padding: ScreenUtils.responsivePadding(all: 12),
+    return Container(
+      decoration: BoxDecoration(
+        color: HackerColors.surface,
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: HackerColors.accent, width: 1),
+      ),
+      padding: const EdgeInsets.all(12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -495,30 +486,31 @@ itemCount: _consoleMessages.length,
               Icon(
                 icon,
                 color: HackerColors.primary,
-                size: 18.iconSize,
+                size: 18,
               ),
-              SizedBox(width: 8.w),
+              const SizedBox(width: 8),
               Expanded(
-                child: FlexibleText(
+                child: Text(
                   title,
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: HackerColors.primary,
                     fontFamily: 'Courier',
-                    fontSize: 16.adaptiveFont,
+                    fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
                   maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
           ),
-          Divider(
+          const Divider(
             color: HackerColors.accent,
-            height: 24.h,
+            height: 24,
           ),
           Expanded(
             child: SingleChildScrollView(
-              physics: BouncingScrollPhysics(),
+              physics: const BouncingScrollPhysics(),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: content,
@@ -537,60 +529,64 @@ itemCount: _consoleMessages.length,
     final String extract = _externalData['extract'] ?? 'Tidak ada data yang tersedia.';
     final String source = _externalData['source'] ?? 'SUMBER TIDAK DIKETAHUI';
     
-    return ResponsiveCard(
-      color: HackerColors.surface,
-      borderColor: HackerColors.accent,
-      padding: ScreenUtils.responsivePadding(all: 12),
+    return Container(
+      decoration: BoxDecoration(
+        color: HackerColors.surface,
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: HackerColors.accent, width: 1),
+      ),
+      padding: const EdgeInsets.all(12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(
+              const Icon(
                 Icons.language,
                 color: HackerColors.primary,
-                size: 18.iconSize,
+                size: 18,
               ),
-              SizedBox(width: 8.w),
+              const SizedBox(width: 8),
               Expanded(
-                child: FlexibleText(
+                child: Text(
                   "DATA EKSTERNAL: $title",
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: HackerColors.primary,
                     fontFamily: 'Courier',
-                    fontSize: 16.adaptiveFont,
+                    fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
                   maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
           ),
-          Divider(
+          const Divider(
             color: HackerColors.accent,
-            height: 24.h,
+            height: 24,
           ),
           Expanded(
             child: SingleChildScrollView(
-              physics: BouncingScrollPhysics(),
+              physics: const BouncingScrollPhysics(),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  FlexibleText(
+                  Text(
                     extract,
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: HackerColors.text,
                       fontFamily: 'Courier',
-                      fontSize: 12.adaptiveFont,
+                      fontSize: 12,
                     ),
                   ),
-                  SizedBox(height: 12.h),
-                  FlexibleText(
+                  const SizedBox(height: 12),
+                  Text(
                     "SUMBER: $source",
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: HackerColors.accent,
                       fontFamily: 'Courier',
-                      fontSize: 10.adaptiveFont,
+                      fontSize: 10,
                       fontStyle: FontStyle.italic,
                     ),
                   ),
@@ -605,8 +601,9 @@ itemCount: _consoleMessages.length,
 
   Widget _buildSecurityTerminal(MahasiswaDetail mahasiswa) {
     // Adaptasi berdasarkan ukuran layar
-    final bool isMobile = ScreenUtils.isMobileScreen();
-    final double terminalHeight = isMobile ? 100.h : 120.h;
+    final size = MediaQuery.of(context).size;
+    final bool isMobile = size.width < 600;
+    final double terminalHeight = isMobile ? 100 : 120;
     
     return Container(
       height: terminalHeight,
@@ -615,42 +612,40 @@ itemCount: _consoleMessages.length,
         borderRadius: BorderRadius.circular(4),
         border: Border.all(color: HackerColors.accent),
       ),
-      padding: ScreenUtils.responsivePadding(all: 8),
+      padding: const EdgeInsets.all(8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: ScreenUtils.responsivePadding(
-              vertical: 2, 
-              horizontal: 8
-            ),
+            padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 8),
             decoration: BoxDecoration(
               color: HackerColors.background,
               borderRadius: BorderRadius.circular(2),
             ),
-            child: FlexibleText(
+            child: const Text(
               "ANALISIS KEAMANAN",
               style: TextStyle(
                 color: HackerColors.warning,
                 fontFamily: 'Courier',
-                fontSize: 12.adaptiveFont,
+                fontSize: 12,
                 fontWeight: FontWeight.bold,
               ),
             ),
           ),
-          SizedBox(height: 8.h),
+          const SizedBox(height: 8),
           Expanded(
             child: ListView.builder(
               itemCount: 5,
               itemBuilder: (context, index) {
-                return FlexibleText(
+                return Text(
                   _generateRandomSecurityInfo(mahasiswa, index),
                   style: TextStyle(
                     color: _getSecurityColor(index),
                     fontFamily: 'Courier',
-                    fontSize: 10.adaptiveFont,
+                    fontSize: 10,
                   ),
                   maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 );
               },
             ),
@@ -700,24 +695,21 @@ itemCount: _consoleMessages.length,
 
   Widget _buildDataRow(String label, String value) {
     return Padding(
-      padding: ScreenUtils.responsivePadding(bottom: 10),
+      padding: const EdgeInsets.only(bottom: 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          FlexibleText(
+          Text(
             label,
             style: TextStyle(
               color: HackerColors.text.withOpacity(0.7),
               fontFamily: 'Courier',
-              fontSize: 10.adaptiveFont,
+              fontSize: 10,
             ),
           ),
           Container(
             width: double.infinity,
-            padding: ScreenUtils.responsivePadding(
-              vertical: 6, 
-              horizontal: 8
-            ),
+            padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
             decoration: BoxDecoration(
               color: HackerColors.background,
               borderRadius: BorderRadius.circular(2),
@@ -726,15 +718,16 @@ itemCount: _consoleMessages.length,
                 width: 1,
               ),
             ),
-            child: FlexibleText(
+            child: Text(
               value.isNotEmpty ? value : "-DISENSOR-",
-              style: TextStyle(
+              style: const TextStyle(
                 color: HackerColors.primary,
                 fontFamily: 'Courier',
-                fontSize: 14.adaptiveFont,
+                fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
               maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],

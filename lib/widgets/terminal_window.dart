@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import '../utils/constants.dart';
-import '../utils/screen_utils.dart';
-import 'flexible_text.dart';
 
 class TerminalWindow extends StatelessWidget {
   final Widget child;
@@ -19,17 +17,11 @@ class TerminalWindow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Pastikan ScreenUtils diinisialisasi
-    if (ScreenUtils.screenWidth == 0) {
-      ScreenUtils.init(context);
-    }
-    
-    // Adaptasi berdasarkan ukuran layar dengan nilai default yang aman
-    final bool isMobile = ScreenUtils.isMobileScreen();
-    final double headerHeight = isMobile ? 28.0 : 32.0;
-    final double buttonSize = isMobile ? 8.0 : 12.0;
-    final double buttonSpacing = isMobile ? 2.0 : 4.0;
-    final double margin = isMobile ? 4.0 : 8.0;
+    // Gunakan ukuran tetap untuk mencegah error layout
+    const double headerHeight = 32.0; 
+    const double buttonSize = 10.0;
+    const double buttonSpacing = 4.0;
+    const double margin = 8.0;
     
     return Container(
       decoration: BoxDecoration(
@@ -47,11 +39,50 @@ class TerminalWindow extends StatelessWidget {
           ),
         ],
       ),
-      margin: EdgeInsets.all(margin),
+      margin: const EdgeInsets.all(margin),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildTerminalHeader(headerHeight, buttonSize, buttonSpacing),
+          Container(
+            height: headerHeight,
+            decoration: const BoxDecoration(
+              color: HackerColors.surface,
+              border: Border(
+                bottom: BorderSide(
+                  color: HackerColors.accent,
+                  width: 1,
+                ),
+              ),
+            ),
+            child: Row(
+              children: [
+                const SizedBox(width: buttonSpacing * 2),
+                _buildWindowButton(HackerColors.error, buttonSize),
+                const SizedBox(width: buttonSpacing),
+                _buildWindowButton(HackerColors.warning, buttonSize),
+                const SizedBox(width: buttonSpacing),
+                _buildWindowButton(HackerColors.success, buttonSize),
+                const SizedBox(width: buttonSpacing * 2),
+                Expanded(
+                  child: Center(
+                    child: Text(
+                      title,
+                      style: const TextStyle(
+                        color: HackerColors.accent,
+                        fontFamily: 'Courier',
+                        fontSize: 14.0,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ),
+                if (actions != null) ...actions!,
+                const SizedBox(width: buttonSpacing * 2),
+              ],
+            ),
+          ),
           Expanded(
             child: scrollable 
                 ? SingleChildScrollView(
@@ -60,48 +91,6 @@ class TerminalWindow extends StatelessWidget {
                   )
                 : child,
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTerminalHeader(double height, double buttonSize, double buttonSpacing) {
-    return Container(
-      height: height,
-      decoration: const BoxDecoration(
-        color: HackerColors.surface,
-        border: Border(
-          bottom: BorderSide(
-            color: HackerColors.accent,
-            width: 1,
-          ),
-        ),
-      ),
-      child: Row(
-        children: [
-          SizedBox(width: buttonSpacing * 2),
-          _buildWindowButton(HackerColors.error, buttonSize),
-          SizedBox(width: buttonSpacing),
-          _buildWindowButton(HackerColors.warning, buttonSize),
-          SizedBox(width: buttonSpacing),
-          _buildWindowButton(HackerColors.success, buttonSize),
-          SizedBox(width: buttonSpacing * 2),
-          Expanded(
-            child: Center(
-              child: FlexibleText(
-                title,
-                style: TextStyle(
-                  color: HackerColors.accent,
-                  fontFamily: 'Courier',
-                  fontSize: 14.0,
-                  fontWeight: FontWeight.bold,
-                ),
-                maxLines: 1,
-              ),
-            ),
-          ),
-          if (actions != null) ...actions!,
-          SizedBox(width: buttonSpacing * 2),
         ],
       ),
     );

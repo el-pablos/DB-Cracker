@@ -1,13 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'screens/home_screen.dart';
-import 'screens/detail_screen.dart';
-import 'screens/prodi_detail_screen.dart';
-import 'screens/prodi_search_screen.dart';
-import 'screens/pt_detail_screen.dart';
 import 'api/api_factory.dart';
 import 'utils/constants.dart';
-import 'utils/screen_utils.dart';
 
 void main() {
   // Enable Flutter Web error logging in console
@@ -24,9 +19,9 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Inisialisasi ScreenUtils secara default dengan context minimal
-    // Ini akan diupdate dengan context yang lebih baik nanti dalam widget tree
-    ScreenUtils.init(context);
+    // Poco X3 Pro specific dimensions
+    const double screenWidth = 1080;
+    const double screenHeight = 2400;
     
     return Provider<ApiFactory>(
       create: (_) => ApiFactory(),
@@ -90,62 +85,7 @@ class MyApp extends StatelessWidget {
           visualDensity: VisualDensity.adaptivePlatformDensity,
           useMaterial3: true,
         ),
-        // Definisikan routes aplikasi
-        initialRoute: '/',
-        routes: {
-          '/': (context) => Builder(
-            builder: (context) {
-              // Re-inisialisasi ScreenUtils dengan context yang lebih baik
-              ScreenUtils.init(context);
-              return const HomeScreen();
-            },
-          ),
-          '/prodi/search': (context) => const ProdiSearchScreen(),
-        },
-        // Atur onGenerateRoute untuk handle routes dinamis
-        onGenerateRoute: (settings) {
-          if (settings.name?.startsWith('/prodi/detail/') ?? false) {
-            // Ekstrak parameter dari route
-            final parts = settings.name?.split('/') ?? [];
-            final prodiId = parts.length > 3 ? parts[3] : '';
-            final arguments = settings.arguments as Map<String, dynamic>?;
-            final prodiName = arguments?['prodiName'] ?? 'Program Studi';
-            
-            return MaterialPageRoute(
-              builder: (context) => ProdiDetailScreen(
-                prodiId: prodiId,
-                prodiName: prodiName,
-              ),
-            );
-          } else if (settings.name?.startsWith('/pt/detail/') ?? false) {
-            // Ekstrak parameter dari route
-            final parts = settings.name?.split('/') ?? [];
-            final ptId = parts.length > 3 ? parts[3] : '';
-            final arguments = settings.arguments as Map<String, dynamic>?;
-            final ptName = arguments?['ptName'] ?? 'Perguruan Tinggi';
-            
-            return MaterialPageRoute(
-              builder: (context) => PTDetailScreen(
-                ptId: ptId,
-                ptName: ptName,
-              ),
-            );
-          } else if (settings.name?.startsWith('/mahasiswa/detail/') ?? false) {
-            // Ekstrak parameter dari route
-            final parts = settings.name?.split('/') ?? [];
-            final mahasiswaId = parts.length > 3 ? parts[3] : '';
-            final arguments = settings.arguments as Map<String, dynamic>?;
-            final subjectName = arguments?['subjectName'] ?? 'Mahasiswa';
-            
-            return MaterialPageRoute(
-              builder: (context) => DetailScreen(
-                mahasiswaId: mahasiswaId,
-                subjectName: subjectName,
-              ),
-            );
-          }
-          return null;
-        },
+        home: const HomeScreen(),
       ),
     );
   }

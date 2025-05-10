@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-
 class Prodi {
   final String id;
   final String nama;

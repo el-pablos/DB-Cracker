@@ -4,16 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../api/api_factory.dart';
 import '../api/multi_api_factory.dart';
-import '../api/api_services_integration.dart';
 import '../models/mahasiswa.dart';
 import '../widgets/hacker_search_bar.dart';
 import '../widgets/hacker_result_item.dart';
-import '../widgets/hacker_loading_indicator.dart';
 import '../widgets/console_text.dart';
 import '../widgets/terminal_window.dart';
-import '../widgets/flexible_text.dart';
 import '../utils/constants.dart';
-import '../utils/screen_utils.dart';
 import 'detail_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -208,17 +204,14 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
-    // Initialize ScreenUtils for responsive design
-    ScreenUtils.init(context);
-    
-    // Adaptasi berdasarkan ukuran layar
-    final bool isMobile = ScreenUtils.isMobileScreen();
+    final size = MediaQuery.of(context).size;
+    final bool isMobile = size.width < 600;
     
     if (_showIntro) {
       return TerminalWindow(
         title: "BOOT SEQUENCE DB CRACKER",
         child: ListView.builder(
-          padding: ScreenUtils.responsivePadding(all: 16),
+          padding: const EdgeInsets.all(16),
           itemCount: _consoleMessages.length,
           itemBuilder: (context, index) {
             return ConsoleText(text: _consoleMessages[index]);
@@ -236,9 +229,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               animation: _animationController,
               builder: (context, child) {
                 return Container(
-                  width: 12.w,
-                  height: 12.h,
-                  margin: EdgeInsets.only(right: 8.w),
+                  width: 12,
+                  height: 12,
+                  margin: const EdgeInsets.only(right: 8),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: _animationController.value > 0.5 
@@ -248,13 +241,13 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 );
               },
             ),
-            FlexibleText(
+            const Text(
               "DB CRACKER v3.0",
               style: TextStyle(
                 fontFamily: 'Courier',
                 fontWeight: FontWeight.bold,
                 color: HackerColors.primary,
-                fontSize: isMobile ? 14.adaptiveFont : 16.adaptiveFont,
+                fontSize: 16,
               ),
             ),
           ],
@@ -272,13 +265,13 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               });
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: FlexibleText(
+                  content: Text(
                     value 
                       ? "MODE MULTI-SOURCE DIAKTIFKAN" 
                       : "MODE HANYA PDDIKTI DIAKTIFKAN",
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontFamily: 'Courier',
-                      fontSize: 14.adaptiveFont,
+                      fontSize: 14,
                     ),
                   ),
                   backgroundColor: HackerColors.surface,
@@ -288,13 +281,13 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             },
           ),
           Padding(
-            padding: EdgeInsets.only(right: isMobile ? 8.w : 16.w),
-            child: FlexibleText(
+            padding: EdgeInsets.only(right: isMobile ? 8 : 16),
+            child: Text(
               _useMultiSource ? "MULTI-DB" : "PDDIKTI",
-              style: TextStyle(
+              style: const TextStyle(
                 color: HackerColors.accent,
                 fontFamily: 'Courier',
-                fontSize: 12.adaptiveFont,
+                fontSize: 12,
               ),
             ),
           ),
@@ -308,19 +301,19 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             children: [
               Container(
                 color: HackerColors.surface.withOpacity(0.7),
-                padding: ScreenUtils.responsivePadding(all: 8),
-                child: FlexibleText(
+                padding: const EdgeInsets.all(8),
+                child: const Text(
                   'KONEKSI AMAN TERSEDIA',
                   style: TextStyle(
                     color: HackerColors.highlight,
                     fontFamily: 'Courier',
-                    fontSize: 12.adaptiveFont,
+                    fontSize: 12,
                   ),
                   textAlign: TextAlign.center,
                 ),
               ),
               Padding(
-                padding: ScreenUtils.responsivePadding(all: isMobile ? 12 : 16),
+                padding: const EdgeInsets.all(16),
                 child: HackerSearchBar(
                   controller: _searchController,
                   hintText: AppStrings.searchHint,
@@ -332,7 +325,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   ? TerminalWindow(
                       title: "HACKING SEDANG BERJALAN",
                       child: ListView.builder(
-                        padding: ScreenUtils.responsivePadding(all: 16),
+                        padding: const EdgeInsets.all(16),
                         itemCount: _consoleMessages.length,
                         itemBuilder: (context, index) {
                           return ConsoleText(text: _consoleMessages[index]);
@@ -344,41 +337,41 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         title: "PERINGATAN SISTEM",
                         child: Center(
                           child: Padding(
-                            padding: ScreenUtils.responsivePadding(all: 16),
+                            padding: const EdgeInsets.all(16),
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(
+                                const Icon(
                                   Icons.warning_amber_rounded,
                                   color: HackerColors.error,
-                                  size: 48.iconSize,
+                                  size: 48,
                                 ),
-                                SizedBox(height: 16.h),
-                                FlexibleText(
+                                const SizedBox(height: 16),
+                                Text(
                                   _errorMessage!,
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     color: HackerColors.error,
-                                    fontSize: 16.adaptiveFont,
+                                    fontSize: 16,
                                     fontFamily: 'Courier',
                                   ),
                                   textAlign: TextAlign.center,
                                 ),
-                                SizedBox(height: 24.h),
+                                const SizedBox(height: 24),
                                 ElevatedButton(
                                   onPressed: _simulateHacking,
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: HackerColors.surface,
                                     foregroundColor: HackerColors.primary,
-                                    padding: ScreenUtils.responsivePadding(
+                                    padding: const EdgeInsets.symmetric(
                                       horizontal: 16, 
                                       vertical: 8
                                     ),
-                                    side: BorderSide(color: HackerColors.primary),
+                                    side: const BorderSide(color: HackerColors.primary),
                                   ),
-                                  child: FlexibleText(
+                                  child: const Text(
                                     'COBA LAGI',
                                     style: TextStyle(
-                                      fontSize: 14.adaptiveFont,
+                                      fontSize: 14,
                                       fontFamily: 'Courier',
                                     ),
                                   ),
@@ -397,24 +390,24 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                               Icon(
                                 Icons.search,
                                 color: HackerColors.accent.withOpacity(0.5),
-                                size: 64.iconSize,
+                                size: 64,
                               ),
-                              SizedBox(height: 16.h),
-                              FlexibleText(
+                              const SizedBox(height: 16),
+                              const Text(
                                 AppStrings.emptySearchPrompt,
                                 style: TextStyle(
-                                  fontSize: 16.adaptiveFont,
+                                  fontSize: 16,
                                   color: HackerColors.text,
                                   fontFamily: 'Courier',
                                 ),
                                 textAlign: TextAlign.center,
                                 maxLines: 2,
                               ),
-                              SizedBox(height: 8.h),
-                              FlexibleText(
+                              const SizedBox(height: 8),
+                              const Text(
                                 "SIAP UNTUK MEMULAI PERETASAN",
                                 style: TextStyle(
-                                  fontSize: 12.adaptiveFont,
+                                  fontSize: 12,
                                   color: HackerColors.accent,
                                   fontFamily: 'Courier',
                                 ),
@@ -428,20 +421,20 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                           child: Column(
                             children: [
                               Padding(
-                                padding: ScreenUtils.responsivePadding(all: 8),
+                                padding: const EdgeInsets.all(8),
                                 child: Row(
                                   children: [
-                                    Icon(Icons.person_search, 
+                                    const Icon(Icons.person_search, 
                                         color: HackerColors.primary, 
-                                        size: 16.iconSize),
-                                    SizedBox(width: 8.w),
+                                        size: 16),
+                                    const SizedBox(width: 8),
                                     Expanded(
-                                      child: FlexibleText(
+                                      child: Text(
                                         'DITEMUKAN ${_searchResults.length} SUBJEK YANG COCOK',
-                                        style: TextStyle(
+                                        style: const TextStyle(
                                           color: HackerColors.primary,
                                           fontFamily: 'Courier',
-                                          fontSize: 14.adaptiveFont,
+                                          fontSize: 14,
                                         ),
                                         maxLines: 1,
                                       ),
@@ -467,7 +460,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               ),
               Container(
                 color: HackerColors.surface,
-                padding: ScreenUtils.responsivePadding(
+                padding: const EdgeInsets.symmetric(
                   horizontal: 16, 
                   vertical: 8
                 ),
@@ -477,30 +470,30 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     Row(
                       children: [
                         Container(
-                          width: 8.w,
-                          height: 8.h,
+                          width: 8,
+                          height: 8,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             color: _random.nextBool() ? HackerColors.primary : HackerColors.accent,
                           ),
                         ),
-                        SizedBox(width: 8.w),
-                        FlexibleText(
+                        const SizedBox(width: 8),
+                        Text(
                           DateTime.now().toString().substring(0, 19),
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: HackerColors.text,
-                            fontSize: 10.adaptiveFont,
+                            fontSize: 10,
                             fontFamily: 'Courier',
                           ),
                           maxLines: 1,
                         ),
                       ],
                     ),
-                    FlexibleText(
+                    const Text(
                       'BY: TAMAENGS',
                       style: TextStyle(
                         color: HackerColors.text,
-                        fontSize: 10.adaptiveFont,
+                        fontSize: 10,
                         fontFamily: 'Courier',
                         fontWeight: FontWeight.bold,
                       ),
