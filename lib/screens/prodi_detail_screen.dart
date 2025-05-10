@@ -23,139 +23,7 @@ class ProdiDetailScreen extends StatefulWidget {
     Key? key,
     required this.prodiId,
     required this.prodiName,
-  }
-
-  Widget _buildSecuritySection(ProdiDetail prodi) {
-    // Adaptasi berdasarkan ukuran layar
-    final bool isMobile = ScreenUtils.isMobileScreen();
-    final double terminalHeight = isMobile ? 100 : 120;
-    
-    return Container(
-      height: terminalHeight,
-      decoration: BoxDecoration(
-        color: HackerColors.surface,
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: HackerColors.accent),
-      ),
-      padding: const EdgeInsets.all(8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 8),
-            decoration: BoxDecoration(
-              color: HackerColors.background,
-              borderRadius: BorderRadius.circular(2),
-            ),
-            child: const FlexibleText(
-              "ANALISIS PRODI",
-              style: TextStyle(
-                color: HackerColors.warning,
-                fontFamily: 'Courier',
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Expanded(
-            child: ListView.builder(
-              itemCount: 5,
-              itemBuilder: (context, index) {
-                return FlexibleText(
-                  _generateRandomProdiInfo(prodi, index),
-                  style: TextStyle(
-                    color: _getInfoColor(index),
-                    fontFamily: 'Courier',
-                    fontSize: 10,
-                  ),
-                  maxLines: 1,
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _generateRandomProdiInfo(ProdiDetail prodi, int index) {
-    final hexCode = _getRandomHexValue(8);
-    
-    switch (index) {
-      case 0:
-        return "STATUS: ${prodi.status} | AKREDITASI: ${prodi.akreditasi} | BIDANG: ${prodi.kelBidang.isNotEmpty ? prodi.kelBidang : 'N/A'}";
-      case 1:
-        return "DIDIRIKAN: ${prodi.tglBerdiri} | SK: ${prodi.skSelenggara.isNotEmpty ? prodi.skSelenggara.substring(0, min(prodi.skSelenggara.length, 15)) : '-'}...";
-      case 2:
-        return "LOKASI: LAT ${prodi.lintang}, LONG ${prodi.bujur} | PROV: ${prodi.provinsi}";
-      case 3:
-        return "AKREDIT. INT'L: ${prodi.akreditasiInternasional.isNotEmpty ? prodi.akreditasiInternasional : 'TIDAK ADA'} | STATUS AKRED: ${prodi.statusAkreditasi}";
-      case 4:
-        return "SISTEM: PRODI-ANALYZER | CODE: ${hexCode} | TIME: ${DateTime.now().toString().substring(0, 16)}";
-      default:
-        return "";
-    }
-  }
-
-  Color _getInfoColor(int index) {
-    switch (index) {
-      case 0:
-        return HackerColors.primary;
-      case 1:
-        return HackerColors.accent;
-      case 2:
-        return HackerColors.text;
-      case 3:
-        return HackerColors.warning;
-      case 4:
-        return HackerColors.primary;
-      default:
-        return HackerColors.text;
-    }
-  }
-
-  Widget _buildDataRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          FlexibleText(
-            label,
-            style: TextStyle(
-              color: HackerColors.text.withOpacity(0.7),
-              fontFamily: 'Courier',
-              fontSize: 10,
-            ),
-          ),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-            decoration: BoxDecoration(
-              color: HackerColors.background,
-              borderRadius: BorderRadius.circular(2),
-              border: Border.all(
-                color: HackerColors.accent.withOpacity(0.5),
-                width: 1,
-              ),
-            ),
-            child: FlexibleText(
-              value.isNotEmpty ? value : "-DISENSOR-",
-              style: const TextStyle(
-                color: HackerColors.primary,
-                fontFamily: 'Courier',
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-              maxLines: 2,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}) : super(key: key);
+  }) : super(key: key);
 
   @override
   _ProdiDetailScreenState createState() => _ProdiDetailScreenState();
@@ -860,4 +728,136 @@ class _ProdiDetailScreenState extends State<ProdiDetailScreen> with SingleTicker
         ],
       ),
     );
-  }}
+  }
+
+  Widget _buildSecuritySection(ProdiDetail prodi) {
+    // Adaptasi berdasarkan ukuran layar
+    final bool isMobile = ScreenUtils.isMobileScreen();
+    final double terminalHeight = isMobile ? 100 : 120;
+    
+    return Container(
+      height: terminalHeight,
+      decoration: BoxDecoration(
+        color: HackerColors.surface,
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: HackerColors.accent),
+      ),
+      padding: const EdgeInsets.all(8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 8),
+            decoration: BoxDecoration(
+              color: HackerColors.background,
+              borderRadius: BorderRadius.circular(2),
+            ),
+            child: const FlexibleText(
+              "ANALISIS PRODI",
+              style: TextStyle(
+                color: HackerColors.warning,
+                fontFamily: 'Courier',
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Expanded(
+            child: ListView.builder(
+              itemCount: 5,
+              itemBuilder: (context, index) {
+                return FlexibleText(
+                  _generateRandomProdiInfo(prodi, index),
+                  style: TextStyle(
+                    color: _getInfoColor(index),
+                    fontFamily: 'Courier',
+                    fontSize: 10,
+                  ),
+                  maxLines: 1,
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _generateRandomProdiInfo(ProdiDetail prodi, int index) {
+    final hexCode = _getRandomHexValue(8);
+    
+    switch (index) {
+      case 0:
+        return "STATUS: ${prodi.status} | AKREDITASI: ${prodi.akreditasi} | BIDANG: ${prodi.kelBidang.isNotEmpty ? prodi.kelBidang : 'N/A'}";
+      case 1:
+        return "DIDIRIKAN: ${prodi.tglBerdiri} | SK: ${prodi.skSelenggara.isNotEmpty ? prodi.skSelenggara.substring(0, min(prodi.skSelenggara.length, 15)) : '-'}...";
+      case 2:
+        return "LOKASI: LAT ${prodi.lintang}, LONG ${prodi.bujur} | PROV: ${prodi.provinsi}";
+      case 3:
+        return "AKREDIT. INT'L: ${prodi.akreditasiInternasional.isNotEmpty ? prodi.akreditasiInternasional : 'TIDAK ADA'} | STATUS AKRED: ${prodi.statusAkreditasi}";
+      case 4:
+        return "SISTEM: PRODI-ANALYZER | CODE: ${hexCode} | TIME: ${DateTime.now().toString().substring(0, 16)}";
+      default:
+        return "";
+    }
+  }
+
+  Color _getInfoColor(int index) {
+    switch (index) {
+      case 0:
+        return HackerColors.primary;
+      case 1:
+        return HackerColors.accent;
+      case 2:
+        return HackerColors.text;
+      case 3:
+        return HackerColors.warning;
+      case 4:
+        return HackerColors.primary;
+      default:
+        return HackerColors.text;
+    }
+  }
+
+  Widget _buildDataRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          FlexibleText(
+            label,
+            style: TextStyle(
+              color: HackerColors.text.withOpacity(0.7),
+              fontFamily: 'Courier',
+              fontSize: 10,
+            ),
+          ),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+            decoration: BoxDecoration(
+              color: HackerColors.background,
+              borderRadius: BorderRadius.circular(2),
+              border: Border.all(
+                color: HackerColors.accent.withOpacity(0.5),
+                width: 1,
+              ),
+            ),
+            child: FlexibleText(
+              value.isNotEmpty ? value : "-DISENSOR-",
+              style: const TextStyle(
+                color: HackerColors.primary,
+                fontFamily: 'Courier',
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+              maxLines: 2,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

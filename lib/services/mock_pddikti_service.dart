@@ -2,6 +2,8 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import '../models/mahasiswa.dart';
 import '../models/dosen.dart';
+import '../models/prodi.dart';
+import '../models/pt.dart';
 
 /// Mock service to replace the PDDIKTI API for web development
 /// This is useful when developing the web app without a backend proxy
@@ -53,6 +55,79 @@ class MockPddiktiService {
     }
   ];
 
+  // Sample data untuk prodi
+  final List<Map<String, dynamic>> _sampleProdi = [
+    {
+      "id": "UEREMDgxNDAxMjE=",
+      "nama": "Ilmu Komputer",
+      "jenjang": "S1",
+      "pt": "Universitas Indonesia",
+      "pt_singkat": "UI"
+    },
+    {
+      "id": "UEREMDgyNDAxMjE=",
+      "nama": "Teknik Informatika",
+      "jenjang": "S1",
+      "pt": "Institut Teknologi Bandung",
+      "pt_singkat": "ITB"
+    },
+    {
+      "id": "UEREMDgzNDAxMjE=",
+      "nama": "Sistem Informasi",
+      "jenjang": "S1",
+      "pt": "Universitas Gadjah Mada",
+      "pt_singkat": "UGM"
+    },
+    {
+      "id": "UEREMDg0NDAxMjE=",
+      "nama": "Manajemen Informatika",
+      "jenjang": "D3",
+      "pt": "Universitas Padjadjaran",
+      "pt_singkat": "UNPAD"
+    },
+    {
+      "id": "UEREMDg1NDAxMjE=",
+      "nama": "Teknik Komputer",
+      "jenjang": "S1",
+      "pt": "Universitas Diponegoro",
+      "pt_singkat": "UNDIP"
+    }
+  ];
+
+  // Sample data untuk PT
+  final List<Map<String, dynamic>> _samplePT = [
+    {
+      "id": "UEREUFQxMDAwMQ==",
+      "kode": "001031",
+      "nama_singkat": "UI",
+      "nama": "Universitas Indonesia"
+    },
+    {
+      "id": "UEREUFQxMDAwMg==",
+      "kode": "001032",
+      "nama_singkat": "ITB",
+      "nama": "Institut Teknologi Bandung"
+    },
+    {
+      "id": "UEREUFQxMDAwMw==",
+      "kode": "001033",
+      "nama_singkat": "UGM",
+      "nama": "Universitas Gadjah Mada"
+    },
+    {
+      "id": "UEREUFQxMDAwNA==",
+      "kode": "001034",
+      "nama_singkat": "UNPAD",
+      "nama": "Universitas Padjadjaran"
+    },
+    {
+      "id": "UEREUFQxMDAwNQ==",
+      "kode": "001035",
+      "nama_singkat": "UNDIP",
+      "nama": "Universitas Diponegoro"
+    }
+  ];
+
   // Pencarian mahasiswa (mock)
   Future<List<Mahasiswa>> searchMahasiswa(String keyword) async {
     // Simulasi delay jaringan
@@ -79,8 +154,57 @@ class MockPddiktiService {
     return filteredData.map((item) => Mahasiswa.fromJson(item)).toList();
   }
 
+  // Pencarian prodi (mock)
+  Future<List<Prodi>> searchProdi(String keyword) async {
+    // Simulasi delay jaringan
+    await Future.delayed(Duration(milliseconds: 800 + _random.nextInt(1200)));
+    
+    if (kIsWeb) {
+      print('Using mock data for prodi search (web)');
+    }
+    
+    // Filter berdasarkan keyword
+    final filteredData = _sampleProdi.where((item) {
+      final nama = item['nama'].toString().toLowerCase();
+      final jenjang = item['jenjang'].toString().toLowerCase();
+      final pt = item['pt'].toString().toLowerCase();
+      final ptSingkat = item['pt_singkat'].toString().toLowerCase();
+      
+      return nama.contains(keyword.toLowerCase()) || 
+             jenjang.contains(keyword.toLowerCase()) || 
+             pt.contains(keyword.toLowerCase()) || 
+             ptSingkat.contains(keyword.toLowerCase());
+    }).toList();
+    
+    // Konversi ke model Prodi
+    return filteredData.map((item) => Prodi.fromJson(item)).toList();
+  }
+
+  // Pencarian PT (mock)
+  Future<List<PerguruanTinggi>> searchPt(String keyword) async {
+    // Simulasi delay jaringan
+    await Future.delayed(Duration(milliseconds: 800 + _random.nextInt(1200)));
+    
+    if (kIsWeb) {
+      print('Using mock data for PT search (web)');
+    }
+    
+    // Filter berdasarkan keyword
+    final filteredData = _samplePT.where((item) {
+      final kode = item['kode'].toString().toLowerCase();
+      final namaSingkat = item['nama_singkat'].toString().toLowerCase();
+      final nama = item['nama'].toString().toLowerCase();
+      
+      return kode.contains(keyword.toLowerCase()) || 
+             namaSingkat.contains(keyword.toLowerCase()) || 
+             nama.contains(keyword.toLowerCase());
+    }).toList();
+    
+    // Konversi ke model PerguruanTinggi
+    return filteredData.map((item) => PerguruanTinggi.fromJson(item)).toList();
+  }
+
   // Detail mahasiswa (mock)
-// Detail mahasiswa (mock)
   Future<MahasiswaDetail> getMahasiswaDetail(String mahasiswaId) async {
     // Simulasi delay jaringan
     await Future.delayed(Duration(milliseconds: 800 + _random.nextInt(1200)));
@@ -125,6 +249,182 @@ class MockPddiktiService {
     return MahasiswaDetail.fromJson(detailData);
   }
 
+  // Detail prodi (mock)
+  Future<ProdiDetail> getDetailProdi(String prodiId) async {
+    // Simulasi delay jaringan
+    await Future.delayed(Duration(milliseconds: 800 + _random.nextInt(1200)));
+    
+    if (kIsWeb) {
+      print('Using mock data for prodi detail (web)');
+    }
+    
+    // Cari prodi berdasarkan ID di data sample
+    final prodiData = _sampleProdi.firstWhere(
+      (item) => item['id'] == prodiId,
+      orElse: () {
+        // Jika tidak ditemukan dengan ID yang tepat, buat data sampel
+        print('Creating sample data for unknown prodi ID: $prodiId');
+        return {
+          "id": prodiId,
+          "nama": "Program Studi ${prodiId.substring(0, min(5, prodiId.length))}",
+          "jenjang": ["S1", "S2", "S3", "D3", "D4"][_random.nextInt(5)],
+          "pt": "Universitas Sample ${_random.nextInt(10)}",
+          "pt_singkat": "UNSAM${_random.nextInt(10)}"
+        };
+      },
+    );
+    
+    // Buat data detail prodi dengan beberapa data sesuai kebutuhan
+    final Map<String, dynamic> detailData = {
+      "id_sp": "SP${_random.nextInt(10000)}",
+      "id_sms": prodiId,
+      "nama_pt": prodiData['pt'],
+      "kode_pt": prodiData['pt_singkat'],
+      "nama_prodi": prodiData['nama'],
+      "kode_prodi": "KP${_random.nextInt(1000)}",
+      "kel_bidang": ["Teknologi", "Sains", "Sosial", "Humaniora", "Ekonomi"][_random.nextInt(5)],
+      "jenj_didik": prodiData['jenjang'],
+      "tgl_berdiri": "20${10 + _random.nextInt(10)}-${1 + _random.nextInt(12)}-${1 + _random.nextInt(28)}",
+      "tgl_sk_selenggara": "20${10 + _random.nextInt(10)}-${1 + _random.nextInt(12)}-${1 + _random.nextInt(28)}",
+      "sk_selenggara": "SK/PRODI/${_random.nextInt(1000)}/20${10 + _random.nextInt(10)}",
+      "no_tel": "021-${1000000 + _random.nextInt(9000000)}",
+      "no_fax": "021-${1000000 + _random.nextInt(9000000)}",
+      "website": "www.${prodiData['pt_singkat'].toString().toLowerCase()}.ac.id",
+      "email": "info@${prodiData['pt_singkat'].toString().toLowerCase()}.ac.id",
+      "alamat": "Jl. Pendidikan No. ${1 + _random.nextInt(100)}",
+      "provinsi": ["DKI Jakarta", "Jawa Barat", "Jawa Tengah", "Jawa Timur", "Yogyakarta"][_random.nextInt(5)],
+      "kab_kota": ["Jakarta Pusat", "Bandung", "Semarang", "Surabaya", "Yogyakarta"][_random.nextInt(5)],
+      "kecamatan": ["Kecamatan ${1 + _random.nextInt(10)}"],
+      "lintang": "${-7 - _random.nextDouble()}",
+      "bujur": "${110 + _random.nextDouble() * 10}",
+      "status": ["Aktif", "Pembinaan"][_random.nextInt(2)],
+      "akreditasi": ["A", "B", "C", "Unggul", "Baik Sekali"][_random.nextInt(5)],
+      "akreditasi_internasional": _random.nextBool() ? "ISO 9001" : "",
+      "status_akreditasi": ["Aktif", "Proses"][_random.nextInt(2)],
+      "deskripsi_singkat": "Program studi ${prodiData['nama']} didirikan untuk mendidik mahasiswa dalam bidang ${["teknologi", "sains", "sosial", "humaniora", "ekonomi"][_random.nextInt(5)]}.",
+      "visi": "Menjadi program studi ${prodiData['nama']} terkemuka di ${["Indonesia", "Asia Tenggara", "Asia", "dunia"][_random.nextInt(4)]} dalam bidang pendidikan, penelitian, dan pengabdian masyarakat.",
+      "misi": "1. Menyelenggarakan pendidikan tinggi yang berkualitas\n2. Melakukan penelitian inovatif\n3. Melaksanakan pengabdian masyarakat yang bermanfaat\n4. Menjalin kerjasama dengan berbagai institusi",
+      "kompetensi": "Lulusan program studi ${prodiData['nama']} diharapkan memiliki kemampuan:\n1. Analisis dan pemecahan masalah\n2. Komunikasi efektif\n3. Penguasaan teknologi informasi\n4. Kemampuan bekerja dalam tim",
+      "capaian_belajar": "Setelah menyelesaikan program studi, mahasiswa diharapkan mampu:\n1. Mengaplikasikan pengetahuan teoritis dalam praktik\n2. Mengembangkan solusi inovatif\n3. Beradaptasi dengan perubahan teknologi\n4. Berkomunikasi secara efektif",
+      "rata_masa_studi": (3 + _random.nextInt(3)).toString(),
+    };
+    
+    return ProdiDetail.fromJson(detailData);
+  }
+
+  // Detail PT (mock)
+  Future<PerguruanTinggiDetail> getDetailPt(String ptId) async {
+    // Simulasi delay jaringan
+    await Future.delayed(Duration(milliseconds: 800 + _random.nextInt(1200)));
+    
+    if (kIsWeb) {
+      print('Using mock data for PT detail (web)');
+    }
+    
+    // Cari PT berdasarkan ID di data sample
+    final ptData = _samplePT.firstWhere(
+      (item) => item['id'] == ptId,
+      orElse: () {
+        // Jika tidak ditemukan dengan ID yang tepat, buat data sampel
+        print('Creating sample data for unknown PT ID: $ptId');
+        return {
+          "id": ptId,
+          "kode": "${100000 + _random.nextInt(900000)}",
+          "nama_singkat": "PT${_random.nextInt(100)}",
+          "nama": "Perguruan Tinggi ${ptId.substring(0, min(5, ptId.length))}"
+        };
+      },
+    );
+    
+    // Buat data detail PT dengan beberapa data sesuai kebutuhan
+    final Map<String, dynamic> detailData = {
+      "kelompok": ["Universitas", "Institut", "Sekolah Tinggi", "Politeknik", "Akademi"][_random.nextInt(5)],
+      "pembina": ["Kementerian Pendidikan dan Kebudayaan", "Kementerian Agama", "Kementerian Riset dan Teknologi"][_random.nextInt(3)],
+      "id_sp": ptId,
+      "kode_pt": ptData['kode'],
+      "email": "info@${ptData['nama_singkat'].toString().toLowerCase()}.ac.id",
+      "no_tel": "021-${1000000 + _random.nextInt(9000000)}",
+      "no_fax": "021-${1000000 + _random.nextInt(9000000)}",
+      "website": "www.${ptData['nama_singkat'].toString().toLowerCase()}.ac.id",
+      "alamat": "Jl. Pendidikan No. ${1 + _random.nextInt(100)}",
+      "nama_pt": ptData['nama'],
+      "nm_singkat": ptData['nama_singkat'],
+      "kode_pos": "${10000 + _random.nextInt(90000)}",
+      "provinsi_pt": ["DKI Jakarta", "Jawa Barat", "Jawa Tengah", "Jawa Timur", "Yogyakarta"][_random.nextInt(5)],
+      "kab_kota_pt": ["Jakarta Pusat", "Bandung", "Semarang", "Surabaya", "Yogyakarta"][_random.nextInt(5)],
+      "kecamatan_pt": ["Kecamatan ${1 + _random.nextInt(10)}"],
+      "lintang_pt": "${-7 - _random.nextDouble()}",
+      "bujur_pt": "${110 + _random.nextDouble() * 10}",
+      "tgl_berdiri_pt": "19${50 + _random.nextInt(50)}-${1 + _random.nextInt(12)}-${1 + _random.nextInt(28)}",
+      "tgl_sk_pendirian_sp": "19${50 + _random.nextInt(50)}-${1 + _random.nextInt(12)}-${1 + _random.nextInt(28)}",
+      "sk_pendirian_sp": "SK/PT/${_random.nextInt(1000)}/19${50 + _random.nextInt(50)}",
+      "status_pt": ["Aktif", "Pembinaan"][_random.nextInt(2)],
+      "akreditasi_pt": ["A", "B", "C", "Unggul", "Baik Sekali"][_random.nextInt(5)],
+      "status_akreditasi": ["Aktif", "Proses"][_random.nextInt(2)],
+    };
+    
+    return PerguruanTinggiDetail.fromJson(detailData);
+  }
+
+  // Mencari daftar prodi di PT
+  Future<List<ProdiPt>> getProdiPt(String ptId, int tahun) async {
+    // Simulasi delay jaringan
+    await Future.delayed(Duration(milliseconds: 800 + _random.nextInt(1200)));
+    
+    if (kIsWeb) {
+      print('Using mock data for PT prodi list (web)');
+    }
+    
+    // Buat 5 program studi acak untuk PT ini
+    List<ProdiPt> prodiList = [];
+    
+    // Ambil nama PT dari sample
+    final ptData = _samplePT.firstWhere(
+      (item) => item['id'] == ptId,
+      orElse: () => {"nama": "Perguruan Tinggi Sample"},
+    );
+    
+    for (int i = 0; i < 5; i++) {
+      // Buat data prodi acak
+      final String idSms = "SMS${_random.nextInt(100000)}";
+      final String kodeProdi = "KP${_random.nextInt(1000)}";
+      final List<String> prodiNames = [
+        "Teknik Informatika",
+        "Sistem Informasi",
+        "Ilmu Komputer",
+        "Manajemen Informatika",
+        "Teknik Komputer",
+        "Akuntansi",
+        "Manajemen",
+        "Ekonomi",
+        "Hukum",
+        "Kedokteran"
+      ];
+      final String namaProdi = prodiNames[_random.nextInt(prodiNames.length)];
+      final List<String> akreditasi = ["A", "B", "C", "Unggul", "Baik Sekali"];
+      final List<String> jenjang = ["S1", "S2", "S3", "D3", "D4"];
+      
+      // Buat objek ProdiPt
+      prodiList.add(ProdiPt(
+        idSms: idSms,
+        kodeProdi: kodeProdi,
+        namaProdi: namaProdi,
+        akreditasi: akreditasi[_random.nextInt(akreditasi.length)],
+        jenjangProdi: jenjang[_random.nextInt(jenjang.length)],
+        statusProdi: "Aktif",
+        jumlahDosenNidn: "${10 + _random.nextInt(40)}",
+        jumlahDosenNidk: "${1 + _random.nextInt(10)}",
+        jumlahDosen: "${15 + _random.nextInt(50)}",
+        jumlahDosenAjar: "${15 + _random.nextInt(50)}",
+        jumlahMahasiswa: "${100 + _random.nextInt(900)}",
+        rasio: "${(10 + _random.nextInt(30)) / 10}",
+        indikatorKelengkapanData: "${50 + _random.nextInt(50)}%",
+      ));
+    }
+    
+    return prodiList;
+  }
+
   // Pencarian dosen (mock)
   Future<List<Dosen>> searchDosen(String keyword) async {
     // Simulasi delay jaringan
@@ -165,5 +465,10 @@ class MockPddiktiService {
     
     // Konversi ke model Dosen
     return filteredData.map((item) => Dosen.fromJson(item)).toList();
+  }
+  
+  // Helper function to limit string length
+  int min(int a, int b) {
+    return (a < b) ? a : b;
   }
 }

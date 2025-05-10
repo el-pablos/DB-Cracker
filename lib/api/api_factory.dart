@@ -66,7 +66,7 @@ class ApiFactory {
     }
   }
   
-/// Detail mahasiswa
+  /// Detail mahasiswa
   Future<MahasiswaDetail> getMahasiswaDetail(String mahasiswaId) async {
     if (_useMockData) {
       return _mockService.getMahasiswaDetail(mahasiswaId);
@@ -125,5 +125,215 @@ class ApiFactory {
     }
   }
   
-  // Tambahkan method lain sesuai kebutuhan, dengan pola yang sama
+  /// Pencarian program studi
+  Future<List<Prodi>> searchProdi(String keyword) async {
+    if (_useMockData) {
+      // Implementasi mock untuk prodi jika diperlukan
+      return [];
+    } else {
+      try {
+        return await _realApi.searchProdi(keyword);
+      } catch (e) {
+        print('Error with real API, fallback to mock: $e');
+        // Fallback to mock data if the real API fails with specific errors
+        if (e.toString().contains('403') || 
+            e.toString().contains('CORS') ||
+            e.toString().contains('XMLHttpRequest')) {
+          // Implementasi mock untuk prodi jika diperlukan
+          return [];
+        }
+        rethrow;
+      }
+    }
+  }
+  
+  /// Pencarian perguruan tinggi
+  Future<List<PerguruanTinggi>> searchPt(String keyword) async {
+    if (_useMockData) {
+      // Implementasi mock untuk PT jika diperlukan
+      return [];
+    } else {
+      try {
+        return await _realApi.searchPt(keyword);
+      } catch (e) {
+        print('Error with real API, fallback to mock: $e');
+        // Fallback to mock data if the real API fails with specific errors
+        if (e.toString().contains('403') || 
+            e.toString().contains('CORS') ||
+            e.toString().contains('XMLHttpRequest')) {
+          // Implementasi mock untuk PT jika diperlukan
+          return [];
+        }
+        rethrow;
+      }
+    }
+  }
+  
+  /// Mendapatkan detail program studi
+  Future<ProdiDetail> getDetailProdi(String prodiId) async {
+    if (_useMockData) {
+      // Implementasi mock untuk detail prodi jika diperlukan
+      return ProdiDetail(
+        idSp: '',
+        idSms: prodiId,
+        namaPt: 'Perguruan Tinggi (Mock)',
+        kodePt: 'PT001',
+        namaProdi: 'Program Studi (Mock)',
+        kodeProdi: 'PS001',
+        kelBidang: 'Teknologi',
+        jenjangDidik: 'S1',
+        tglBerdiri: '2000-01-01',
+        tglSkSelenggara: '2000-01-01',
+        skSelenggara: 'SK/001/2000',
+        noTel: '021-1234567',
+        noFax: '021-7654321',
+        website: 'www.example.com',
+        email: 'info@example.com',
+        alamat: 'Jl. Contoh No. 123',
+        provinsi: 'DKI Jakarta',
+        kabKota: 'Jakarta Pusat',
+        kecamatan: 'Menteng',
+        lintang: '-6.2088',
+        bujur: '106.8456',
+        status: 'Aktif',
+        akreditasi: 'A',
+        akreditasiInternasional: '',
+        statusAkreditasi: 'Aktif',
+        deskripsiSingkat: 'Ini adalah program studi contoh',
+        visi: 'Menjadi program studi terbaik',
+        misi: 'Menghasilkan lulusan berkualitas',
+        kompetensi: 'Memiliki kemampuan di bidang teknologi',
+        capaianBelajar: 'Lulusan mampu bekerja di berbagai sektor',
+        rataMasaStudi: '4',
+      );
+    } else {
+      try {
+        return await _realApi.getDetailProdi(prodiId);
+      } catch (e) {
+        print('Error with real API, fallback to mock: $e');
+        
+        // Fallback to mock data
+        return ProdiDetail(
+          idSp: '',
+          idSms: prodiId,
+          namaPt: 'Perguruan Tinggi (Mock)',
+          kodePt: 'PT001',
+          namaProdi: 'Program Studi (Mock)',
+          kodeProdi: 'PS001',
+          kelBidang: 'Teknologi',
+          jenjangDidik: 'S1',
+          tglBerdiri: '2000-01-01',
+          tglSkSelenggara: '2000-01-01',
+          skSelenggara: 'SK/001/2000',
+          noTel: '021-1234567',
+          noFax: '021-7654321',
+          website: 'www.example.com',
+          email: 'info@example.com',
+          alamat: 'Jl. Contoh No. 123',
+          provinsi: 'DKI Jakarta',
+          kabKota: 'Jakarta Pusat',
+          kecamatan: 'Menteng',
+          lintang: '-6.2088',
+          bujur: '106.8456',
+          status: 'Aktif',
+          akreditasi: 'A',
+          akreditasiInternasional: '',
+          statusAkreditasi: 'Aktif',
+          deskripsiSingkat: 'Ini adalah program studi contoh',
+          visi: 'Menjadi program studi terbaik',
+          misi: 'Menghasilkan lulusan berkualitas',
+          kompetensi: 'Memiliki kemampuan di bidang teknologi',
+          capaianBelajar: 'Lulusan mampu bekerja di berbagai sektor',
+          rataMasaStudi: '4',
+        );
+      }
+    }
+  }
+  
+  /// Mendapatkan detail perguruan tinggi
+  Future<PerguruanTinggiDetail> getDetailPt(String ptId) async {
+    if (_useMockData) {
+      // Implementasi mock untuk detail PT jika diperlukan
+      return PerguruanTinggiDetail(
+        kelompok: 'Universitas',
+        pembina: 'Kementerian Pendidikan',
+        idSp: ptId,
+        kodePt: 'PT001',
+        email: 'info@example.com',
+        noTel: '021-1234567',
+        noFax: '021-7654321',
+        website: 'www.example.com',
+        alamat: 'Jl. Contoh No. 123',
+        namaPt: 'Universitas Contoh (Mock)',
+        nmSingkat: 'UNCON',
+        kodePos: '12345',
+        provinsiPt: 'DKI Jakarta',
+        kabKotaPt: 'Jakarta Pusat',
+        kecamatanPt: 'Menteng',
+        lintangPt: '-6.2088',
+        bujurPt: '106.8456',
+        tglBerdiriPt: '1990-01-01',
+        tglSkPendirianSp: '1990-01-01',
+        skPendirianSp: 'SK/001/1990',
+        statusPt: 'Aktif',
+        akreditasiPt: 'A',
+        statusAkreditasi: 'Aktif',
+      );
+    } else {
+      try {
+        return await _realApi.getDetailPt(ptId);
+      } catch (e) {
+        print('Error with real API, fallback to mock: $e');
+        
+        // Fallback to mock data
+        return PerguruanTinggiDetail(
+          kelompok: 'Universitas',
+          pembina: 'Kementerian Pendidikan',
+          idSp: ptId,
+          kodePt: 'PT001',
+          email: 'info@example.com',
+          noTel: '021-1234567',
+          noFax: '021-7654321',
+          website: 'www.example.com',
+          alamat: 'Jl. Contoh No. 123',
+          namaPt: 'Universitas Contoh (Mock)',
+          nmSingkat: 'UNCON',
+          kodePos: '12345',
+          provinsiPt: 'DKI Jakarta',
+          kabKotaPt: 'Jakarta Pusat',
+          kecamatanPt: 'Menteng',
+          lintangPt: '-6.2088',
+          bujurPt: '106.8456',
+          tglBerdiriPt: '1990-01-01',
+          tglSkPendirianSp: '1990-01-01',
+          skPendirianSp: 'SK/001/1990',
+          statusPt: 'Aktif',
+          akreditasiPt: 'A',
+          statusAkreditasi: 'Aktif',
+        );
+      }
+    }
+  }
+  
+  /// Mendapatkan daftar program studi di perguruan tinggi
+  Future<List<ProdiPt>> getProdiPt(String ptId, int tahun) async {
+    if (_useMockData) {
+      // Implementasi mock untuk daftar prodi di PT jika diperlukan
+      return [];
+    } else {
+      try {
+        return await _realApi.getProdiPt(ptId, tahun);
+      } catch (e) {
+        print('Error with real API, fallback to mock: $e');
+        // Fallback to mock data if the real API fails with specific errors
+        if (e.toString().contains('403') || 
+            e.toString().contains('CORS') ||
+            e.toString().contains('XMLHttpRequest')) {
+          // Implementasi mock untuk daftar prodi di PT jika diperlukan
+          return [];
+        }
+        rethrow;
+      }
+    }
+  }
 }
