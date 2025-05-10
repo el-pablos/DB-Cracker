@@ -1,10 +1,7 @@
-import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 import '../models/mahasiswa.dart';
 import '../models/dosen.dart';
-import '../models/prodi.dart';
-import '../models/pt.dart';
 
 /// Mock service to replace the PDDIKTI API for web development
 /// This is useful when developing the web app without a backend proxy
@@ -169,6 +166,4 @@ class MockPddiktiService {
     // Konversi ke model Dosen
     return filteredData.map((item) => Dosen.fromJson(item)).toList();
   }
-
-  // Method lainnya bisa ditambahkan sesuai kebutuhan
 }

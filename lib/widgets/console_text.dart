@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../utils/constants.dart';
+import '../utils/screen_utils.dart';
 
 class ConsoleText extends StatefulWidget {
   final String text;
@@ -23,13 +24,21 @@ class _ConsoleTextState extends State<ConsoleText> with SingleTickerProviderStat
   late AnimationController _animationController;
   late Animation<double> _fadeInAnimation;
   late Animation<int> _textLengthAnimation;
+  bool _isComplete = false;
 
   @override
   void initState() {
     super.initState();
     
+    // Hitung durasi berdasarkan panjang teks, tapi dengan batasan maksimum
+    final int textLength = widget.text.length;
+    final int maxDuration = 2000; // ms
+    final int baseDuration = 500; // ms
+    final int calculatedDuration = baseDuration + (textLength * 20);
+    final int safeDuration = calculatedDuration > maxDuration ? maxDuration : calculatedDuration;
+    
     _animationController = AnimationController(
-      duration: Duration(milliseconds: widget.text.length * 20),
+      duration: Duration(milliseconds: safeDuration),
       vsync: this,
     );
     
@@ -49,7 +58,13 @@ class _ConsoleTextState extends State<ConsoleText> with SingleTickerProviderStat
       curve: Curves.easeOut,
     ));
     
-    _animationController.forward();
+    _animationController.forward().then((_) {
+      if (mounted) {
+        setState(() {
+          _isComplete = true;
+        });
+      }
+    });
   }
 
   @override
@@ -60,6 +75,11 @@ class _ConsoleTextState extends State<ConsoleText> with SingleTickerProviderStat
 
   @override
   Widget build(BuildContext context) {
+    // Pastikan ScreenUtils diinisialisasi
+    if (ScreenUtils.screenWidth == 0) {
+      ScreenUtils.init(context);
+    }
+    
     Color textColor = HackerColors.text;
     
     if (widget.isError) {
@@ -73,10 +93,12 @@ class _ConsoleTextState extends State<ConsoleText> with SingleTickerProviderStat
     return AnimatedBuilder(
       animation: _animationController,
       builder: (context, child) {
-        final displayedText = widget.text.substring(
-          0, 
-          _textLengthAnimation.value,
-        );
+        // Cegah overflow dengan substring yang aman
+        final int safeEnd = _textLengthAnimation.value < widget.text.length 
+            ? _textLengthAnimation.value 
+            : widget.text.length;
+            
+        final String displayedText = widget.text.substring(0, safeEnd);
         
         return Opacity(
           opacity: _fadeInAnimation.value,
@@ -105,9 +127,11 @@ class _ConsoleTextState extends State<ConsoleText> with SingleTickerProviderStat
                       fontSize: 14,
                       height: 1.5,
                     ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 5, // Batasi jumlah baris untuk mencegah overflow
                   ),
                 ),
-                if (_textLengthAnimation.value < widget.text.length)
+                if (!_isComplete && _textLengthAnimation.value < widget.text.length)
                   const Text(
                     "█",
                     style: TextStyle(

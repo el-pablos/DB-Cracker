@@ -11,13 +11,16 @@ class AppStrings {
   
   // Search
   static const String searchHint = 'masukkan nama target...';
+  static const String filterHint = 'filter universitas...';
   static const String emptySearchPrompt = 'MASUKKAN NAMA TARGET UNTUK MEMULAI SCAN';
   static const String scanningMessage = 'MEMINDAI DATABASE...';
   static const String accessGranted = 'AKSES DIBERIKAN';
   static const String accessDenied = 'AKSES DITOLAK';
   static const String noResultsFound = 'DATA TIDAK DITEMUKAN UNTUK TARGET';
+  static const String noFilterResults = 'TIDAK ADA HASIL UNTUK FILTER';
   static const String pleaseEnterSearchTerm = 'ERROR: TARGET BELUM DITENTUKAN';
   static const String errorSearching = 'KONEKSI TERPUTUS:';
+  static const String clearFilter = 'BERSIHKAN FILTER';
   
   // Details
   static const String personalInfoTitle = 'DATA PRIBADI';
@@ -47,6 +50,12 @@ class AppStrings {
   static const String bypassingFirewall = 'BYPASS FIREWALL...';
   static const String extractingData = 'EKSTRAK DATA...';
   static const String hackingComplete = 'HACK BERHASIL';
+  
+  // Filter
+  static const String filterTitle = 'FILTER UNIVERSITAS';
+  static const String filteringInProgress = 'MENERAPKAN FILTER...';
+  static const String filterCleared = 'FILTER DIBERSIHKAN';
+  static const String filterResults = 'HASIL FILTER';
 }
 
 class HackerColors {

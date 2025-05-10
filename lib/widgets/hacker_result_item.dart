@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../models/mahasiswa.dart';
 import '../utils/constants.dart';
+import '../utils/screen_utils.dart';
+import 'flexible_text.dart';
 import 'dart:math';
 
 class HackerResultItem extends StatefulWidget {
@@ -49,8 +51,18 @@ class _HackerResultItemState extends State<HackerResultItem> with SingleTickerPr
 
   @override
   Widget build(BuildContext context) {
+    // Initialize ScreenUtils for responsive design
+    ScreenUtils.init(context);
+    
+    // Adaptasi berdasarkan ukuran layar
+    final bool isMobile = ScreenUtils.isMobileScreen();
+    final double avatarSize = isMobile ? 36.w : 42.w;
+    
     return Card(
-      margin: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 8.0),
+      margin: ScreenUtils.responsivePadding(
+        vertical: isMobile ? 4 : 6, 
+        horizontal: isMobile ? 6 : 8
+      ),
       color: HackerColors.surface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(4),
@@ -72,7 +84,7 @@ class _HackerResultItemState extends State<HackerResultItem> with SingleTickerPr
           }
         },
         child: Padding(
-          padding: const EdgeInsets.all(12.0),
+          padding: ScreenUtils.responsivePadding(all: isMobile ? 8 : 12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -80,8 +92,8 @@ class _HackerResultItemState extends State<HackerResultItem> with SingleTickerPr
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    width: 42,
-                    height: 42,
+                    width: avatarSize,
+                    height: avatarSize,
                     decoration: BoxDecoration(
                       color: HackerColors.surface,
                       borderRadius: BorderRadius.circular(4),
@@ -91,58 +103,64 @@ class _HackerResultItemState extends State<HackerResultItem> with SingleTickerPr
                       ),
                     ),
                     child: Center(
-                      child: Text(
+                      child: FlexibleText(
                         widget.mahasiswa.nama.isNotEmpty
                             ? widget.mahasiswa.nama[0].toUpperCase()
                             : '?',
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: HackerColors.primary,
                           fontWeight: FontWeight.bold,
-                          fontSize: 20,
+                          fontSize: isMobile ? 18.adaptiveFont : 20.adaptiveFont,
                           fontFamily: 'Courier',
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12.w),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.person,
-                              size: 14,
+                              size: 14.iconSize,
                               color: HackerColors.primary,
                             ),
-                            const SizedBox(width: 6),
-                            Text(
-                              "SUBJECT: ${widget.mahasiswa.nama.toUpperCase()}",
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                                color: HackerColors.primary,
-                                fontFamily: 'Courier',
+                            SizedBox(width: 6.w),
+                            Expanded(
+                              child: FlexibleText(
+                                "SUBJECT: ${widget.mahasiswa.nama.toUpperCase()}",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14.adaptiveFont,
+                                  color: HackerColors.primary,
+                                  fontFamily: 'Courier',
+                                ),
+                                maxLines: 1,
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 4),
+                        SizedBox(height: 4.h),
                         Row(
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.numbers,
-                              size: 12,
+                              size: 12.iconSize,
                               color: HackerColors.accent,
                             ),
-                            const SizedBox(width: 6),
-                            Text(
-                              "ID: ${widget.mahasiswa.nim}",
-                              style: const TextStyle(
-                                color: HackerColors.accent,
-                                fontSize: 12,
-                                fontFamily: 'Courier',
+                            SizedBox(width: 6.w),
+                            Expanded(
+                              child: FlexibleText(
+                                "ID: ${widget.mahasiswa.nim}",
+                                style: TextStyle(
+                                  color: HackerColors.accent,
+                                  fontSize: 12.adaptiveFont,
+                                  fontFamily: 'Courier',
+                                ),
+                                maxLines: 1,
                               ),
                             ),
                           ],
@@ -151,7 +169,7 @@ class _HackerResultItemState extends State<HackerResultItem> with SingleTickerPr
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.all(4),
+                    padding: ScreenUtils.responsivePadding(all: 4),
                     decoration: BoxDecoration(
                       color: HackerColors.background,
                       borderRadius: BorderRadius.circular(2),
@@ -160,20 +178,20 @@ class _HackerResultItemState extends State<HackerResultItem> with SingleTickerPr
                         width: 1,
                       ),
                     ),
-                    child: Text(
+                    child: FlexibleText(
                       _generateHackerCode(),
                       style: TextStyle(
                         color: HackerColors.accent.withOpacity(0.8),
-                        fontSize: 8,
+                        fontSize: 8.adaptiveFont,
                         fontFamily: 'Courier',
                       ),
                     ),
                   ),
                 ],
               ),
-              const Divider(
+              Divider(
                 color: HackerColors.accent,
-                height: 20,
+                height: 20.h,
                 thickness: 1,
               ),
               Row(
@@ -185,19 +203,35 @@ class _HackerResultItemState extends State<HackerResultItem> with SingleTickerPr
                       value: widget.mahasiswa.namaPt,
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8.w),
                   Icon(
                     Icons.arrow_forward,
                     color: _isHovering ? HackerColors.primary : HackerColors.accent,
-                    size: 16,
+                    size: 16.iconSize,
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
-              _buildInfoRow(
+              SizedBox(height: 8.h),
+_buildInfoRow(
                 icon: Icons.book,
                 label: "PROGRAM",
                 value: widget.mahasiswa.namaProdi,
+              ),
+              // Tambahkan sumber data jika tersedia
+              SizedBox(height: 4.h),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  FlexibleText(
+                    "SOURCE: " + (widget.mahasiswa.id.contains("=") ? "PDDIKTI" : "MULTI-DB"),
+                    style: TextStyle(
+                      color: HackerColors.accent.withOpacity(0.7),
+                      fontFamily: 'Courier',
+                      fontSize: 8.adaptiveFont,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -216,29 +250,30 @@ class _HackerResultItemState extends State<HackerResultItem> with SingleTickerPr
       children: [
         Icon(
           icon,
-          size: 12,
+          size: 12.iconSize,
           color: HackerColors.accent,
         ),
-        const SizedBox(width: 8),
+        SizedBox(width: 8.w),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              FlexibleText(
                 label,
                 style: TextStyle(
                   color: HackerColors.text.withOpacity(0.7),
-                  fontSize: 10,
+                  fontSize: 10.adaptiveFont,
                   fontFamily: 'Courier',
                 ),
               ),
-              Text(
+              FlexibleText(
                 value,
-                style: const TextStyle(
+                style: TextStyle(
                   color: HackerColors.text,
-                  fontSize: 12,
+                  fontSize: 12.adaptiveFont,
                   fontFamily: 'Courier',
                 ),
+                maxLines: 1,
               ),
             ],
           ),

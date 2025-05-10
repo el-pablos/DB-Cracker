@@ -1,13 +1,19 @@
+// lib/screens/detail_screen.dart
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../api/api_factory.dart';
+import '../api/multi_api_factory.dart';
+import '../api/api_services_integration.dart';
 import '../models/mahasiswa.dart';
+import '../widgets/flexible_text.dart';
 import '../widgets/hacker_loading_indicator.dart';
 import '../widgets/console_text.dart';
+import '../widgets/responsive_card.dart';
 import '../widgets/terminal_window.dart';
 import '../utils/constants.dart';
+import '../utils/screen_utils.dart';
 
 class DetailScreen extends StatefulWidget {
   final String mahasiswaId;
@@ -31,6 +37,13 @@ class _DetailScreenState extends State<DetailScreen> with SingleTickerProviderSt
   Timer? _decryptTimer;
   late AnimationController _animationController;
   
+  // Tambahkan instance MultiApiFactory
+  late MultiApiFactory _multiApiFactory;
+  
+  // Flag untuk menampilkan informasi eksternal
+  bool _showExternalInfo = false;
+  Map<String, dynamic> _externalData = {};
+  
   @override
   void initState() {
     super.initState();
@@ -40,8 +53,14 @@ class _DetailScreenState extends State<DetailScreen> with SingleTickerProviderSt
     );
     _animationController.repeat(reverse: true);
     
+    // Inisialisasi MultiApiFactory
+    _multiApiFactory = MultiApiFactory();
+    
     // Mulai sequence dekripsi
     _simulateDecryption();
+    
+    // Coba dapatkan data tambahan
+    _fetchExternalData();
   }
 
   void _simulateDecryption() {
@@ -56,6 +75,7 @@ class _DetailScreenState extends State<DetailScreen> with SingleTickerProviderSt
     _addConsoleMessageWithDelay("MELEWATI ENKRIPSI...", 2000);
     _addConsoleMessageWithDelay("EKSTRAKSI CATATAN INSTITUSI...", 2600);
     _addConsoleMessageWithDelay("MEMBERSIHKAN DATA...", 3200);
+    _addConsoleMessageWithDelay("KORELASI DATA DENGAN DATABASE EKSTERNAL...", 3800); // Pesan baru
     
     // Fetch data setelah simulasi
     _decryptTimer = Timer(const Duration(milliseconds: 4000), () {
@@ -74,9 +94,8 @@ class _DetailScreenState extends State<DetailScreen> with SingleTickerProviderSt
   }
 
   void _fetchMahasiswaDetail() {
-    // Gunakan ApiFactory sebagai pengganti PddiktiApi langsung
-    final api = Provider.of<ApiFactory>(context, listen: false);
-    _mahasiswaFuture = api.getMahasiswaDetail(widget.mahasiswaId);
+    // Gunakan MultiApiFactory
+    _mahasiswaFuture = _multiApiFactory.getMahasiswaDetailFromAllSources(widget.mahasiswaId);
     
     _mahasiswaFuture.then((_) {
       setState(() {
@@ -91,6 +110,27 @@ class _DetailScreenState extends State<DetailScreen> with SingleTickerProviderSt
       _addConsoleMessageWithDelay("ERROR: EKSTRAKSI DATA GAGAL", 300);
       _addConsoleMessageWithDelay("AKSES DITOLAK", 600);
     });
+  }
+  
+  // Metode untuk mengambil data tambahan dari API eksternal
+  Future<void> _fetchExternalData() async {
+    try {
+      // Delay untuk simulasi pencarian
+      await Future.delayed(Duration(seconds: 2));
+      
+      // Coba cari di Wikipedia
+      final apiServices = ApiServicesIntegration();
+      final wikipediaData = await apiServices.searchWikipedia(widget.subjectName);
+      
+      if (wikipediaData.isNotEmpty) {
+        setState(() {
+          _externalData = wikipediaData;
+          _showExternalInfo = true;
+        });
+      }
+    } catch (e) {
+      print('Error fetching external data: $e');
+    }
   }
 
   @override
@@ -108,8 +148,16 @@ class _DetailScreenState extends State<DetailScreen> with SingleTickerProviderSt
     ).join();
   }
 
+  // Fungsi untuk mendeteksi jika layar berukuran kecil (mobile)
+  bool isMobileScreen(BuildContext context) {
+    return MediaQuery.of(context).size.width < 600;
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Initialize ScreenUtils for responsive design
+    ScreenUtils.init(context);
+    
     return Scaffold(
       backgroundColor: HackerColors.background,
       appBar: AppBar(
@@ -119,9 +167,9 @@ class _DetailScreenState extends State<DetailScreen> with SingleTickerProviderSt
               animation: _animationController,
               builder: (context, child) {
                 return Container(
-                  width: 12,
-                  height: 12,
-                  margin: const EdgeInsets.only(right: 8),
+                  width: 12.w, // Gunakan ekstensi responsive
+                  height: 12.h, // Gunakan ekstensi responsive
+                  margin: EdgeInsets.only(right: 8.w), // Gunakan ekstensi responsive
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: _animationController.value > 0.5 
@@ -131,20 +179,36 @@ class _DetailScreenState extends State<DetailScreen> with SingleTickerProviderSt
                 );
               },
             ),
-            const Text(
+            Text(
               AppStrings.detailTitle,
               style: TextStyle(
                 fontFamily: 'Courier',
                 fontWeight: FontWeight.bold,
                 color: HackerColors.primary,
+                fontSize: 16.sp, // Gunakan ekstensi responsive
               ),
             ),
           ],
         ),
         backgroundColor: HackerColors.surface,
-        iconTheme: const IconThemeData(
+        iconTheme: IconThemeData(
           color: HackerColors.primary,
         ),
+        actions: [
+          // Toggle untuk menampilkan info eksternal
+          IconButton(
+            icon: Icon(
+              _showExternalInfo ? Icons.visibility : Icons.visibility_off,
+              color: HackerColors.primary,
+              size: 20.sp, // Gunakan ekstensi responsive
+            ),
+            onPressed: () {
+              setState(() {
+                _showExternalInfo = !_showExternalInfo;
+              });
+            },
+          ),
+        ],
       ),
       body: Container(
         color: HackerColors.background,
@@ -152,13 +216,13 @@ class _DetailScreenState extends State<DetailScreen> with SingleTickerProviderSt
           children: [
             Container(
               color: HackerColors.surface.withOpacity(0.7),
-              padding: const EdgeInsets.all(8.0),
+              padding: EdgeInsets.all(8.w), // Gunakan ekstensi responsive
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Container(
-                    width: 8,
-                    height: 8,
+                    width: 8.w, // Gunakan ekstensi responsive
+                    height: 8.h, // Gunakan ekstensi responsive
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: _random.nextBool() 
@@ -166,13 +230,13 @@ class _DetailScreenState extends State<DetailScreen> with SingleTickerProviderSt
                           : HackerColors.accent,
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8.w), // Gunakan ekstensi responsive
                   Text(
                     'RAHASIA - LEVEL AKSES 3 - SUBJEK: ${widget.subjectName}',
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: HackerColors.highlight,
                       fontFamily: 'Courier',
-                      fontSize: 12,
+                      fontSize: 12.sp, // Gunakan ekstensi responsive
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -184,174 +248,232 @@ class _DetailScreenState extends State<DetailScreen> with SingleTickerProviderSt
                 ? TerminalWindow(
                     title: "DEKRIPSI DATA",
                     child: ListView.builder(
-                      padding: const EdgeInsets.all(16.0),
-                      itemCount: _consoleMessages.length,
-                      itemBuilder: (context, index) {
-                        bool isSuccess = index == _consoleMessages.length - 1 && 
-                                      _consoleMessages[index].contains("SELESAI");
-                        bool isError = index == _consoleMessages.length - 1 && 
-                                     _consoleMessages[index].contains("ERROR");
-                        
-                        return ConsoleText(
-                          text: _consoleMessages[index], 
-                          isSuccess: isSuccess,
-                          isError: isError,
-                        );
-                      },
-                    ),
-                  )
-                : FutureBuilder<MahasiswaDetail>(
-                    future: _mahasiswaFuture,
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: HackerLoadingIndicator());
-                      } else if (snapshot.hasError) {
-                        return TerminalWindow(
-                          title: "ERROR",
-                          child: Center(
-                            child: Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Icon(
-                                    Icons.warning_amber_rounded,
-                                    color: HackerColors.error,
-                                    size: 48,
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Text(
-                                    '${AppStrings.errorLoadingData} ${snapshot.error}',
-                                    style: const TextStyle(
+                      padding: EdgeInsets.all(16.w), // Gunakan ekstensi responsive
+itemCount: _consoleMessages.length,
+                        itemBuilder: (context, index) {
+                          bool isSuccess = index == _consoleMessages.length - 1 && 
+                                        _consoleMessages[index].contains("SELESAI");
+                          bool isError = index == _consoleMessages.length - 1 && 
+                                       _consoleMessages[index].contains("ERROR");
+                          
+                          return ConsoleText(
+                            text: _consoleMessages[index], 
+                            isSuccess: isSuccess,
+                            isError: isError,
+                          );
+                        },
+                      ),
+                    )
+                  : FutureBuilder<MahasiswaDetail>(
+                      future: _mahasiswaFuture,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return Center(child: HackerLoadingIndicator());
+                        } else if (snapshot.hasError) {
+                          return TerminalWindow(
+                            title: "ERROR",
+                            child: Center(
+                              child: Padding(
+                                padding: ScreenUtils.responsivePadding(all: 16),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.warning_amber_rounded,
                                       color: HackerColors.error,
-                                      fontSize: 16,
-                                      fontFamily: 'Courier',
+                                      size: 48.iconSize,
                                     ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                  const SizedBox(height: 24),
-                                  ElevatedButton(
-                                    onPressed: _simulateDecryption,
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: HackerColors.surface,
-                                      foregroundColor: HackerColors.primary,
-                                      side: const BorderSide(color: HackerColors.primary),
+                                    SizedBox(height: 16.h),
+                                    FlexibleText(
+                                      '${AppStrings.errorLoadingData} ${snapshot.error}',
+                                      style: TextStyle(
+                                        color: HackerColors.error,
+                                        fontSize: 16.adaptiveFont,
+                                        fontFamily: 'Courier',
+                                      ),
+                                      textAlign: TextAlign.center,
+                                      maxLines: 3,
                                     ),
-                                    child: const Text(AppStrings.retry),
-                                  ),
-                                ],
+                                    SizedBox(height: 24.h),
+                                    ElevatedButton(
+                                      onPressed: _simulateDecryption,
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: HackerColors.surface,
+                                        foregroundColor: HackerColors.primary,
+                                        padding: ScreenUtils.responsivePadding(
+                                          horizontal: 16, 
+                                          vertical: 8
+                                        ),
+                                        side: BorderSide(color: HackerColors.primary),
+                                      ),
+                                      child: FlexibleText(
+                                        AppStrings.retry,
+                                        style: TextStyle(
+                                          fontSize: 14.adaptiveFont,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                        );
-                      } else if (!snapshot.hasData) {
-                        return const Center(
-                          child: Text(
-                            AppStrings.noDataAvailable,
-                            style: TextStyle(
-                              color: HackerColors.error,
-                              fontFamily: 'Courier',
+                          );
+                        } else if (!snapshot.hasData) {
+                          return Center(
+                            child: FlexibleText(
+                              AppStrings.noDataAvailable,
+                              style: TextStyle(
+                                color: HackerColors.error,
+                                fontFamily: 'Courier',
+                                fontSize: 16.adaptiveFont,
+                              ),
                             ),
-                          ),
-                        );
-                      }
+                          );
+                        }
 
-                      final mahasiswa = snapshot.data!;
-                      return _buildHackerDetailView(mahasiswa);
-                    },
-                  ),
-            ),
-            Container(
-              color: HackerColors.surface,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: _random.nextBool() 
-                              ? HackerColors.primary 
-                              : HackerColors.accent,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'KUNCI: ${_getRandomHexValue(8)}-${_getRandomHexValue(4)}-${_getRandomHexValue(4)}',
-                        style: const TextStyle(
-                          color: HackerColors.text,
-                          fontSize: 10,
-                          fontFamily: 'Courier',
-                        ),
-                      ),
-                    ],
-                  ),
-                  const Text(
-                    'BY: TAMAENGS',
-                    style: TextStyle(
-                      color: HackerColors.text,
-                      fontSize: 10,
-                      fontFamily: 'Courier',
-                      fontWeight: FontWeight.bold,
+                        final mahasiswa = snapshot.data!;
+                        return _buildHackerDetailView(mahasiswa);
+                      },
                     ),
-                  ),
-                ],
               ),
-            ),
-          ],
+              Container(
+                color: HackerColors.surface,
+                padding: ScreenUtils.responsivePadding(
+                  horizontal: 16, 
+                  vertical: 8
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 8.w,
+                          height: 8.h,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: _random.nextBool() 
+                                ? HackerColors.primary 
+                                : HackerColors.accent,
+                          ),
+                        ),
+                        SizedBox(width: 8.w),
+                        FlexibleText(
+                          'KUNCI: ${_getRandomHexValue(8)}-${_getRandomHexValue(4)}-${_getRandomHexValue(4)}',
+                          style: TextStyle(
+                            color: HackerColors.text,
+                            fontSize: 10.adaptiveFont,
+                            fontFamily: 'Courier',
+                          ),
+                          maxLines: 1,
+                        ),
+                      ],
+                    ),
+                    FlexibleText(
+                      'BY: TAMAENGS',
+                      style: TextStyle(
+                        color: HackerColors.text,
+                        fontSize: 10.adaptiveFont,
+                        fontFamily: 'Courier',
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
-    );
+      );
   }
 
   Widget _buildHackerDetailView(MahasiswaDetail mahasiswa) {
+    final bool isMobile = ScreenUtils.isMobileScreen();
+    
     return Padding(
-      padding: const EdgeInsets.all(12.0),
+      padding: ScreenUtils.responsivePadding(all: 12),
       child: Column(
         children: [
           Expanded(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  flex: 1,
-                  child: _buildDataTerminal(
-                    title: "DATA PRIBADI",
-                    icon: Icons.person,
-                    content: [
-                      _buildDataRow("IDENTITAS", mahasiswa.nama),
-                      _buildDataRow("ID SUBJEK", mahasiswa.nim),
-                      _buildDataRow("JENIS KELAMIN", mahasiswa.jenisKelamin),
-                      _buildDataRow("TAHUN MASUK", mahasiswa.tahunMasuk),
-                      _buildDataRow("JENIS DAFTAR", mahasiswa.jenisDaftar),
-                      _buildDataRow("STATUS", mahasiswa.statusSaatIni),
+            child: isMobile
+                // Layout mobile: data pribadi di atas, data institusi di bawah
+                ? Column(
+                    children: [
+                      Expanded(
+                        child: _buildDataTerminal(
+                          title: "DATA PRIBADI",
+                          icon: Icons.person,
+                          content: [
+                            _buildDataRow("IDENTITAS", mahasiswa.nama),
+                            _buildDataRow("ID SUBJEK", mahasiswa.nim),
+                            _buildDataRow("JENIS KELAMIN", mahasiswa.jenisKelamin),
+                            _buildDataRow("TAHUN MASUK", mahasiswa.tahunMasuk),
+                            _buildDataRow("JENIS DAFTAR", mahasiswa.jenisDaftar),
+                            _buildDataRow("STATUS", mahasiswa.statusSaatIni),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: 8.h),
+                      Expanded(
+                        child: _buildDataTerminal(
+                          title: "DATA INSTITUSI",
+                          icon: Icons.school,
+                          content: [
+                            _buildDataRow("INSTITUSI", mahasiswa.namaPt),
+                            _buildDataRow("KODE PT", mahasiswa.kodePt),
+                            _buildDataRow("PROGRAM", mahasiswa.prodi),
+                            _buildDataRow("KODE PRODI", mahasiswa.kodeProdi),
+                            _buildDataRow("JENJANG", mahasiswa.jenjang),
+                          ],
+                        ),
+                      ),
+                    ],
+                  )
+                // Layout tablet/desktop: data pribadi di kiri, data institusi di kanan
+                : Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        flex: 1,
+                        child: _buildDataTerminal(
+                          title: "DATA PRIBADI",
+                          icon: Icons.person,
+                          content: [
+                            _buildDataRow("IDENTITAS", mahasiswa.nama),
+                            _buildDataRow("ID SUBJEK", mahasiswa.nim),
+                            _buildDataRow("JENIS KELAMIN", mahasiswa.jenisKelamin),
+                            _buildDataRow("TAHUN MASUK", mahasiswa.tahunMasuk),
+                            _buildDataRow("JENIS DAFTAR", mahasiswa.jenisDaftar),
+                            _buildDataRow("STATUS", mahasiswa.statusSaatIni),
+                          ],
+                        ),
+                      ),
+                      SizedBox(width: 8.w),
+                      Expanded(
+                        flex: 1,
+                        child: _buildDataTerminal(
+                          title: "DATA INSTITUSI",
+                          icon: Icons.school,
+                          content: [
+                            _buildDataRow("INSTITUSI", mahasiswa.namaPt),
+                            _buildDataRow("KODE PT", mahasiswa.kodePt),
+                            _buildDataRow("PROGRAM", mahasiswa.prodi),
+                            _buildDataRow("KODE PRODI", mahasiswa.kodeProdi),
+                            _buildDataRow("JENJANG", mahasiswa.jenjang),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  flex: 1,
-                  child: _buildDataTerminal(
-                    title: "DATA INSTITUSI",
-                    icon: Icons.school,
-                    content: [
-                      _buildDataRow("INSTITUSI", mahasiswa.namaPt),
-                      _buildDataRow("KODE PT", mahasiswa.kodePt),
-                      _buildDataRow("PROGRAM", mahasiswa.prodi),
-                      _buildDataRow("KODE PRODI", mahasiswa.kodeProdi),
-                      _buildDataRow("JENJANG", mahasiswa.jenjang),
-                    ],
-                  ),
-                ),
-              ],
-            ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           _buildSecurityTerminal(mahasiswa),
+          
+          // Tambahkan bagian informasi eksternal jika ada
+          if (_showExternalInfo && _externalData.isNotEmpty) ...[
+            SizedBox(height: 12.h),
+            _buildExternalDataTerminal(),
+          ],
         ],
       ),
     );
@@ -362,83 +484,174 @@ class _DetailScreenState extends State<DetailScreen> with SingleTickerProviderSt
     required IconData icon,
     required List<Widget> content,
   }) {
-    return TerminalWindow(
-      title: title,
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(12.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(
-                  icon,
-                  color: HackerColors.primary,
-                  size: 18,
-                ),
-                const SizedBox(width: 8),
-                Text(
+    return ResponsiveCard(
+      color: HackerColors.surface,
+      borderColor: HackerColors.accent,
+      padding: ScreenUtils.responsivePadding(all: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                icon,
+                color: HackerColors.primary,
+                size: 18.iconSize,
+              ),
+              SizedBox(width: 8.w),
+              Expanded(
+                child: FlexibleText(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: HackerColors.primary,
                     fontFamily: 'Courier',
-                    fontSize: 16,
+                    fontSize: 16.adaptiveFont,
                     fontWeight: FontWeight.bold,
                   ),
+                  maxLines: 1,
                 ),
-              ],
+              ),
+            ],
+          ),
+          Divider(
+            color: HackerColors.accent,
+            height: 24.h,
+          ),
+          Expanded(
+            child: SingleChildScrollView(
+              physics: BouncingScrollPhysics(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: content,
+              ),
             ),
-            const Divider(
-              color: HackerColors.accent,
-              height: 24,
+          ),
+        ],
+      ),
+    );
+  }
+  
+  // Terminal untuk menampilkan data eksternal seperti Wikipedia
+  Widget _buildExternalDataTerminal() {
+    // Mengekstrak informasi dari Wikipedia
+    final String title = _externalData['title'] ?? 'DATA EKSTERNAL';
+    final String extract = _externalData['extract'] ?? 'Tidak ada data yang tersedia.';
+    final String source = _externalData['source'] ?? 'SUMBER TIDAK DIKETAHUI';
+    
+    return ResponsiveCard(
+      color: HackerColors.surface,
+      borderColor: HackerColors.accent,
+      padding: ScreenUtils.responsivePadding(all: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.language,
+                color: HackerColors.primary,
+                size: 18.iconSize,
+              ),
+              SizedBox(width: 8.w),
+              Expanded(
+                child: FlexibleText(
+                  "DATA EKSTERNAL: $title",
+                  style: TextStyle(
+                    color: HackerColors.primary,
+                    fontFamily: 'Courier',
+                    fontSize: 16.adaptiveFont,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  maxLines: 1,
+                ),
+              ),
+            ],
+          ),
+          Divider(
+            color: HackerColors.accent,
+            height: 24.h,
+          ),
+          Expanded(
+            child: SingleChildScrollView(
+              physics: BouncingScrollPhysics(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  FlexibleText(
+                    extract,
+                    style: TextStyle(
+                      color: HackerColors.text,
+                      fontFamily: 'Courier',
+                      fontSize: 12.adaptiveFont,
+                    ),
+                  ),
+                  SizedBox(height: 12.h),
+                  FlexibleText(
+                    "SUMBER: $source",
+                    style: TextStyle(
+                      color: HackerColors.accent,
+                      fontFamily: 'Courier',
+                      fontSize: 10.adaptiveFont,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ],
+              ),
             ),
-            ...content,
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildSecurityTerminal(MahasiswaDetail mahasiswa) {
+    // Adaptasi berdasarkan ukuran layar
+    final bool isMobile = ScreenUtils.isMobileScreen();
+    final double terminalHeight = isMobile ? 100.h : 120.h;
+    
     return Container(
-      height: 120,
+      height: terminalHeight,
       decoration: BoxDecoration(
         color: HackerColors.surface,
         borderRadius: BorderRadius.circular(4),
         border: Border.all(color: HackerColors.accent),
       ),
-      padding: const EdgeInsets.all(8),
+      padding: ScreenUtils.responsivePadding(all: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 8),
+            padding: ScreenUtils.responsivePadding(
+              vertical: 2, 
+              horizontal: 8
+            ),
             decoration: BoxDecoration(
               color: HackerColors.background,
               borderRadius: BorderRadius.circular(2),
             ),
-            child: const Text(
+            child: FlexibleText(
               "ANALISIS KEAMANAN",
               style: TextStyle(
                 color: HackerColors.warning,
                 fontFamily: 'Courier',
-                fontSize: 12,
+                fontSize: 12.adaptiveFont,
                 fontWeight: FontWeight.bold,
               ),
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Expanded(
             child: ListView.builder(
               itemCount: 5,
               itemBuilder: (context, index) {
-                return Text(
+                return FlexibleText(
                   _generateRandomSecurityInfo(mahasiswa, index),
                   style: TextStyle(
                     color: _getSecurityColor(index),
                     fontFamily: 'Courier',
-                    fontSize: 10,
+                    fontSize: 10.adaptiveFont,
                   ),
+                  maxLines: 1,
                 );
               },
             ),
@@ -457,7 +670,7 @@ class _DetailScreenState extends State<DetailScreen> with SingleTickerProviderSt
       case 1:
         return "INTEGRITAS DATA: ${_random.nextInt(30) + 70}% | ENKRIPSI: AES-256 | HASH: SHA3-${_random.nextInt(2) == 0 ? "256" : "512"}";
       case 2:
-        return "SISTEM: PDDIKTI-SEC | NODE: ${_getRandomHexValue(4)}-${_getRandomHexValue(4)} | SESI: $hexCode";
+        return "SISTEM: MULTI-DB-SEC | NODE: ${_getRandomHexValue(4)}-${_getRandomHexValue(4)} | SESI: $hexCode"; // Updated
       case 3:
         int length = min(10, mahasiswa.id.length);
         String idPrefix = length > 0 ? mahasiswa.id.substring(0, length) : "UNKNOWN";
@@ -488,21 +701,24 @@ class _DetailScreenState extends State<DetailScreen> with SingleTickerProviderSt
 
   Widget _buildDataRow(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: ScreenUtils.responsivePadding(bottom: 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          FlexibleText(
             label,
             style: TextStyle(
               color: HackerColors.text.withOpacity(0.7),
               fontFamily: 'Courier',
-              fontSize: 10,
+              fontSize: 10.adaptiveFont,
             ),
           ),
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+            padding: ScreenUtils.responsivePadding(
+              vertical: 6, 
+              horizontal: 8
+            ),
             decoration: BoxDecoration(
               color: HackerColors.background,
               borderRadius: BorderRadius.circular(2),
@@ -511,14 +727,15 @@ class _DetailScreenState extends State<DetailScreen> with SingleTickerProviderSt
                 width: 1,
               ),
             ),
-            child: Text(
+            child: FlexibleText(
               value.isNotEmpty ? value : "-DISENSOR-",
-              style: const TextStyle(
+              style: TextStyle(
                 color: HackerColors.primary,
                 fontFamily: 'Courier',
-                fontSize: 14,
+                fontSize: 14.adaptiveFont,
                 fontWeight: FontWeight.w500,
               ),
+              maxLines: 1,
             ),
           ),
         ],

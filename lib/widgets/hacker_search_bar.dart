@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../utils/constants.dart';
+import '../utils/screen_utils.dart';
+import 'flexible_text.dart';
 
 class HackerSearchBar extends StatelessWidget {
   final TextEditingController controller;
@@ -15,6 +17,9 @@ class HackerSearchBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Adaptasi berdasarkan ukuran layar
+    final bool isMobile = ScreenUtils.isMobileScreen();
+    
     return Container(
       decoration: BoxDecoration(
         color: HackerColors.surface,
@@ -33,7 +38,10 @@ class HackerSearchBar extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            padding: ScreenUtils.responsivePadding(
+              horizontal: 8, 
+              vertical: isMobile ? 3 : 4
+            ),
             decoration: BoxDecoration(
               color: HackerColors.surface.withOpacity(0.8),
               border: const Border(
@@ -44,18 +52,18 @@ class HackerSearchBar extends StatelessWidget {
               ),
             ),
             child: Row(
-              children: const [
+              children: [
                 Icon(
                   Icons.search,
                   color: HackerColors.accent,
-                  size: 14,
+                  size: 14.iconSize,
                 ),
-                SizedBox(width: 4),
-                Text(
+                SizedBox(width: 4.w),
+                FlexibleText(
                   "TARGET LOCATOR",
                   style: TextStyle(
                     color: HackerColors.accent,
-                    fontSize: 12,
+                    fontSize: 12.adaptiveFont,
                     fontFamily: 'Courier',
                     fontWeight: FontWeight.bold,
                   ),
@@ -63,70 +71,82 @@ class HackerSearchBar extends StatelessWidget {
               ],
             ),
           ),
-          Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: controller,
-                  style: const TextStyle(
-                    color: HackerColors.primary,
-                    fontFamily: 'Courier',
-                  ),
-                  decoration: InputDecoration(
-                    hintText: hintText,
-                    hintStyle: TextStyle(
-                      color: HackerColors.text.withOpacity(0.5),
+          IntrinsicHeight(
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: controller,
+                    style: TextStyle(
+                      color: HackerColors.primary,
                       fontFamily: 'Courier',
+                      fontSize: 14.adaptiveFont,
                     ),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                    border: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                    focusedBorder: InputBorder.none,
-                    prefixIcon: const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 12),
-                      child: Text(
-                        ">",
-                        style: TextStyle(
-                          color: HackerColors.primary,
-                          fontFamily: 'Courier',
-                          fontWeight: FontWeight.bold,
+                    decoration: InputDecoration(
+                      hintText: hintText,
+                      hintStyle: TextStyle(
+                        color: HackerColors.text.withOpacity(0.5),
+                        fontFamily: 'Courier',
+                        fontSize: 12.adaptiveFont,
+                      ),
+                      contentPadding: ScreenUtils.responsivePadding(
+                        horizontal: 16, 
+                        vertical: 14
+                      ),
+                      border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      prefixIcon: Padding(
+                        padding: ScreenUtils.responsivePadding(horizontal: 12),
+                        child: Text(
+                          ">",
+                          style: TextStyle(
+                            color: HackerColors.primary,
+                            fontFamily: 'Courier',
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16.adaptiveFont,
+                          ),
+                        ),
+                      ),
+                      prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
+                    ),
+                    cursorColor: HackerColors.primary,
+                    textInputAction: TextInputAction.search,
+                    onSubmitted: (_) => onSearch(),
+                  ),
+                ),
+                Container(
+                  height: 48.h,
+                  width: 1,
+                  color: HackerColors.accent.withOpacity(0.5),
+                  margin: ScreenUtils.responsivePadding(vertical: 4),
+                ),
+                InkWell(
+                  onTap: onSearch,
+                  child: Container(
+                    padding: ScreenUtils.responsivePadding(horizontal: isMobile ? 12 : 16),
+                    height: 56.h,
+                    decoration: const BoxDecoration(
+                      color: HackerColors.surface,
+                    ),
+                    child: Center(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          "HACK",
+                          style: TextStyle(
+                            color: HackerColors.primary,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Courier',
+                            fontSize: 14.adaptiveFont,
+                          ),
                         ),
                       ),
                     ),
-                    prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
-                  ),
-                  cursorColor: HackerColors.primary,
-                  textInputAction: TextInputAction.search,
-                  onSubmitted: (_) => onSearch(),
-                ),
-              ),
-              Container(
-                height: 48,
-                width: 1,
-                color: HackerColors.accent.withOpacity(0.5),
-                margin: const EdgeInsets.symmetric(vertical: 4),
-              ),
-              InkWell(
-                onTap: onSearch,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  height: 56,
-                  decoration: const BoxDecoration(
-                    color: HackerColors.surface,
-                  ),
-                  child: const Center(
-                    child: Text(
-                      "HACK",
-                      style: TextStyle(
-                        color: HackerColors.primary,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Courier',
-                      ),
-                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),

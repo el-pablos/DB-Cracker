@@ -3,13 +3,17 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../api/api_factory.dart';
+import '../api/multi_api_factory.dart';
+import '../api/api_services_integration.dart';
 import '../models/mahasiswa.dart';
 import '../widgets/hacker_search_bar.dart';
 import '../widgets/hacker_result_item.dart';
 import '../widgets/hacker_loading_indicator.dart';
 import '../widgets/console_text.dart';
 import '../widgets/terminal_window.dart';
+import '../widgets/flexible_text.dart';
 import '../utils/constants.dart';
+import '../utils/screen_utils.dart';
 import 'detail_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -29,6 +33,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   List<String> _consoleMessages = [];
   final Random _random = Random();
   Timer? _consoleTimer;
+  
+  // Tambahkan instance MultiApiFactory
+  late MultiApiFactory _multiApiFactory;
+  
+  // Tambahkan flag untuk menunjukkan pencarian multi-sumber
+  bool _useMultiSource = true;
 
   @override
   void initState() {
@@ -38,7 +48,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       duration: const Duration(milliseconds: 2000),
     );
     _animationController.repeat(reverse: true);
-
+    
+    // Inisialisasi MultiApiFactory
+    _multiApiFactory = MultiApiFactory();
+    
     // Tampilkan intro
     _runIntroSequence();
   }
@@ -53,8 +66,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     _addConsoleMessageWithDelay("MELEWATI PROTOKOL KEAMANAN...", 1500);
     _addConsoleMessageWithDelay("MEMBUAT KONEKSI DATABASE...", 2300);
     _addConsoleMessageWithDelay("MEMINDAI CELAH FIREWALL...", 3000);
-    _addConsoleMessageWithDelay("AKSES DIBERIKAN KE DATABASE PENDIDIKAN", 4000);
-    _addConsoleMessageWithDelay("DB CRACKER v2.5 SIAP - Author: Tamaengs", 4500);
+    _addConsoleMessageWithDelay("MENGAKTIFKAN SUMBER DATA TAMBAHAN...", 3500);
+    _addConsoleMessageWithDelay("AKSES DIBERIKAN KE MULTIPLE DATABASE", 4000);
+    _addConsoleMessageWithDelay("DB CRACKER v3.0 SIAP - Author: Tamaengs", 4500);
     
     // Sembunyikan intro setelah selesai
     Timer(const Duration(milliseconds: 5000), () {
@@ -97,7 +111,13 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     _addConsoleMessageWithDelay("MENYUNTIKKAN QUERY SQL...", 1200);
     _addConsoleMessageWithDelay("MENCOBA MEMECAHKAN ENKRIPSI...", 1800);
     _addConsoleMessageWithDelay("MENEMBUS FIREWALL...", 2400);
-    _addConsoleMessageWithDelay("MENGAKSES DATABASE MAHASISWA...", 3000);
+    
+    if (_useMultiSource) {
+      _addConsoleMessageWithDelay("MENGAKSES BERBAGAI DATABASE PENDIDIKAN...", 3000);
+      _addConsoleMessageWithDelay("MENGGABUNGKAN HASIL DARI MULTIPLE SUMBER...", 3600);
+    } else {
+      _addConsoleMessageWithDelay("MENGAKSES DATABASE MAHASISWA...", 3000);
+    }
     
     _actuallyPerformSearch();
   }
@@ -115,17 +135,22 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     }
 
     try {
-      // Gunakan ApiFactory sebagai pengganti PddiktiApi langsung
-      final api = Provider.of<ApiFactory>(context, listen: false);
-
       // Tambahan indikator loading
-      _addConsoleMessageWithDelay("MENGAKSES SERVER PDDIKTI...", 1000);
+      _addConsoleMessageWithDelay("MENGAKSES SERVER DATABASE...", 1000);
       _addConsoleMessageWithDelay("MENCOBA KONEKSI AMAN...", 2000);
 
       // Cari data dengan error handling
       List<Mahasiswa> results = [];
       try {
-        results = await api.searchMahasiswa(query);
+        if (_useMultiSource) {
+          // Gunakan multi-source pencarian
+          results = await _multiApiFactory.searchAllSources(query);
+          _addConsoleMessageWithDelay("MENGGABUNGKAN DATA DARI MULTIPLE SUMBER...", 2500);
+        } else {
+          // Gunakan hanya API PDDIKTI
+          final api = Provider.of<ApiFactory>(context, listen: false);
+          results = await api.searchMahasiswa(query);
+        }
       } catch (e) {
         print('Error dalam pencarian: $e');
         String errorMsg = e.toString();
@@ -183,11 +208,17 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
+    // Initialize ScreenUtils for responsive design
+    ScreenUtils.init(context);
+    
+    // Adaptasi berdasarkan ukuran layar
+    final bool isMobile = ScreenUtils.isMobileScreen();
+    
     if (_showIntro) {
       return TerminalWindow(
         title: "BOOT SEQUENCE DB CRACKER",
         child: ListView.builder(
-          padding: const EdgeInsets.all(16.0),
+          padding: ScreenUtils.responsivePadding(all: 16),
           itemCount: _consoleMessages.length,
           itemBuilder: (context, index) {
             return ConsoleText(text: _consoleMessages[index]);
@@ -205,9 +236,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               animation: _animationController,
               builder: (context, child) {
                 return Container(
-                  width: 12,
-                  height: 12,
-                  margin: const EdgeInsets.only(right: 8),
+                  width: 12.w,
+                  height: 12.h,
+                  margin: EdgeInsets.only(right: 8.w),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: _animationController.value > 0.5 
@@ -217,218 +248,268 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 );
               },
             ),
-            Text(
-              AppStrings.homeTitle,
-              style: const TextStyle(
+            FlexibleText(
+              "DB CRACKER v3.0",
+              style: TextStyle(
                 fontFamily: 'Courier',
                 fontWeight: FontWeight.bold,
                 color: HackerColors.primary,
+                fontSize: isMobile ? 14.adaptiveFont : 16.adaptiveFont,
               ),
             ),
           ],
         ),
         backgroundColor: HackerColors.surface,
         actions: [
+          // Toggle switch untuk mengaktifkan/menonaktifkan multi-source
+          Switch(
+            value: _useMultiSource,
+            activeColor: HackerColors.primary,
+            inactiveThumbColor: HackerColors.accent,
+            onChanged: (bool value) {
+              setState(() {
+                _useMultiSource = value;
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: FlexibleText(
+                    value 
+                      ? "MODE MULTI-SOURCE DIAKTIFKAN" 
+                      : "MODE HANYA PDDIKTI DIAKTIFKAN",
+                    style: TextStyle(
+                      fontFamily: 'Courier',
+                      fontSize: 14.adaptiveFont,
+                    ),
+                  ),
+                  backgroundColor: HackerColors.surface,
+                  duration: Duration(seconds: 2),
+                ),
+              );
+            },
+          ),
           Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: Text(
-              "v2.5",
+            padding: EdgeInsets.only(right: isMobile ? 8.w : 16.w),
+            child: FlexibleText(
+              _useMultiSource ? "MULTI-DB" : "PDDIKTI",
               style: TextStyle(
                 color: HackerColors.accent,
                 fontFamily: 'Courier',
+                fontSize: 12.adaptiveFont,
               ),
             ),
           ),
         ],
       ),
-      body: Container(
-        color: HackerColors.background,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Container(
-              color: HackerColors.surface.withOpacity(0.7),
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                'KONEKSI AMAN TERSEDIA',
-                style: TextStyle(
-                  color: HackerColors.highlight,
-                  fontFamily: 'Courier',
-                  fontSize: 12,
+      body: SafeArea(
+        child: Container(
+          color: HackerColors.background,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Container(
+                color: HackerColors.surface.withOpacity(0.7),
+                padding: ScreenUtils.responsivePadding(all: 8),
+                child: FlexibleText(
+                  'KONEKSI AMAN TERSEDIA',
+                  style: TextStyle(
+                    color: HackerColors.highlight,
+                    fontFamily: 'Courier',
+                    fontSize: 12.adaptiveFont,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-                textAlign: TextAlign.center,
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: HackerSearchBar(
-                controller: _searchController,
-                hintText: AppStrings.searchHint,
-                onSearch: _simulateHacking,
+              Padding(
+                padding: ScreenUtils.responsivePadding(all: isMobile ? 12 : 16),
+                child: HackerSearchBar(
+                  controller: _searchController,
+                  hintText: AppStrings.searchHint,
+                  onSearch: _simulateHacking,
+                ),
               ),
-            ),
-            Expanded(
-              child: _isLoading
-                ? TerminalWindow(
-                    title: "HACKING SEDANG BERJALAN",
-                    child: ListView.builder(
-                      padding: const EdgeInsets.all(16.0),
-                      itemCount: _consoleMessages.length,
-                      itemBuilder: (context, index) {
-                        return ConsoleText(text: _consoleMessages[index]);
-                      },
-                    ),
-                  )
-                : _errorMessage != null
+              Expanded(
+                child: _isLoading
                   ? TerminalWindow(
-                      title: "PERINGATAN SISTEM",
-                      child: Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(
-                                Icons.warning_amber_rounded,
-                                color: HackerColors.error,
-                                size: 48,
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                _errorMessage!,
-                                style: const TextStyle(
+                      title: "HACKING SEDANG BERJALAN",
+                      child: ListView.builder(
+                        padding: ScreenUtils.responsivePadding(all: 16),
+                        itemCount: _consoleMessages.length,
+                        itemBuilder: (context, index) {
+                          return ConsoleText(text: _consoleMessages[index]);
+                        },
+                      ),
+                    )
+                  : _errorMessage != null
+                    ? TerminalWindow(
+                        title: "PERINGATAN SISTEM",
+                        child: Center(
+                          child: Padding(
+                            padding: ScreenUtils.responsivePadding(all: 16),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.warning_amber_rounded,
                                   color: HackerColors.error,
-                                  fontSize: 16,
+                                  size: 48.iconSize,
+                                ),
+                                SizedBox(height: 16.h),
+                                FlexibleText(
+                                  _errorMessage!,
+                                  style: TextStyle(
+                                    color: HackerColors.error,
+                                    fontSize: 16.adaptiveFont,
+                                    fontFamily: 'Courier',
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                                SizedBox(height: 24.h),
+                                ElevatedButton(
+                                  onPressed: _simulateHacking,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: HackerColors.surface,
+                                    foregroundColor: HackerColors.primary,
+                                    padding: ScreenUtils.responsivePadding(
+                                      horizontal: 16, 
+                                      vertical: 8
+                                    ),
+                                    side: BorderSide(color: HackerColors.primary),
+                                  ),
+                                  child: FlexibleText(
+                                    'COBA LAGI',
+                                    style: TextStyle(
+                                      fontSize: 14.adaptiveFont,
+                                      fontFamily: 'Courier',
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      )
+                    : _searchResults.isEmpty
+                      ? TerminalWindow(
+                          title: "MENUNGGU INPUT",
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.search,
+                                color: HackerColors.accent.withOpacity(0.5),
+                                size: 64.iconSize,
+                              ),
+                              SizedBox(height: 16.h),
+                              FlexibleText(
+                                AppStrings.emptySearchPrompt,
+                                style: TextStyle(
+                                  fontSize: 16.adaptiveFont,
+                                  color: HackerColors.text,
+                                  fontFamily: 'Courier',
+                                ),
+                                textAlign: TextAlign.center,
+                                maxLines: 2,
+                              ),
+                              SizedBox(height: 8.h),
+                              FlexibleText(
+                                "SIAP UNTUK MEMULAI PERETASAN",
+                                style: TextStyle(
+                                  fontSize: 12.adaptiveFont,
+                                  color: HackerColors.accent,
                                   fontFamily: 'Courier',
                                 ),
                                 textAlign: TextAlign.center,
                               ),
-                              const SizedBox(height: 24),
-                              ElevatedButton(
-                                onPressed: _simulateHacking,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: HackerColors.surface,
-                                  foregroundColor: HackerColors.primary,
-                                  side: const BorderSide(color: HackerColors.primary),
+                            ],
+                          ),
+                        )
+                      : TerminalWindow(
+                          title: "REKAMAN TEREKSTRAK",
+                          child: Column(
+                            children: [
+                              Padding(
+                                padding: ScreenUtils.responsivePadding(all: 8),
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.person_search, 
+                                        color: HackerColors.primary, 
+                                        size: 16.iconSize),
+                                    SizedBox(width: 8.w),
+                                    Expanded(
+                                      child: FlexibleText(
+                                        'DITEMUKAN ${_searchResults.length} SUBJEK YANG COCOK',
+                                        style: TextStyle(
+                                          color: HackerColors.primary,
+                                          fontFamily: 'Courier',
+                                          fontSize: 14.adaptiveFont,
+                                        ),
+                                        maxLines: 1,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                child: const Text('COBA LAGI'),
+                              ),
+                              Expanded(
+                                child: ListView.builder(
+                                  itemCount: _searchResults.length,
+                                  itemBuilder: (context, index) {
+                                    final mahasiswa = _searchResults[index];
+                                    return HackerResultItem(
+                                      mahasiswa: mahasiswa,
+                                      onTap: () => _viewMahasiswaDetail(context, mahasiswa),
+                                    );
+                                  },
+                                ),
                               ),
                             ],
                           ),
                         ),
-                      ),
-                    )
-                  : _searchResults.isEmpty
-                    ? TerminalWindow(
-                        title: "MENUNGGU INPUT",
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.search,
-                              color: HackerColors.accent.withOpacity(0.5),
-                              size: 64,
-                            ),
-                            const SizedBox(height: 16),
-                            const Text(
-                              AppStrings.emptySearchPrompt,
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: HackerColors.text,
-                                fontFamily: 'Courier',
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                            const SizedBox(height: 8),
-                            const Text(
-                              "SIAP UNTUK MEMULAI PERETASAN",
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: HackerColors.accent,
-                                fontFamily: 'Courier',
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
-                        ),
-                      )
-                    : TerminalWindow(
-                        title: "REKAMAN TEREKSTRAK",
-                        child: Column(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Row(
-                                children: [
-                                  const Icon(Icons.person_search, color: HackerColors.primary, size: 16),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    'DITEMUKAN ${_searchResults.length} SUBJEK YANG COCOK',
-                                    style: const TextStyle(
-                                      color: HackerColors.primary,
-                                      fontFamily: 'Courier',
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Expanded(
-                              child: ListView.builder(
-                                itemCount: _searchResults.length,
-                                itemBuilder: (context, index) {
-                                  final mahasiswa = _searchResults[index];
-                                  return HackerResultItem(
-                                    mahasiswa: mahasiswa,
-                                    onTap: () => _viewMahasiswaDetail(context, mahasiswa),
-                                  );
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-            ),
-            Container(
-              color: HackerColors.surface,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: _random.nextBool() ? HackerColors.primary : HackerColors.accent,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        DateTime.now().toString().substring(0, 19),
-                        style: const TextStyle(
-                          color: HackerColors.text,
-                          fontSize: 10,
-                          fontFamily: 'Courier',
-                        ),
-                      ),
-                    ],
-                  ),
-                  const Text(
-                    'BY: TAMAENGS',
-                    style: TextStyle(
-                      color: HackerColors.text,
-                      fontSize: 10,
-                      fontFamily: 'Courier',
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
               ),
-            ),
-          ],
+              Container(
+                color: HackerColors.surface,
+                padding: ScreenUtils.responsivePadding(
+                  horizontal: 16, 
+                  vertical: 8
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 8.w,
+                          height: 8.h,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: _random.nextBool() ? HackerColors.primary : HackerColors.accent,
+                          ),
+                        ),
+                        SizedBox(width: 8.w),
+                        FlexibleText(
+                          DateTime.now().toString().substring(0, 19),
+                          style: TextStyle(
+                            color: HackerColors.text,
+                            fontSize: 10.adaptiveFont,
+                            fontFamily: 'Courier',
+                          ),
+                          maxLines: 1,
+                        ),
+                      ],
+                    ),
+                    FlexibleText(
+                      'BY: TAMAENGS',
+                      style: TextStyle(
+                        color: HackerColors.text,
+                        fontSize: 10.adaptiveFont,
+                        fontFamily: 'Courier',
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'screens/home_screen.dart';
 import 'api/api_factory.dart';
 import 'utils/constants.dart';
+import 'utils/screen_utils.dart';
 
 void main() {
   // Enable Flutter Web error logging in console
@@ -19,10 +20,15 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Inisialisasi ScreenUtils secara default dengan context minimal
+    // Ini akan diupdate dengan context yang lebih baik nanti dalam widget tree
+    ScreenUtils.init(context);
+    
     return Provider<ApiFactory>(
       create: (_) => ApiFactory(),
       child: MaterialApp(
         title: 'DB Cracker - Tamaengs',
+        debugShowCheckedModeBanner: false,
         theme: ThemeData(
           primaryColor: HackerColors.primary,
           scaffoldBackgroundColor: HackerColors.background,
@@ -80,8 +86,13 @@ class MyApp extends StatelessWidget {
           visualDensity: VisualDensity.adaptivePlatformDensity,
           useMaterial3: true,
         ),
-        home: const HomeScreen(),
-        debugShowCheckedModeBanner: false,
+        home: Builder(
+          builder: (context) {
+            // Re-inisialisasi ScreenUtils dengan context yang lebih baik
+            ScreenUtils.init(context);
+            return const HomeScreen();
+          },
+        ),
       ),
     );
   }
