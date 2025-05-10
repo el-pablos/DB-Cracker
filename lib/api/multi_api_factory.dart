@@ -1,4 +1,3 @@
-// lib/api/multi_api_factory.dart
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
@@ -178,7 +177,7 @@ class MultiApiFactory {
                 namaProdi: item['program_studi'] ?? '',
               );
             }
-return Mahasiswa(
+            return Mahasiswa(
               id: '',
               nama: '',
               nim: '',
@@ -335,6 +334,144 @@ return Mahasiswa(
     } catch (e) {
       print('Error mencari detail dari Kemdikbud: $e');
       return null;
+    }
+  }
+  
+  /// Mendapatkan informasi Perguruan Tinggi
+  Future<PerguruanTinggiDetail?> getDetailPT(String ptId) async {
+    try {
+      // Gunakan API PDDIKTI untuk mendapatkan detail PT
+      final detail = await _pddiktiApi.getDetailPt(ptId);
+      return detail;
+    } catch (e) {
+      print('Error mendapatkan detail PT: $e');
+      
+      // Buat data dummy jika error
+      return PerguruanTinggiDetail(
+        kelompok: '-',
+        pembina: '-',
+        idSp: ptId,
+        kodePt: '-',
+        email: '-',
+        noTel: '-',
+        noFax: '-',
+        website: '-',
+        alamat: 'Data tidak tersedia',
+        namaPt: 'Universitas tidak tersedia',
+        nmSingkat: '-',
+        kodePos: '-',
+        provinsiPt: '-',
+        kabKotaPt: '-',
+        kecamatanPt: '-',
+        lintangPt: '-',
+        bujurPt: '-',
+        tglBerdiriPt: '-',
+        tglSkPendirianSp: '-',
+        skPendirianSp: '-',
+        statusPt: '-',
+        akreditasiPt: '-',
+        statusAkreditasi: '-',
+      );
+    }
+  }
+  
+  /// Mendapatkan informasi Program Studi
+  Future<ProdiDetail?> getDetailProdi(String prodiId) async {
+    try {
+      // Gunakan API PDDIKTI untuk mendapatkan detail Prodi
+      final detail = await _pddiktiApi.getDetailProdi(prodiId);
+      return detail;
+    } catch (e) {
+      print('Error mendapatkan detail Prodi: $e');
+      
+      // Buat data dummy jika error
+      return ProdiDetail(
+        idSp: '-',
+        idSms: prodiId,
+        namaPt: 'Data tidak tersedia',
+        kodePt: '-',
+        namaProdi: 'Program Studi tidak tersedia',
+        kodeProdi: '-',
+        kelBidang: '-',
+        jenjangDidik: '-',
+        tglBerdiri: '-',
+        tglSkSelenggara: '-',
+        skSelenggara: '-',
+        noTel: '-',
+        noFax: '-',
+        website: '-',
+        email: '-',
+        alamat: '-',
+        provinsi: '-',
+        kabKota: '-',
+        kecamatan: '-',
+        lintang: '-',
+        bujur: '-',
+        status: '-',
+        akreditasi: '-',
+        akreditasiInternasional: '-',
+        statusAkreditasi: '-',
+        deskripsiSingkat: '-',
+        visi: '-',
+        misi: '-',
+        kompetensi: '-',
+        capaianBelajar: '-',
+        rataMasaStudi: '-',
+      );
+    }
+  }
+  
+  /// Mencari data Program Studi
+  Future<List<Prodi>> searchProdi(String keyword) async {
+    try {
+      // Gunakan API PDDIKTI untuk mencari Prodi
+      return await _pddiktiApi.searchProdi(keyword);
+    } catch (e) {
+      print('Error mencari Prodi: $e');
+      return [];
+    }
+  }
+  
+  /// Mencari data Perguruan Tinggi
+  Future<List<PerguruanTinggi>> searchPT(String keyword) async {
+    try {
+      // Gunakan API PDDIKTI untuk mencari PT
+      return await _pddiktiApi.searchPt(keyword);
+    } catch (e) {
+      print('Error mencari PT: $e');
+      return [];
+    }
+  }
+  
+  /// Mendapatkan daftar Prodi di PT tertentu
+  Future<List<ProdiPt>> getProdiInPT(String ptId, int tahun) async {
+    try {
+      // Gunakan API PDDIKTI untuk mendapatkan daftar Prodi
+      return await _pddiktiApi.getProdiPt(ptId, tahun);
+    } catch (e) {
+      print('Error mendapatkan daftar Prodi di PT: $e');
+      return [];
+    }
+  }
+  
+  /// Mencari data lokasi prodi
+  Future<Map<String, String>> getProdiLocation(String prodiId) async {
+    try {
+      // Gunakan detail Prodi untuk mendapatkan lokasinya
+      final prodiDetail = await getDetailProdi(prodiId);
+      if (prodiDetail != null) {
+        return {
+          'latitude': prodiDetail.lintang,
+          'longitude': prodiDetail.bujur,
+          'address': prodiDetail.alamat,
+          'city': prodiDetail.kabKota,
+          'province': prodiDetail.provinsi,
+        };
+      }
+      return {};
+    } catch (e) {
+      print('Error mendapatkan lokasi Prodi: $e');
+      return {};
     }
   }
 }
