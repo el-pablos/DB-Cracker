@@ -68,6 +68,8 @@ class ScreenUtils {
   static double getAdaptiveFontSize(double size) {
     return size.clamp(8.0, MAX_FONT_SIZE);
   }
+
+  static void init(BuildContext context) {}
 }
 
 /// Extension untuk memudahkan penggunaan

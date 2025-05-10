@@ -223,12 +223,18 @@ class _ProdiSearchScreenState extends State<ProdiSearchScreen> with SingleTicker
                 child: _isLoading
                   ? TerminalWindow(
                       title: "PENCARIAN SEDANG BERJALAN",
-                      child: ListView.builder(
-                        padding: const EdgeInsets.all(16.0),
-                        itemCount: _consoleMessages.length,
-                        itemBuilder: (context, index) {
-                          return ConsoleText(text: _consoleMessages[index]);
-                        },
+                      child: Column(
+                        children: [
+                          Expanded(
+                            child: ListView.builder(
+                              padding: const EdgeInsets.all(16.0),
+                              itemCount: _consoleMessages.length,
+                              itemBuilder: (context, index) {
+                                return ConsoleText(text: _consoleMessages[index]);
+                              },
+                            ),
+                          ),
+                        ],
                       ),
                     )
                   : _errorMessage != null

@@ -236,21 +236,27 @@ class _DetailScreenState extends State<DetailScreen> with SingleTickerProviderSt
               child: _isDecrypting
                 ? TerminalWindow(
                     title: "DEKRIPSI DATA",
-                    child: ListView.builder(
-                      padding: const EdgeInsets.all(16),
-                      itemCount: _consoleMessages.length,
-                      itemBuilder: (context, index) {
-                        bool isSuccess = index == _consoleMessages.length - 1 && 
-                                      _consoleMessages[index].contains("SELESAI");
-                        bool isError = index == _consoleMessages.length - 1 && 
-                                     _consoleMessages[index].contains("ERROR");
-                        
-                        return ConsoleText(
-                          text: _consoleMessages[index], 
-                          isSuccess: isSuccess,
-                          isError: isError,
-                        );
-                      },
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: ListView.builder(
+                            padding: const EdgeInsets.all(16),
+                            itemCount: _consoleMessages.length,
+                            itemBuilder: (context, index) {
+                              bool isSuccess = index == _consoleMessages.length - 1 && 
+                                            _consoleMessages[index].contains("SELESAI");
+                              bool isError = index == _consoleMessages.length - 1 && 
+                                           _consoleMessages[index].contains("ERROR");
+                              
+                              return ConsoleText(
+                                text: _consoleMessages[index], 
+                                isSuccess: isSuccess,
+                                isError: isError,
+                              );
+                            },
+                          ),
+                        ),
+                      ],
                     ),
                   )
                 : FutureBuilder<MahasiswaDetail>(
@@ -509,12 +515,9 @@ class _DetailScreenState extends State<DetailScreen> with SingleTickerProviderSt
             height: 24,
           ),
           Expanded(
-            child: SingleChildScrollView(
+            child: ListView(
               physics: const BouncingScrollPhysics(),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: content,
-              ),
+              children: content,
             ),
           ),
         ],
@@ -530,6 +533,7 @@ class _DetailScreenState extends State<DetailScreen> with SingleTickerProviderSt
     final String source = _externalData['source'] ?? 'SUMBER TIDAK DIKETAHUI';
     
     return Container(
+      height: 150, // Tetapkan tinggi yang jelas
       decoration: BoxDecoration(
         color: HackerColors.surface,
         borderRadius: BorderRadius.circular(4),
@@ -567,31 +571,28 @@ class _DetailScreenState extends State<DetailScreen> with SingleTickerProviderSt
             height: 24,
           ),
           Expanded(
-            child: SingleChildScrollView(
+            child: ListView(
               physics: const BouncingScrollPhysics(),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    extract,
-                    style: const TextStyle(
-                      color: HackerColors.text,
-                      fontFamily: 'Courier',
-                      fontSize: 12,
-                    ),
+              children: [
+                Text(
+                  extract,
+                  style: const TextStyle(
+                    color: HackerColors.text,
+                    fontFamily: 'Courier',
+                    fontSize: 12,
                   ),
-                  const SizedBox(height: 12),
-                  Text(
-                    "SUMBER: $source",
-                    style: const TextStyle(
-                      color: HackerColors.accent,
-                      fontFamily: 'Courier',
-                      fontSize: 10,
-                      fontStyle: FontStyle.italic,
-                    ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  "SUMBER: $source",
+                  style: const TextStyle(
+                    color: HackerColors.accent,
+                    fontFamily: 'Courier',
+                    fontSize: 10,
+                    fontStyle: FontStyle.italic,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ],

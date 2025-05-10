@@ -83,12 +83,13 @@ class TerminalWindow extends StatelessWidget {
               ],
             ),
           ),
+          // Kunci perbaikan: Tambahkan SizedBox dengan Expanded di dalamnya untuk ListView
+          // agar ListView diberi batasan tinggi yang jelas
           Expanded(
             child: scrollable 
-                ? SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    child: child,
-                  )
+                ? Container(
+                    // Pastikan Container memiliki batas tinggi
+                    child: child)
                 : child,
           ),
         ],

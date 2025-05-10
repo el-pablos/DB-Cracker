@@ -206,12 +206,18 @@ class _ProdiDetailScreenState extends State<ProdiDetailScreen> with SingleTicker
                 child: _isLoading
                   ? TerminalWindow(
                       title: "DATA LOADING",
-                      child: ListView.builder(
-                        padding: const EdgeInsets.all(16),
-                        itemCount: _consoleMessages.length,
-                        itemBuilder: (context, index) {
-                          return ConsoleText(text: _consoleMessages[index]);
-                        },
+                      child: Column(
+                        children: [
+                          Expanded(
+                            child: ListView.builder(
+                              padding: const EdgeInsets.all(16),
+                              itemCount: _consoleMessages.length,
+                              itemBuilder: (context, index) {
+                                return ConsoleText(text: _consoleMessages[index]);
+                              },
+                            ),
+                          ),
+                        ],
                       ),
                     )
                   : FutureBuilder<ProdiDetail?>(
@@ -482,12 +488,9 @@ class _ProdiDetailScreenState extends State<ProdiDetailScreen> with SingleTicker
             height: 24,
           ),
           Expanded(
-            child: SingleChildScrollView(
+            child: ListView(
               physics: const BouncingScrollPhysics(),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: content,
-              ),
+              children: content,
             ),
           ),
         ],
@@ -530,76 +533,73 @@ class _ProdiDetailScreenState extends State<ProdiDetailScreen> with SingleTicker
             height: 24,
           ),
           Expanded(
-            child: SingleChildScrollView(
+            child: ListView(
               physics: const BouncingScrollPhysics(),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const FlexibleText(
-                    "VISI:",
-                    style: TextStyle(
-                      color: HackerColors.accent,
+              children: [
+                const FlexibleText(
+                  "VISI:",
+                  style: TextStyle(
+                    color: HackerColors.accent,
+                    fontFamily: 'Courier',
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  maxLines: 1,
+                ),
+                const SizedBox(height: 4),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: HackerColors.background,
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(
+                      color: HackerColors.accent.withOpacity(0.5),
+                    ),
+                  ),
+                  child: FlexibleText(
+                    prodi.visi.isNotEmpty ? prodi.visi : "Data visi tidak tersedia",
+                    style: const TextStyle(
+                      color: HackerColors.text,
                       fontFamily: 'Courier',
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
                     ),
-                    maxLines: 1,
+                    maxLines: 10,
                   ),
-                  const SizedBox(height: 4),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: HackerColors.background,
-                      borderRadius: BorderRadius.circular(4),
-                      border: Border.all(
-                        color: HackerColors.accent.withOpacity(0.5),
-                      ),
-                    ),
-                    child: FlexibleText(
-                      prodi.visi.isNotEmpty ? prodi.visi : "Data visi tidak tersedia",
-                      style: const TextStyle(
-                        color: HackerColors.text,
-                        fontFamily: 'Courier',
-                        fontSize: 12,
-                      ),
-                      maxLines: 10,
+                ),
+                const SizedBox(height: 16),
+                const FlexibleText(
+                  "MISI:",
+                  style: TextStyle(
+                    color: HackerColors.accent,
+                    fontFamily: 'Courier',
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  maxLines: 1,
+                ),
+                const SizedBox(height: 4),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: HackerColors.background,
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(
+                      color: HackerColors.accent.withOpacity(0.5),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  const FlexibleText(
-                    "MISI:",
-                    style: TextStyle(
-                      color: HackerColors.accent,
+                  child: FlexibleText(
+                    prodi.misi.isNotEmpty ? prodi.misi : "Data misi tidak tersedia",
+                    style: const TextStyle(
+                      color: HackerColors.text,
                       fontFamily: 'Courier',
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
                     ),
-                    maxLines: 1,
+                    maxLines: 15,
                   ),
-                  const SizedBox(height: 4),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: HackerColors.background,
-                      borderRadius: BorderRadius.circular(4),
-                      border: Border.all(
-                        color: HackerColors.accent.withOpacity(0.5),
-                      ),
-                    ),
-                    child: FlexibleText(
-                      prodi.misi.isNotEmpty ? prodi.misi : "Data misi tidak tersedia",
-                      style: const TextStyle(
-                        color: HackerColors.text,
-                        fontFamily: 'Courier',
-                        fontSize: 12,
-                      ),
-                      maxLines: 15,
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ],
@@ -642,87 +642,84 @@ class _ProdiDetailScreenState extends State<ProdiDetailScreen> with SingleTicker
             height: 24,
           ),
           Expanded(
-            child: SingleChildScrollView(
+            child: ListView(
               physics: const BouncingScrollPhysics(),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const FlexibleText(
-                    "KOMPETENSI LULUSAN:",
-                    style: TextStyle(
-                      color: HackerColors.accent,
-                      fontFamily: 'Courier',
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    maxLines: 1,
+              children: [
+                const FlexibleText(
+                  "KOMPETENSI LULUSAN:",
+                  style: TextStyle(
+                    color: HackerColors.accent,
+                    fontFamily: 'Courier',
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
                   ),
-                  const SizedBox(height: 4),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: HackerColors.background,
-                      borderRadius: BorderRadius.circular(4),
-                      border: Border.all(
-                        color: HackerColors.accent.withOpacity(0.5),
-                      ),
-                    ),
-                    child: FlexibleText(
-                      prodi.kompetensi.isNotEmpty ? prodi.kompetensi : "Data kompetensi tidak tersedia",
-                      style: const TextStyle(
-                        color: HackerColors.text,
-                        fontFamily: 'Courier',
-                        fontSize: 12,
-                      ),
-                      maxLines: 10,
+                  maxLines: 1,
+                ),
+                const SizedBox(height: 4),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: HackerColors.background,
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(
+                      color: HackerColors.accent.withOpacity(0.5),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  const FlexibleText(
-                    "CAPAIAN PEMBELAJARAN:",
-                    style: TextStyle(
-                      color: HackerColors.accent,
-                      fontFamily: 'Courier',
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    maxLines: 1,
-                  ),
-                  const SizedBox(height: 4),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: HackerColors.background,
-                      borderRadius: BorderRadius.circular(4),
-                      border: Border.all(
-                        color: HackerColors.accent.withOpacity(0.5),
-                      ),
-                    ),
-                    child: FlexibleText(
-                      prodi.capaianBelajar.isNotEmpty ? prodi.capaianBelajar : "Data capaian pembelajaran tidak tersedia",
-                      style: const TextStyle(
-                        color: HackerColors.text,
-                        fontFamily: 'Courier',
-                        fontSize: 12,
-                      ),
-                      maxLines: 15,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  FlexibleText(
-                    "RATA-RATA MASA STUDI: ${prodi.rataMasaStudi.isNotEmpty ? prodi.rataMasaStudi : 'Tidak tersedia'} tahun",
+                  child: FlexibleText(
+                    prodi.kompetensi.isNotEmpty ? prodi.kompetensi : "Data kompetensi tidak tersedia",
                     style: const TextStyle(
-                      color: HackerColors.warning,
+                      color: HackerColors.text,
                       fontFamily: 'Courier',
                       fontSize: 12,
-                      fontWeight: FontWeight.bold,
                     ),
-                    maxLines: 1,
+                    maxLines: 10,
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(height: 16),
+                const FlexibleText(
+                  "CAPAIAN PEMBELAJARAN:",
+                  style: TextStyle(
+                    color: HackerColors.accent,
+                    fontFamily: 'Courier',
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  maxLines: 1,
+                ),
+                const SizedBox(height: 4),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: HackerColors.background,
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(
+                      color: HackerColors.accent.withOpacity(0.5),
+                    ),
+                  ),
+                  child: FlexibleText(
+                    prodi.capaianBelajar.isNotEmpty ? prodi.capaianBelajar : "Data capaian pembelajaran tidak tersedia",
+                    style: const TextStyle(
+                      color: HackerColors.text,
+                      fontFamily: 'Courier',
+                      fontSize: 12,
+                    ),
+                    maxLines: 15,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                FlexibleText(
+                  "RATA-RATA MASA STUDI: ${prodi.rataMasaStudi.isNotEmpty ? prodi.rataMasaStudi : 'Tidak tersedia'} tahun",
+                  style: const TextStyle(
+                    color: HackerColors.warning,
+                    fontFamily: 'Courier',
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  maxLines: 1,
+                ),
+              ],
             ),
           ),
         ],

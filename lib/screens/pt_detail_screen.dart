@@ -1,9 +1,6 @@
-// lib/screens/pt_detail_screen.dart
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../api/api_factory.dart';
 import '../api/multi_api_factory.dart';
 import '../models/pt.dart';
 import '../widgets/hacker_loading_indicator.dart';
@@ -206,12 +203,18 @@ class _PTDetailScreenState extends State<PTDetailScreen> with SingleTickerProvid
                 child: _isLoading
                   ? TerminalWindow(
                       title: "DATA LOADING",
-                      child: ListView.builder(
-                        padding: const EdgeInsets.all(16),
-                        itemCount: _consoleMessages.length,
-                        itemBuilder: (context, index) {
-                          return ConsoleText(text: _consoleMessages[index]);
-                        },
+                      child: Column(
+                        children: [
+                          Expanded(
+                            child: ListView.builder(
+                              padding: const EdgeInsets.all(16),
+                              itemCount: _consoleMessages.length,
+                              itemBuilder: (context, index) {
+                                return ConsoleText(text: _consoleMessages[index]);
+                              },
+                            ),
+                          ),
+                        ],
                       ),
                     )
                   : FutureBuilder<PerguruanTinggiDetail?>(
@@ -460,12 +463,9 @@ class _PTDetailScreenState extends State<PTDetailScreen> with SingleTickerProvid
             height: 24,
           ),
           Expanded(
-            child: SingleChildScrollView(
+            child: ListView(
               physics: const BouncingScrollPhysics(),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: content,
-              ),
+              children: content,
             ),
           ),
         ],
