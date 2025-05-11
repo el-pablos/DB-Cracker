@@ -9,6 +9,9 @@ import '../widgets/hacker_search_bar.dart';
 import '../widgets/hacker_result_item.dart';
 import '../widgets/console_text.dart';
 import '../widgets/terminal_window.dart';
+import '../widgets/filter_bar.dart';
+import '../widgets/filter_status.dart';
+import '../widgets/filter_overlay.dart';
 import '../utils/constants.dart';
 import 'detail_screen.dart';
 
@@ -22,6 +25,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
   List<Mahasiswa> _searchResults = [];
+  List<Mahasiswa> _filteredResults = [];
   bool _isLoading = false;
   String? _errorMessage;
   late AnimationController _animationController;
@@ -35,6 +39,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   
   // Tambahkan flag untuk menunjukkan pencarian multi-sumber
   bool _useMultiSource = true;
+
+  // Tambahkan variabel untuk filter universitas
+  List<String> _universities = [];
+  String? _selectedUniversity;
+  bool _isFiltering = false;
 
   @override
   void initState() {
@@ -98,6 +107,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     setState(() {
       _consoleMessages = [];
       _isLoading = true;
+      // Reset filter saat melakukan pencarian baru
+      _selectedUniversity = null;
+      _universities = [];
+      _filteredResults = [];
     });
 
     final String query = _searchController.text.trim();
@@ -123,6 +136,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     if (query.isEmpty) {
       setState(() {
         _searchResults = [];
+        _filteredResults = [];
         _errorMessage = AppStrings.pleaseEnterSearchTerm;
         _isLoading = false;
       });
@@ -167,6 +181,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       
       setState(() {
         _searchResults = results;
+        _filteredResults = results; // Awalnya, hasil filter sama dengan hasil pencarian
         _isLoading = false;
         
         if (results.isEmpty) {
@@ -178,12 +193,16 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           _addConsoleMessageWithDelay("DATA DITEMUKAN: ${results.length}", 300);
           _addConsoleMessageWithDelay("MENDEKRIPSI DATA...", 600);
           _addConsoleMessageWithDelay("AKSES DIBERIKAN", 900);
+          
+          // Ekstrak daftar universitas dari hasil
+          _extractUniversities(results);
         }
       });
     } catch (e) {
       setState(() {
         _isLoading = false;
         _searchResults = [];
+        _filteredResults = [];
         // Bersihkan pesan error
         String errorMsg = e.toString().replaceAll("Exception: ", "");
         _errorMessage = errorMsg;
@@ -191,6 +210,94 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       _addConsoleMessageWithDelay("KONEKSI TERPUTUS", 300);
       _addConsoleMessageWithDelay("PERINGATAN KEAMANAN: DISCONNECT...", 600);
     }
+  }
+
+  // Ekstrak daftar universitas unik dari hasil pencarian
+  void _extractUniversities(List<Mahasiswa> results) {
+    Set<String> uniqueUniversities = {};
+    
+    for (var mahasiswa in results) {
+      if (mahasiswa.namaPt.isNotEmpty) {
+        uniqueUniversities.add(mahasiswa.namaPt);
+      }
+    }
+    
+    setState(() {
+      _universities = uniqueUniversities.toList()..sort();
+      _isFiltering = false;
+    });
+  }
+
+  // Filter hasil berdasarkan universitas yang dipilih
+  void _filterResults(String? university) {
+    setState(() {
+      _isFiltering = true;
+      _selectedUniversity = university;
+    });
+    
+    // Simulasi proses filtering dengan menampilkan overlay
+    // Ini membuat UX lebih menarik dengan visual hacking
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const FilterOverlay(
+        message: AppStrings.filteringInProgress,
+      ),
+    );
+    
+    // Delay proses untuk efek visual
+    Future.delayed(const Duration(milliseconds: 800), () {
+      setState(() {
+        if (university == null) {
+          _filteredResults = _searchResults;
+        } else {
+          _filteredResults = _searchResults
+              .where((mahasiswa) => mahasiswa.namaPt == university)
+              .toList();
+        }
+        _isFiltering = false;
+      });
+      
+      // Tutup overlay dialog
+      Navigator.of(context).pop();
+    });
+  }
+
+  void _clearFilter() {
+    // Tampilkan overlay untuk simulasi proses
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const FilterOverlay(
+        message: "MEMBERSIHKAN FILTER...",
+      ),
+    );
+    
+    // Delay untuk simulasi proses
+    Future.delayed(const Duration(milliseconds: 600), () {
+      setState(() {
+        _selectedUniversity = null;
+        _filteredResults = _searchResults;
+      });
+      
+      // Tutup overlay dialog
+      Navigator.of(context).pop();
+      
+      // Tampilkan konfirmasi
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            AppStrings.filterCleared,
+            style: TextStyle(
+              fontFamily: 'Courier',
+              fontSize: 14,
+            ),
+          ),
+          backgroundColor: HackerColors.surface,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    });
   }
 
   void _viewMahasiswaDetail(BuildContext context, Mahasiswa mahasiswa) {
@@ -320,6 +427,31 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   onSearch: _simulateHacking,
                 ),
               ),
+              // Tambahkan filter universitas jika ada hasil
+              if (_searchResults.isNotEmpty && _universities.isNotEmpty)
+                Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: FilterBar(
+                        universities: _universities,
+                        selectedUniversity: _selectedUniversity,
+                        onChanged: _filterResults,
+                        onClear: _clearFilter,
+                      ),
+                    ),
+                    // Tampilkan status filter jika filter aktif
+                    if (_selectedUniversity != null)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                        child: FilterStatus(
+                          university: _selectedUniversity!,
+                          count: _filteredResults.length,
+                          onClear: _clearFilter,
+                        ),
+                      ),
+                  ],
+                ),
               Expanded(
                 child: _isLoading
                   ? TerminalWindow(
@@ -417,22 +549,33 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                           ),
                         )
                       : TerminalWindow(
-                          title: "REKAMAN TEREKSTRAK",
+                          title: _selectedUniversity != null 
+                              ? AppStrings.filterResults 
+                              : "REKAMAN TEREKSTRAK",
                           child: Column(
                             children: [
                               Padding(
                                 padding: const EdgeInsets.all(8),
                                 child: Row(
                                   children: [
-                                    const Icon(Icons.person_search, 
-                                        color: HackerColors.primary, 
+                                    Icon(
+                                        _selectedUniversity != null
+                                            ? Icons.filter_list
+                                            : Icons.person_search,
+                                        color: _selectedUniversity != null
+                                            ? HackerColors.warning
+                                            : HackerColors.primary,
                                         size: 16),
                                     const SizedBox(width: 8),
                                     Expanded(
                                       child: Text(
-                                        'DITEMUKAN ${_searchResults.length} SUBJEK YANG COCOK',
-                                        style: const TextStyle(
-                                          color: HackerColors.primary,
+                                        _selectedUniversity != null
+                                          ? 'DITEMUKAN ${_filteredResults.length} DARI ${_searchResults.length} SUBJEK'
+                                          : 'DITEMUKAN ${_searchResults.length} SUBJEK YANG COCOK',
+                                        style: TextStyle(
+                                          color: _selectedUniversity != null
+                                              ? HackerColors.warning
+                                              : HackerColors.primary,
                                           fontFamily: 'Courier',
                                           fontSize: 14,
                                         ),
@@ -442,18 +585,65 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                   ],
                                 ),
                               ),
-                              Expanded(
-                                child: ListView.builder(
-                                  itemCount: _searchResults.length,
-                                  itemBuilder: (context, index) {
-                                    final mahasiswa = _searchResults[index];
-                                    return HackerResultItem(
-                                      mahasiswa: mahasiswa,
-                                      onTap: () => _viewMahasiswaDetail(context, mahasiswa),
-                                    );
-                                  },
+                              if (_filteredResults.isEmpty && _selectedUniversity != null)
+                                Expanded(
+                                  child: Center(
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(
+                                          Icons.filter_alt_off,
+                                          color: HackerColors.warning,
+                                          size: 40,
+                                        ),
+                                        const SizedBox(height: 16),
+                                        const Text(
+                                          AppStrings.noFilterResultsFound,
+                                          style: TextStyle(
+                                            color: HackerColors.warning,
+                                            fontSize: 16,
+                                            fontFamily: 'Courier',
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                        const SizedBox(height: 16),
+                                        ElevatedButton(
+                                          onPressed: _clearFilter,
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: HackerColors.surface,
+                                            foregroundColor: HackerColors.warning,
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 16, 
+                                              vertical: 8
+                                            ),
+                                            side: const BorderSide(color: HackerColors.warning),
+                                          ),
+                                          child: const Text(
+                                            AppStrings.clearFilter,
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              fontFamily: 'Courier',
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                )
+                              else
+                                Expanded(
+                                  child: ListView.builder(
+                                    itemCount: _filteredResults.length,
+                                    itemBuilder: (context, index) {
+                                      final mahasiswa = _filteredResults[index];
+                                      return HackerResultItem(
+                                        mahasiswa: mahasiswa,
+                                        onTap: () => _viewMahasiswaDetail(context, mahasiswa),
+                                        isFiltered: _selectedUniversity != null,
+                                      );
+                                    },
+                                  ),
                                 ),
-                              ),
                             ],
                           ),
                         ),

@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'screens/home_screen.dart';
+import 'screens/detail_screen.dart';
+import 'screens/prodi_detail_screen.dart';
+import 'screens/prodi_search_screen.dart';
+import 'screens/pt_detail_screen.dart';
 import 'api/api_factory.dart';
 import 'utils/constants.dart';
 
@@ -86,6 +90,33 @@ class MyApp extends StatelessWidget {
           useMaterial3: true,
         ),
         home: const HomeScreen(),
+        // Tambahkan routes untuk navigasi
+        routes: {
+          '/prodi/search': (context) => const ProdiSearchScreen(),
+        },
+        // Untuk routes yang membutuhkan parameter
+        onGenerateRoute: (settings) {
+          if (settings.name?.startsWith('/prodi/detail/') ?? false) {
+            final prodiId = settings.name!.split('/').last;
+            final args = settings.arguments as Map<String, dynamic>?;
+            return MaterialPageRoute(
+              builder: (context) => ProdiDetailScreen(
+                prodiId: prodiId,
+                prodiName: args?['prodiName'] ?? 'Program Studi',
+              ),
+            );
+          } else if (settings.name?.startsWith('/pt/detail/') ?? false) {
+            final ptId = settings.name!.split('/').last;
+            final args = settings.arguments as Map<String, dynamic>?;
+            return MaterialPageRoute(
+              builder: (context) => PTDetailScreen(
+                ptId: ptId,
+                ptName: args?['ptName'] ?? 'Institusi',
+              ),
+            );
+          }
+          return null;
+        },
       ),
     );
   }

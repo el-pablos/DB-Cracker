@@ -4,11 +4,11 @@ class AppStrings {
   // App
   static const String appName = 'DB Cracker - Tamaengs';
   static const String appAuthor = 'Tamaengs';
-  
+ 
   // Screens
-  static const String homeTitle = 'DATABASE CRACKER v2.5';
+  static const String homeTitle = 'DATABASE CRACKER v3.0';
   static const String detailTitle = 'PROFIL SUBJEK';
-  
+ 
   // Search
   static const String searchHint = 'masukkan nama target...';
   static const String filterHint = 'filter universitas...';
@@ -21,14 +21,14 @@ class AppStrings {
   static const String pleaseEnterSearchTerm = 'ERROR: TARGET BELUM DITENTUKAN';
   static const String errorSearching = 'KONEKSI TERPUTUS:';
   static const String clearFilter = 'BERSIHKAN FILTER';
-  
+ 
   // Details
   static const String personalInfoTitle = 'DATA PRIBADI';
   static const String academicInfoTitle = 'DATA INSTITUSI';
   static const String errorLoadingData = 'GAGAL EKSTRAK DATA:';
   static const String noDataAvailable = 'DATA AMAN - AKSES DIBATASI';
   static const String retry = 'COBA LAGI';
-  
+ 
   // Student Info Labels
   static const String name = 'Nama Subjek';
   static const String studentId = 'Nomor ID';
@@ -41,7 +41,7 @@ class AppStrings {
   static const String studyProgram = 'Program';
   static const String studyProgramCode = 'Kode Program';
   static const String educationLevel = 'Jenjang';
-  
+ 
   // Hacker theme elements
   static const String initiateSearch = 'MULAI SCAN';
   static const String connecting = 'MENGHUBUNGKAN...';
@@ -50,12 +50,15 @@ class AppStrings {
   static const String bypassingFirewall = 'BYPASS FIREWALL...';
   static const String extractingData = 'EKSTRAK DATA...';
   static const String hackingComplete = 'HACK BERHASIL';
-  
+ 
   // Filter
   static const String filterTitle = 'FILTER UNIVERSITAS';
+  static const String selectUniversity = 'PILIH UNIVERSITAS';
   static const String filteringInProgress = 'MENERAPKAN FILTER...';
   static const String filterCleared = 'FILTER DIBERSIHKAN';
   static const String filterResults = 'HASIL FILTER';
+  static const String reset = 'RESET';
+  static const String noFilterResultsFound = 'TIDAK ADA HASIL UNTUK FILTER INI';
 }
 
 class HackerColors {

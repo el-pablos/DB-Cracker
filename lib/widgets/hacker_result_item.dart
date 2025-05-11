@@ -6,11 +6,13 @@ import 'dart:math';
 class HackerResultItem extends StatefulWidget {
   final Mahasiswa mahasiswa;
   final VoidCallback onTap;
+  final bool isFiltered;
 
   const HackerResultItem({
     Key? key,
     required this.mahasiswa,
     required this.onTap,
+    this.isFiltered = false,
   }) : super(key: key);
 
   @override
@@ -53,6 +55,15 @@ class _HackerResultItemState extends State<HackerResultItem> with SingleTickerPr
     final bool isMobile = size.width < 600;
     final double avatarSize = isMobile ? 36 : 42;
     
+    // Ubah warna berdasarkan status filter
+    final Color primaryColor = widget.isFiltered 
+        ? HackerColors.warning 
+        : HackerColors.primary;
+    
+    final Color accentColor = widget.isFiltered 
+        ? HackerColors.warning.withOpacity(0.8) 
+        : HackerColors.accent;
+    
     return Card(
       margin: EdgeInsets.symmetric(
         vertical: isMobile ? 4 : 6, 
@@ -62,7 +73,7 @@ class _HackerResultItemState extends State<HackerResultItem> with SingleTickerPr
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(4),
         side: BorderSide(
-          color: _isHovering ? HackerColors.primary : HackerColors.accent,
+          color: _isHovering ? primaryColor : accentColor,
           width: 1,
         ),
       ),
@@ -93,7 +104,7 @@ class _HackerResultItemState extends State<HackerResultItem> with SingleTickerPr
                       color: HackerColors.surface,
                       borderRadius: BorderRadius.circular(4),
                       border: Border.all(
-                        color: HackerColors.primary,
+                        color: primaryColor,
                         width: 1,
                       ),
                     ),
@@ -102,8 +113,8 @@ class _HackerResultItemState extends State<HackerResultItem> with SingleTickerPr
                         widget.mahasiswa.nama.isNotEmpty
                             ? widget.mahasiswa.nama[0].toUpperCase()
                             : '?',
-                        style: const TextStyle(
-                          color: HackerColors.primary,
+                        style: TextStyle(
+                          color: primaryColor,
                           fontWeight: FontWeight.bold,
                           fontSize: 18,
                           fontFamily: 'Courier',
@@ -118,19 +129,19 @@ class _HackerResultItemState extends State<HackerResultItem> with SingleTickerPr
                       children: [
                         Row(
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.person,
                               size: 14,
-                              color: HackerColors.primary,
+                              color: primaryColor,
                             ),
                             const SizedBox(width: 6),
                             Expanded(
                               child: Text(
                                 "SUBJECT: ${widget.mahasiswa.nama.toUpperCase()}",
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 14,
-                                  color: HackerColors.primary,
+                                  color: primaryColor,
                                   fontFamily: 'Courier',
                                 ),
                                 maxLines: 1,
@@ -142,17 +153,17 @@ class _HackerResultItemState extends State<HackerResultItem> with SingleTickerPr
                         const SizedBox(height: 4),
                         Row(
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.numbers,
                               size: 12,
-                              color: HackerColors.accent,
+                              color: accentColor,
                             ),
                             const SizedBox(width: 6),
                             Expanded(
                               child: Text(
                                 "ID: ${widget.mahasiswa.nim}",
-                                style: const TextStyle(
-                                  color: HackerColors.accent,
+                                style: TextStyle(
+                                  color: accentColor,
                                   fontSize: 12,
                                   fontFamily: 'Courier',
                                 ),
@@ -171,14 +182,14 @@ class _HackerResultItemState extends State<HackerResultItem> with SingleTickerPr
                       color: HackerColors.background,
                       borderRadius: BorderRadius.circular(2),
                       border: Border.all(
-                        color: HackerColors.accent.withOpacity(0.5),
+                        color: accentColor.withOpacity(0.5),
                         width: 1,
                       ),
                     ),
                     child: Text(
                       _generateHackerCode(),
                       style: TextStyle(
-                        color: HackerColors.accent.withOpacity(0.8),
+                        color: accentColor.withOpacity(0.8),
                         fontSize: 8,
                         fontFamily: 'Courier',
                       ),
@@ -186,8 +197,8 @@ class _HackerResultItemState extends State<HackerResultItem> with SingleTickerPr
                   ),
                 ],
               ),
-              const Divider(
-                color: HackerColors.accent,
+              Divider(
+                color: accentColor,
                 height: 20,
                 thickness: 1,
               ),
@@ -198,12 +209,17 @@ class _HackerResultItemState extends State<HackerResultItem> with SingleTickerPr
                       icon: Icons.school,
                       label: "INSTITUTION",
                       value: widget.mahasiswa.namaPt,
+                      labelColor: accentColor,
+                      valueColor: widget.isFiltered 
+                          ? HackerColors.warning 
+                          : HackerColors.text,
+                      highlight: widget.isFiltered,
                     ),
                   ),
                   const SizedBox(width: 8),
                   Icon(
                     Icons.arrow_forward,
-                    color: _isHovering ? HackerColors.primary : HackerColors.accent,
+                    color: _isHovering ? primaryColor : accentColor,
                     size: 16,
                   ),
                 ],
@@ -213,6 +229,8 @@ class _HackerResultItemState extends State<HackerResultItem> with SingleTickerPr
                 icon: Icons.book,
                 label: "PROGRAM",
                 value: widget.mahasiswa.namaProdi,
+                labelColor: accentColor,
+                valueColor: HackerColors.text,
               ),
               // Tambahkan sumber data jika tersedia
               const SizedBox(height: 4),
@@ -222,7 +240,7 @@ class _HackerResultItemState extends State<HackerResultItem> with SingleTickerPr
                   Text(
                     "SOURCE: " + (widget.mahasiswa.id.contains("=") ? "PDDIKTI" : "MULTI-DB"),
                     style: TextStyle(
-                      color: HackerColors.accent.withOpacity(0.7),
+                      color: accentColor.withOpacity(0.7),
                       fontFamily: 'Courier',
                       fontSize: 8,
                       fontStyle: FontStyle.italic,
@@ -241,6 +259,9 @@ class _HackerResultItemState extends State<HackerResultItem> with SingleTickerPr
     required IconData icon,
     required String label,
     required String value,
+    Color? labelColor,
+    Color? valueColor,
+    bool highlight = false,
   }) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -248,7 +269,7 @@ class _HackerResultItemState extends State<HackerResultItem> with SingleTickerPr
         Icon(
           icon,
           size: 12,
-          color: HackerColors.accent,
+          color: labelColor ?? HackerColors.accent,
         ),
         const SizedBox(width: 8),
         Expanded(
@@ -258,20 +279,32 @@ class _HackerResultItemState extends State<HackerResultItem> with SingleTickerPr
               Text(
                 label,
                 style: TextStyle(
-                  color: HackerColors.text.withOpacity(0.7),
+                  color: (labelColor ?? HackerColors.accent).withOpacity(0.7),
                   fontSize: 10,
                   fontFamily: 'Courier',
                 ),
               ),
-              Text(
-                value,
-                style: const TextStyle(
-                  color: HackerColors.text,
-                  fontSize: 12,
-                  fontFamily: 'Courier',
+              Container(
+                decoration: highlight ? BoxDecoration(
+                  color: HackerColors.warning.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(2),
+                  border: Border.all(
+                    color: HackerColors.warning.withOpacity(0.3),
+                    width: 1,
+                  ),
+                ) : null,
+                padding: highlight ? const EdgeInsets.symmetric(horizontal: 4, vertical: 1) : null,
+                child: Text(
+                  value,
+                  style: TextStyle(
+                    color: valueColor ?? HackerColors.text,
+                    fontSize: 12,
+                    fontFamily: 'Courier',
+                    fontWeight: highlight ? FontWeight.bold : FontWeight.normal,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),
