@@ -9,7 +9,7 @@ import '../widgets/hacker_search_bar.dart';
 import '../widgets/hacker_result_item.dart';
 import '../widgets/console_text.dart';
 import '../widgets/terminal_window.dart';
-import '../widgets/filter_bar.dart';
+import '../widgets/filter_search_bar.dart';
 import '../widgets/filter_status.dart';
 import '../widgets/filter_overlay.dart';
 import '../utils/constants.dart';
@@ -24,6 +24,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
+  final TextEditingController _filterController = TextEditingController();
   List<Mahasiswa> _searchResults = [];
   List<Mahasiswa> _filteredResults = [];
   bool _isLoading = false;
@@ -44,6 +45,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   List<String> _universities = [];
   String? _selectedUniversity;
   bool _isFiltering = false;
+  Timer? _filterDebounce;
 
   @override
   void initState() {
@@ -59,6 +61,33 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     
     // Tampilkan intro
     _runIntroSequence();
+    
+    // Untuk menunda filter saat pengetikan
+    _filterController.addListener(_onFilterChanged);
+  }
+  
+  void _onFilterChanged() {
+    if (_filterDebounce?.isActive ?? false) {
+      _filterDebounce!.cancel();
+    }
+    
+    _filterDebounce = Timer(const Duration(milliseconds: 500), () {
+      if (_filterController.text.isNotEmpty) {
+        _autoFilterResults(_filterController.text);
+      }
+    });
+  }
+  
+  void _autoFilterResults(String query) {
+    // Cari universitas yang sesuai dengan query
+    final matchingUniversities = _universities
+        .where((university) => 
+            university.toLowerCase().contains(query.toLowerCase()))
+        .toList();
+    
+    if (matchingUniversities.isNotEmpty) {
+      _filterResults(matchingUniversities.first);
+    }
   }
 
   void _runIntroSequence() {
@@ -98,8 +127,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   @override
   void dispose() {
     _searchController.dispose();
+    _filterController.dispose();
     _animationController.dispose();
     _consoleTimer?.cancel();
+    _filterDebounce?.cancel();
     super.dispose();
   }
 
@@ -109,6 +140,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       _isLoading = true;
       // Reset filter saat melakukan pencarian baru
       _selectedUniversity = null;
+      _filterController.clear();
       _universities = [];
       _filteredResults = [];
     });
@@ -278,6 +310,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       setState(() {
         _selectedUniversity = null;
         _filteredResults = _searchResults;
+        _filterController.clear();
       });
       
       // Tutup overlay dialog
@@ -349,7 +382,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               },
             ),
             const Text(
-              "DB CRACKER v3.0",
+              AppStrings.homeTitle,
               style: TextStyle(
                 fontFamily: 'Courier',
                 fontWeight: FontWeight.bold,
@@ -433,11 +466,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   children: [
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: FilterBar(
+                      child: FilterSearchBar(
                         universities: _universities,
                         selectedUniversity: _selectedUniversity,
-                        onChanged: _filterResults,
+                        onFilter: _filterResults,
                         onClear: _clearFilter,
+                        controller: _filterController,
                       ),
                     ),
                     // Tampilkan status filter jika filter aktif
