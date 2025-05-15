@@ -64,6 +64,11 @@ class DosenDetail {
   final String statusIkatanKerja;
   final String statusAktivitas;
   
+  // Data institusi tambahan
+  final String homePt;
+  final String homeProdi;
+  final String rasioHomebase;
+  
   // Data portofolio (opsional)
   final List<DosenPortofolio> penelitian;
   final List<DosenPortofolio> pengabdian;
@@ -82,6 +87,9 @@ class DosenDetail {
     required this.pendidikanTertinggi,
     required this.statusIkatanKerja,
     required this.statusAktivitas,
+    this.homePt = '',
+    this.homeProdi = '',
+    this.rasioHomebase = '',
     this.penelitian = const [],
     this.pengabdian = const [],
     this.karya = const [],
@@ -92,7 +100,8 @@ class DosenDetail {
 
   factory DosenDetail.fromJson(Map<String, dynamic> json) {
     try {
-      return DosenDetail(
+      // Data dosen dasar
+      final dosenDetail = DosenDetail(
         idSdm: _getStringValue(json, 'id_sdm'),
         namaDosen: _getStringValue(json, 'nama_dosen'),
         namaPt: _getStringValue(json, 'nama_pt'),
@@ -102,9 +111,75 @@ class DosenDetail {
         pendidikanTertinggi: _getStringValue(json, 'pendidikan_tertinggi'),
         statusIkatanKerja: _getStringValue(json, 'status_ikatan_kerja'),
         statusAktivitas: _getStringValue(json, 'status_aktivitas'),
+        homePt: _getStringValue(json, 'home_pt'),
+        homeProdi: _getStringValue(json, 'home_prodi'),
+        rasioHomebase: _getStringValue(json, 'rasio_homebase'),
+        
+        // Data portofolio akan diisi nanti jika ada
+        penelitian: [],
+        pengabdian: [],
+        karya: [],
+        paten: [],
+        riwayatStudi: [],
+        riwayatMengajar: [],
       );
+      
+      return dosenDetail;
     } catch (e) {
       print('Error parsing DosenDetail: $e');
+      print('JSON data: $json');
+      // Return objek dengan field kosong daripada melempar error
+      return DosenDetail(
+        idSdm: '',
+        namaDosen: 'Error: $e',
+        namaPt: '',
+        namaProdi: '',
+        jenisKelamin: '',
+        jabatanAkademik: '',
+        pendidikanTertinggi: '',
+        statusIkatanKerja: '',
+        statusAktivitas: '',
+      );
+    }
+  }
+
+  // Versi dengan parameter-parameter portofolio
+  factory DosenDetail.withPortfolio(
+    Map<String, dynamic> json, {
+    List<DosenPortofolio>? penelitian,
+    List<DosenPortofolio>? pengabdian,
+    List<DosenPortofolio>? karya,
+    List<DosenPortofolio>? paten,
+    List<DosenRiwayatStudi>? riwayatStudi,
+    List<DosenRiwayatMengajar>? riwayatMengajar,
+  }) {
+    try {
+      // Buat objek dasar
+      final dasar = DosenDetail.fromJson(json);
+      
+      // Kembalikan objek dengan data portofolio
+      return DosenDetail(
+        idSdm: dasar.idSdm,
+        namaDosen: dasar.namaDosen,
+        namaPt: dasar.namaPt,
+        namaProdi: dasar.namaProdi,
+        jenisKelamin: dasar.jenisKelamin,
+        jabatanAkademik: dasar.jabatanAkademik,
+        pendidikanTertinggi: dasar.pendidikanTertinggi,
+        statusIkatanKerja: dasar.statusIkatanKerja,
+        statusAktivitas: dasar.statusAktivitas,
+        homePt: dasar.homePt,
+        homeProdi: dasar.homeProdi,
+        rasioHomebase: dasar.rasioHomebase,
+        penelitian: penelitian ?? const [],
+        pengabdian: pengabdian ?? const [],
+        karya: karya ?? const [],
+        paten: paten ?? const [],
+        riwayatStudi: riwayatStudi ?? const [],
+        riwayatMengajar: riwayatMengajar ?? const [],
+      );
+    } catch (e) {
+      print('Error parsing DosenDetail with portfolio: $e');
       print('JSON data: $json');
       // Return objek dengan field kosong daripada melempar error
       return DosenDetail(
@@ -134,12 +209,16 @@ class DosenPortofolio {
   final String jenisKegiatan;
   final String judulKegiatan;
   final String tahunKegiatan;
-
+  final String detailKegiatan;
+  final String statusKegiatan;
+  
   DosenPortofolio({
     required this.idSdm,
     required this.jenisKegiatan,
     required this.judulKegiatan,
     required this.tahunKegiatan,
+    this.detailKegiatan = '',
+    this.statusKegiatan = '',
   });
 
   factory DosenPortofolio.fromJson(Map<String, dynamic> json) {
@@ -149,6 +228,8 @@ class DosenPortofolio {
         jenisKegiatan: _getStringValue(json, 'jenis_kegiatan'),
         judulKegiatan: _getStringValue(json, 'judul_kegiatan'),
         tahunKegiatan: _getStringValue(json, 'tahun_kegiatan'),
+        detailKegiatan: _getStringValue(json, 'detail_kegiatan'),
+        statusKegiatan: _getStringValue(json, 'status_kegiatan'),
       );
     } catch (e) {
       print('Error parsing DosenPortofolio: $e');

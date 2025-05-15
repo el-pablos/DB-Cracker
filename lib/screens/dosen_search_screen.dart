@@ -3,15 +3,17 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import '../api/multi_api_factory.dart';
 import '../models/dosen.dart';
+import '../models/pt.dart';
 import '../widgets/dosen_navigation_button.dart';
 import '../widgets/hacker_search_bar.dart';
 import '../widgets/console_text.dart';
 import '../widgets/terminal_window.dart';
 import '../widgets/flexible_text.dart';
+import '../widgets/filter_overlay.dart';
 import '../utils/constants.dart';
 import '../utils/screen_utils.dart';
 
-/// Screen untuk melakukan pencarian dosen
+/// Screen untuk melakukan pencarian dosen dengan fitur filter kampus
 class DosenSearchScreen extends StatefulWidget {
   const DosenSearchScreen({Key? key}) : super(key: key);
 
@@ -21,13 +23,19 @@ class DosenSearchScreen extends StatefulWidget {
 
 class _DosenSearchScreenState extends State<DosenSearchScreen> with SingleTickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
+  final TextEditingController _filterController = TextEditingController();
   List<Dosen> _searchResults = [];
+  List<Dosen> _filteredResults = [];
   bool _isLoading = false;
   String? _errorMessage;
   late AnimationController _animationController;
   List<String> _consoleMessages = [];
   final Random _random = Random();
   Timer? _consoleTimer;
+  
+  // Filter kampus
+  List<String> _ptList = [];
+  String? _selectedPt;
   
   // Tambahkan instance MultiApiFactory
   late MultiApiFactory _multiApiFactory;
@@ -43,6 +51,20 @@ class _DosenSearchScreenState extends State<DosenSearchScreen> with SingleTicker
     
     // Inisialisasi MultiApiFactory
     _multiApiFactory = MultiApiFactory();
+    
+    // Tampilkan pesan console simulasi hack startup
+    _simulateSystemStartup();
+  }
+  
+  void _simulateSystemStartup() {
+    setState(() {
+      _consoleMessages = [];
+    });
+
+    _addConsoleMessageWithDelay("MEMULAI SISTEM PENCARIAN DOSEN...", 300);
+    _addConsoleMessageWithDelay("MENGAKSES DATABASE PDDIKTI...", 800);
+    _addConsoleMessageWithDelay("BYPASS KEAMANAN AKTIVASI...", 1500);
+    _addConsoleMessageWithDelay("SISTEM SIAP - MASUKKAN PENCARIAN", 2300);
   }
 
   void _addConsoleMessageWithDelay(String message, int delay) {
@@ -58,6 +80,7 @@ class _DosenSearchScreenState extends State<DosenSearchScreen> with SingleTicker
   @override
   void dispose() {
     _searchController.dispose();
+    _filterController.dispose();
     _animationController.dispose();
     _consoleTimer?.cancel();
     super.dispose();
@@ -67,6 +90,11 @@ class _DosenSearchScreenState extends State<DosenSearchScreen> with SingleTicker
     setState(() {
       _consoleMessages = [];
       _isLoading = true;
+      // Reset filter saat melakukan pencarian baru
+      _selectedPt = null;
+      _filterController.clear();
+      _ptList = [];
+      _filteredResults = [];
     });
 
     final String query = _searchController.text.trim();
@@ -124,6 +152,7 @@ class _DosenSearchScreenState extends State<DosenSearchScreen> with SingleTicker
       
       setState(() {
         _searchResults = results;
+        _filteredResults = results; // Awalnya, hasil filter sama dengan hasil pencarian
         _isLoading = false;
         
         if (results.isEmpty) {
@@ -135,6 +164,9 @@ class _DosenSearchScreenState extends State<DosenSearchScreen> with SingleTicker
           _addConsoleMessageWithDelay("DATA DITEMUKAN: ${results.length}", 300);
           _addConsoleMessageWithDelay("MENDEKRIPSI DATA...", 600);
           _addConsoleMessageWithDelay("AKSES DIBERIKAN", 900);
+          
+          // Ekstrak daftar perguruan tinggi dari hasil
+          _extractPTList(results);
         }
       });
     } catch (e) {
@@ -148,6 +180,91 @@ class _DosenSearchScreenState extends State<DosenSearchScreen> with SingleTicker
       _addConsoleMessageWithDelay("KONEKSI TERPUTUS", 300);
       _addConsoleMessageWithDelay("PERINGATAN KEAMANAN: DISCONNECT...", 600);
     }
+  }
+  
+  // Ekstrak daftar perguruan tinggi unik
+  void _extractPTList(List<Dosen> results) {
+    Set<String> uniquePtNames = {};
+    
+    for (var dosen in results) {
+      if (dosen.namaPt.isNotEmpty) {
+        uniquePtNames.add(dosen.namaPt);
+      }
+    }
+    
+    setState(() {
+      _ptList = uniquePtNames.toList()..sort();
+    });
+  }
+  
+  // Filter hasil berdasarkan PT
+  void _filterResults(String? ptName) {
+    setState(() {
+      _selectedPt = ptName;
+    });
+    
+    // Simulasi proses filtering dengan menampilkan overlay
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const FilterOverlay(
+        message: "MEMFILTER DATA DOSEN...",
+      ),
+    );
+    
+    // Delay proses untuk efek visual
+    Future.delayed(const Duration(milliseconds: 800), () {
+      setState(() {
+        if (ptName == null) {
+          _filteredResults = _searchResults;
+        } else {
+          _filteredResults = _searchResults
+              .where((dosen) => dosen.namaPt == ptName)
+              .toList();
+        }
+      });
+      
+      // Tutup overlay dialog
+      Navigator.of(context).pop();
+    });
+  }
+  
+  void _clearFilter() {
+    // Tampilkan overlay untuk simulasi proses
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const FilterOverlay(
+        message: "MEMBERSIHKAN FILTER...",
+      ),
+    );
+    
+    // Delay untuk simulasi proses
+    Future.delayed(const Duration(milliseconds: 600), () {
+      setState(() {
+        _selectedPt = null;
+        _filteredResults = _searchResults;
+        _filterController.clear();
+      });
+      
+      // Tutup overlay dialog
+      Navigator.of(context).pop();
+      
+      // Tampilkan konfirmasi
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            "FILTER DIHAPUS",
+            style: TextStyle(
+              fontFamily: 'Courier',
+              fontSize: 14,
+            ),
+          ),
+          backgroundColor: HackerColors.surface,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    });
   }
 
   @override
@@ -180,7 +297,7 @@ class _DosenSearchScreenState extends State<DosenSearchScreen> with SingleTicker
               },
             ),
             const FlexibleText(
-              "DOSEN DATABASE SCANNER",
+              "DATABASE SCANNER DOSEN",
               style: TextStyle(
                 fontFamily: 'Courier',
                 fontWeight: FontWeight.bold,
@@ -191,6 +308,31 @@ class _DosenSearchScreenState extends State<DosenSearchScreen> with SingleTicker
           ],
         ),
         backgroundColor: HackerColors.surface,
+        actions: [
+          // Tampilkan jumlah hasil jika ada
+          if (_searchResults.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2.0),
+                  decoration: BoxDecoration(
+                    color: HackerColors.background,
+                    borderRadius: BorderRadius.circular(4.0),
+                    border: Border.all(color: HackerColors.primary),
+                  ),
+                  child: Text(
+                    '${_filteredResults.length}/${_searchResults.length}',
+                    style: const TextStyle(
+                      color: HackerColors.primary,
+                      fontFamily: 'Courier',
+                      fontSize: 12.0,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
       body: SafeArea(
         child: Container(
@@ -219,6 +361,11 @@ class _DosenSearchScreenState extends State<DosenSearchScreen> with SingleTicker
                   onSearch: _simulateHacking,
                 ),
               ),
+              
+              // Tampilkan filter kampus jika ada hasil pencarian
+              if (_searchResults.isNotEmpty && _ptList.isNotEmpty)
+                _buildPtFilter(),
+                
               Expanded(
                 child: _isLoading
                   ? TerminalWindow(
@@ -318,6 +465,27 @@ class _DosenSearchScreenState extends State<DosenSearchScreen> with SingleTicker
                                 ),
                                 textAlign: TextAlign.center,
                               ),
+                              
+                              // Console pesan
+                              if (_consoleMessages.isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Container(
+                                    height: 120,
+                                    padding: const EdgeInsets.all(8.0),
+                                    decoration: BoxDecoration(
+                                      color: HackerColors.surface,
+                                      borderRadius: BorderRadius.circular(4.0),
+                                      border: Border.all(color: HackerColors.accent),
+                                    ),
+                                    child: ListView.builder(
+                                      itemCount: _consoleMessages.length,
+                                      itemBuilder: (context, index) {
+                                        return ConsoleText(text: _consoleMessages[index]);
+                                      },
+                                    ),
+                                  ),
+                                ),
                             ],
                           ),
                         )
@@ -329,33 +497,112 @@ class _DosenSearchScreenState extends State<DosenSearchScreen> with SingleTicker
                                 padding: const EdgeInsets.all(8.0),
                                 child: Row(
                                   children: [
-                                    const Icon(Icons.person, 
-                                        color: HackerColors.primary, 
-                                        size: 16.0),
+                                    Container(
+                                      width: 18.0,
+                                      height: 18.0,
+                                      decoration: BoxDecoration(
+                                        color: HackerColors.background,
+                                        borderRadius: BorderRadius.circular(9.0),
+                                        border: Border.all(color: HackerColors.primary),
+                                      ),
+                                      child: Center(
+                                        child: Icon(
+                                          Icons.person, 
+                                          color: HackerColors.primary, 
+                                          size: 12.0,
+                                        ),
+                                      ),
+                                    ),
                                     const SizedBox(width: 8.0),
                                     Expanded(
                                       child: FlexibleText(
-                                        'DITEMUKAN ${_searchResults.length} DOSEN',
-                                        style: const TextStyle(
-                                          color: HackerColors.primary,
+                                        _selectedPt != null
+                                            ? 'FILTER AKTIF: $_selectedPt (${_filteredResults.length})'
+                                            : 'DITEMUKAN ${_searchResults.length} DOSEN',
+                                        style: TextStyle(
+                                          color: _selectedPt != null
+                                              ? HackerColors.warning
+                                              : HackerColors.primary,
                                           fontFamily: 'Courier',
                                           fontSize: 14.0,
+                                          fontWeight: FontWeight.bold,
                                         ),
                                         maxLines: 1,
                                       ),
                                     ),
+                                    
+                                    // Tombol reset filter
+                                    if (_selectedPt != null)
+                                      InkWell(
+                                        onTap: _clearFilter,
+                                        child: Container(
+                                          padding: const EdgeInsets.all(4.0),
+                                          decoration: BoxDecoration(
+                                            color: HackerColors.background,
+                                            borderRadius: BorderRadius.circular(4.0),
+                                            border: Border.all(color: HackerColors.warning),
+                                          ),
+                                          child: const Icon(
+                                            Icons.close,
+                                            color: HackerColors.warning,
+                                            size: 14.0,
+                                          ),
+                                        ),
+                                      ),
                                   ],
                                 ),
                               ),
-                              Expanded(
-                                child: ListView.builder(
-                                  itemCount: _searchResults.length,
-                                  itemBuilder: (context, index) {
-                                    final dosen = _searchResults[index];
-                                    return DosenNavigationButton(dosen: dosen);
-                                  },
+                              
+                              // Tampilkan pesan jika hasil filter kosong
+                              if (_filteredResults.isEmpty && _selectedPt != null)
+                                Expanded(
+                                  child: Center(
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(
+                                          Icons.filter_alt_off,
+                                          color: HackerColors.warning,
+                                          size: 40.0,
+                                        ),
+                                        const SizedBox(height: 16.0),
+                                        const Text(
+                                          "TIDAK ADA HASIL UNTUK FILTER INI",
+                                          style: TextStyle(
+                                            color: HackerColors.warning,
+                                            fontSize: 16.0,
+                                            fontFamily: 'Courier',
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                        const SizedBox(height: 16.0),
+                                        ElevatedButton(
+                                          onPressed: _clearFilter,
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: HackerColors.surface,
+                                            foregroundColor: HackerColors.warning,
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 16.0, 
+                                              vertical: 8.0
+                                            ),
+                                            side: const BorderSide(color: HackerColors.warning),
+                                          ),
+                                          child: const Text(
+                                            "HAPUS FILTER",
+                                            style: TextStyle(
+                                              fontSize: 14.0,
+                                              fontFamily: 'Courier',
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                )
+                              else
+                                Expanded(
+                                  child: _buildDosenList(),
                                 ),
-                              ),
                             ],
                           ),
                         ),
@@ -406,6 +653,318 @@ class _DosenSearchScreenState extends State<DosenSearchScreen> with SingleTicker
             ],
           ),
         ),
+      ),
+    );
+  }
+  
+  // Widget untuk filter PT
+  Widget _buildPtFilter() {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 16.0),
+      padding: const EdgeInsets.all(12.0),
+      decoration: BoxDecoration(
+        color: HackerColors.surface,
+        borderRadius: BorderRadius.circular(4.0),
+        border: Border.all(color: HackerColors.accent),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: const [
+              Icon(
+                Icons.filter_list,
+                color: HackerColors.accent,
+                size: 14.0,
+              ),
+              SizedBox(width: 8.0),
+              Text(
+                "FILTER PERGURUAN TINGGI",
+                style: TextStyle(
+                  color: HackerColors.accent,
+                  fontFamily: 'Courier',
+                  fontSize: 12.0,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8.0),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            decoration: BoxDecoration(
+              color: HackerColors.background,
+              borderRadius: BorderRadius.circular(4.0),
+              border: Border.all(color: HackerColors.accent.withOpacity(0.5)),
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                isExpanded: true,
+                value: _selectedPt,
+                hint: const Text(
+                  "PILIH PERGURUAN TINGGI",
+                  style: TextStyle(
+                    color: HackerColors.text,
+                    fontFamily: 'Courier',
+                    fontSize: 12.0,
+                  ),
+                ),
+                dropdownColor: HackerColors.surface,
+                style: const TextStyle(
+                  color: HackerColors.primary,
+                  fontFamily: 'Courier',
+                  fontSize: 12.0,
+                ),
+                icon: const Icon(
+                  Icons.keyboard_arrow_down,
+                  color: HackerColors.accent,
+                ),
+                onChanged: (String? value) {
+                  _filterResults(value);
+                },
+                items: [
+                  // Item untuk semua PT
+                  const DropdownMenuItem<String>(
+                    value: null,
+                    child: Text(
+                      "SEMUA PERGURUAN TINGGI",
+                      style: TextStyle(
+                        color: HackerColors.text,
+                        fontFamily: 'Courier',
+                        fontSize: 12.0,
+                      ),
+                    ),
+                  ),
+                  
+                  // Divider
+                  const DropdownMenuItem<String>(
+                    enabled: false,
+                    child: Divider(color: HackerColors.accent),
+                  ),
+                  
+                  // Daftar PT
+                  ..._ptList.map<DropdownMenuItem<String>>((String pt) {
+                    return DropdownMenuItem<String>(
+                      value: pt,
+                      child: Text(
+                        pt,
+                        style: const TextStyle(
+                          color: HackerColors.primary,
+                          fontFamily: 'Courier',
+                          fontSize: 12.0,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  // Widget untuk menampilkan daftar dosen dengan efek hacker
+  Widget _buildDosenList() {
+    return ListView.builder(
+      itemCount: _filteredResults.length,
+      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+      itemBuilder: (context, index) {
+        final dosen = _filteredResults[index];
+        
+        // Tambahkan efek visual berdasarkan index
+        final bool isEven = index % 2 == 0;
+        
+        return Container(
+          margin: const EdgeInsets.symmetric(vertical: 4.0),
+          decoration: BoxDecoration(
+            color: HackerColors.surface,
+            borderRadius: BorderRadius.circular(4.0),
+            border: Border.all(
+              color: isEven ? HackerColors.primary : HackerColors.accent,
+              width: 1.0,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: (isEven ? HackerColors.primary : HackerColors.accent).withOpacity(0.1),
+                blurRadius: 4.0,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: InkWell(
+            onTap: () {
+              Navigator.pushNamed(
+                context,
+                '/dosen/detail/${dosen.id}',
+                arguments: {
+                  'dosenName': dosen.nama,
+                },
+              );
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Column(
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Avatar
+                      Container(
+                        width: 40.0,
+                        height: 40.0,
+                        decoration: BoxDecoration(
+                          color: HackerColors.background,
+                          borderRadius: BorderRadius.circular(4.0),
+                          border: Border.all(
+                            color: isEven ? HackerColors.primary : HackerColors.accent,
+                          ),
+                        ),
+                        child: Center(
+                          child: Text(
+                            dosen.nama.isNotEmpty ? dosen.nama[0].toUpperCase() : 'D',
+                            style: TextStyle(
+                              color: isEven ? HackerColors.primary : HackerColors.accent,
+                              fontFamily: 'Courier',
+                              fontSize: 20.0,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12.0),
+                      
+                      // Info
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              dosen.nama,
+                              style: TextStyle(
+                                color: isEven ? HackerColors.primary : HackerColors.accent,
+                                fontFamily: 'Courier',
+                                fontSize: 14.0,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 4.0),
+                            Text(
+                              'NIDN: ${dosen.nidn}',
+                              style: const TextStyle(
+                                color: HackerColors.text,
+                                fontFamily: 'Courier',
+                                fontSize: 12.0,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 2.0),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 2.0),
+                              decoration: BoxDecoration(
+                                color: HackerColors.background,
+                                borderRadius: BorderRadius.circular(2.0),
+                                border: Border.all(
+                                  color: HackerColors.accent.withOpacity(0.5),
+                                ),
+                              ),
+                              child: Text(
+                                dosen.namaPt,
+                                style: TextStyle(
+                                  color: _selectedPt == dosen.namaPt 
+                                      ? HackerColors.warning 
+                                      : HackerColors.text.withOpacity(0.8),
+                                  fontFamily: 'Courier',
+                                  fontSize: 10.0,
+                                  fontWeight: _selectedPt == dosen.namaPt 
+                                      ? FontWeight.bold 
+                                      : FontWeight.normal,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            const SizedBox(height: 2.0),
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.school,
+                                  color: HackerColors.accent.withOpacity(0.6),
+                                  size: 10.0,
+                                ),
+                                const SizedBox(width: 4.0),
+                                Expanded(
+                                  child: Text(
+                                    dosen.namaProdi,
+                                    style: const TextStyle(
+                                      color: HackerColors.text,
+                                      fontFamily: 'Courier',
+                                      fontSize: 10.0,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      
+                      // ID dan akses
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 2.0),
+                            decoration: BoxDecoration(
+                              color: HackerColors.background,
+                              borderRadius: BorderRadius.circular(2.0),
+                              border: Border.all(
+                                color: isEven ? HackerColors.primary.withOpacity(0.5) : HackerColors.accent.withOpacity(0.5),
+                              ),
+                            ),
+                            child: Text(
+                              _generateHexCode(),
+                              style: TextStyle(
+                                color: isEven ? HackerColors.primary.withOpacity(0.7) : HackerColors.accent.withOpacity(0.7),
+                                fontFamily: 'Courier',
+                                fontSize: 8.0,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16.0),
+                          Icon(
+                            Icons.arrow_forward_ios,
+                            color: isEven ? HackerColors.primary : HackerColors.accent,
+                            size: 12.0,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+  
+  // Generate kode hex untuk efek visual
+  String _generateHexCode() {
+    const chars = '0123456789ABCDEF';
+    return String.fromCharCodes(
+      Iterable.generate(
+        8,
+        (_) => chars.codeUnitAt(_random.nextInt(chars.length)),
       ),
     );
   }
