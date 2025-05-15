@@ -6,8 +6,8 @@ import 'screens/prodi_detail_screen.dart';
 import 'screens/prodi_search_screen.dart';
 import 'screens/pt_detail_screen.dart';
 // Import screens dosen akan ditambahkan nanti setelah filenya dibuat
-// import 'screens/dosen_search_screen.dart';
-// import 'screens/dosen_detail_screen.dart';
+import 'screens/dosen_search_screen.dart';
+import 'screens/dosen_detail_screen.dart';
 import 'api/api_factory.dart';
 import 'utils/constants.dart';
 
@@ -53,9 +53,10 @@ class MyApp extends StatelessWidget {
             displaySmall: TextStyle(color: HackerColors.primary),
           ),
           fontFamily: 'Courier',
-          // Perbaiki cardTheme untuk kompatibilitas dengan Flutter versi terbaru
+          // Perbaiki cardTheme dengan implementasi yang kompatibel
+          cardColor: HackerColors.surface,
           cardTheme: const CardTheme(
-            color: HackerColors.surface,
+            elevation: 0,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(8)),
               side: BorderSide(color: HackerColors.accent, width: 1),
@@ -97,8 +98,7 @@ class MyApp extends StatelessWidget {
         // Tambahkan routes untuk navigasi
         routes: {
           '/prodi/search': (context) => const ProdiSearchScreen(),
-          // Dosen search screen akan ditambahkan nanti
-          // '/dosen/search': (context) => const DosenSearchScreen(),
+          '/dosen/search': (context) => const DosenSearchScreen(),
         },
         // Untuk routes yang membutuhkan parameter
         onGenerateRoute: (settings) {
@@ -123,13 +123,10 @@ class MyApp extends StatelessWidget {
           } else if (settings.name?.startsWith('/dosen/detail/') ?? false) {
             final dosenId = settings.name!.split('/').last;
             final args = settings.arguments as Map<String, dynamic>?;
-            // Nanti akan mengarah ke DosenDetailScreen setelah filenya dibuat
             return MaterialPageRoute(
-              builder: (context) => Scaffold(
-                appBar: AppBar(title: Text('Detail Dosen')),
-                body: Center(
-                  child: Text('Detail dosen akan segera tersedia: $dosenId'),
-                ),
+              builder: (context) => DosenDetailScreen(
+                dosenId: dosenId,
+                dosenName: args?['dosenName'] ?? 'Dosen',
               ),
             );
           }

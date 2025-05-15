@@ -89,7 +89,7 @@ class _DetailScreenState extends State<DetailScreen> with SingleTickerProviderSt
 
   void _fetchMahasiswaDetail() {
     // Gunakan MultiApiFactory
-    _mahasiswaFuture = _multiApiFactory.getMahasiswaDetailFromAllSources(widget.mahasiswaId);
+    _mahasiswaFuture = _multiApiFactory.getMahasiswaDetail(widget.mahasiswaId);
     
     _mahasiswaFuture.then((_) {
       setState(() {

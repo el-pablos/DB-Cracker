@@ -260,6 +260,64 @@ class MultiApiFactory {
     }
   }
 
+  /// Implementasi pencarian dosen dari sumber lain
+  Future<List<Dosen>> _searchDosenFromOtherSources(String keyword) async {
+    try {
+      // Dapatkan data dari API pendidikan
+      final rawData = await _apiServices.searchEducationData(keyword);
+      
+      // Konversi ke model Dosen
+      return _apiServices.convertToDosen(rawData);
+    } catch (e) {
+      print('Error mencari dosen dari sumber lain: $e');
+      return [];
+    }
+  }
+
+  /// Mendapatkan detail mahasiswa dari berbagai sumber
+  Future<MahasiswaDetail> getMahasiswaDetail(String mahasiswaId) async {
+    try {
+      // Coba dapatkan dari PDDIKTI terlebih dahulu
+      final detail = await _pddiktiApi.getMahasiswaDetail(mahasiswaId);
+      
+      // Tambahkan data eksternal jika ada
+      try {
+        // Coba untuk memperkaya data dengan sumber-sumber lain
+        final kemdikbudDetail = await _searchKemdikbudDetail(mahasiswaId);
+        if (kemdikbudDetail != null) {
+          // Gunakan data dari Kemdikbud untuk melengkapi
+          // Implementasi penggabungan data bisa dikembangkan
+          return kemdikbudDetail;
+        }
+      } catch (e) {
+        print('Gagal mendapatkan data tambahan: $e');
+        // Tidak perlu melakukan apa-apa, gunakan data yang sudah ada
+      }
+      
+      return detail;
+    } catch (e) {
+      print('Error mendapatkan detail dari PDDIKTI: $e');
+      
+      // Fallback to minimal detail
+      return MahasiswaDetail(
+        id: mahasiswaId,
+        namaPt: 'Data tidak tersedia (error)',
+        kodePt: '-',
+        kodeProdi: '-',
+        prodi: 'Data tidak tersedia',
+        nama: 'Data tidak tersedia (error)',
+        nim: '-',
+        jenisDaftar: '-',
+        idPt: '-',
+        idSms: '-',
+        jenisKelamin: '-',
+        jenjang: '-',
+        statusSaatIni: '-',
+        tahunMasuk: '-',
+      );
+    }
+  }
+
   /// Mendapatkan detail dosen dari berbagai sumber
   Future<DosenDetail> getDosenDetailFromAllSources(String dosenId) async {
     try {
@@ -478,46 +536,6 @@ class MultiApiFactory {
     } catch (e) {
       print('Error mendapatkan lokasi Prodi: $e');
       return {};
-    }
-  }
-
-  /// Mendapatkan detail dosen dari berbagai sumber
-  Future<DosenDetail> getDosenDetailFromAllSources(String dosenId) async {
-    try {
-      // Coba dapatkan dari PDDIKTI terlebih dahulu
-      final detail = await _pddiktiApi.getDosenProfile(dosenId);
-      
-      // Tambahkan data eksternal jika ada
-      try {
-        // Coba untuk memperkaya data dengan sumber-sumber lain jika ada waktu
-        // Ini bisa diimplementasikan di masa mendatang
-      } catch (e) {
-        print('Gagal mendapatkan data tambahan: $e');
-        // Tidak perlu melakukan apa-apa, gunakan data yang sudah ada
-      }
-      
-      return detail;
-    } catch (e) {
-      print('Error mendapatkan detail dari PDDIKTI: $e');
-      
-      // Fallback to minimal detail
-      return DosenDetail(
-        idSdm: dosenId,
-        namaDosen: 'Data tidak tersedia (error)',
-        namaPt: 'Data tidak tersedia',
-        namaProdi: 'Data tidak tersedia',
-        jenisKelamin: '-',
-        jabatanAkademik: '-',
-        pendidikanTertinggi: '-',
-        statusIkatanKerja: '-',
-        statusAktivitas: '-',
-        penelitian: [],
-        pengabdian: [],
-        karya: [],
-        paten: [],
-        riwayatStudi: [],
-        riwayatMengajar: [],
-      );
     }
   }
 }

@@ -83,28 +83,8 @@ class _DosenDetailScreenState extends State<DosenDetailScreen> with SingleTicker
   }
 
   void _fetchDosenDetail() {
-    // Implementasi dummy karena fungsi DosenProfile belum dibuat
-    // Gunakan multiApiFactory.getDosenProfile ketika sudah dibuat
-    _dosenFuture = Future.delayed(Duration(seconds: 2), () {
-      // Mock data untuk saat ini, ganti dengan API call yang sebenarnya
-      return DosenDetail(
-        idSdm: widget.dosenId,
-        namaDosen: widget.dosenName,
-        namaPt: 'Universitas Indonesia',
-        namaProdi: 'Informatika',
-        jenisKelamin: _random.nextBool() ? 'Laki-laki' : 'Perempuan',
-        jabatanAkademik: 'Lektor Kepala',
-        pendidikanTertinggi: 'S3',
-        statusIkatanKerja: 'Tetap',
-        statusAktivitas: 'Aktif',
-        penelitian: [],
-        pengabdian: [],
-        karya: [],
-        paten: [],
-        riwayatStudi: [],
-        riwayatMengajar: [],
-      );
-    });
+    // Gunakan MultiApiFactory untuk mencari data dosen
+    _dosenFuture = _multiApiFactory.getDosenDetailFromAllSources(widget.dosenId);
     
     _dosenFuture.then((_) {
       setState(() {
