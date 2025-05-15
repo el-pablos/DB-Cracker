@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import '../utils/constants.dart';
 import '../utils/screen_utils.dart';
 import 'flexible_text.dart';
+import '../screens/dosen_search_screen.dart';
 
-/// Widget tombol untuk navigasi ke layar pencarian program studi
-class ProdiSearchButton extends StatelessWidget {
+/// Widget tombol untuk navigasi ke layar pencarian dosen
+class DosenSearchButton extends StatelessWidget {
   final bool isCompact;
   
-  const ProdiSearchButton({
+  const DosenSearchButton({
     Key? key,
     this.isCompact = false,
   }) : super(key: key);
@@ -19,8 +20,13 @@ class ProdiSearchButton extends StatelessWidget {
     
     return InkWell(
       onTap: () {
-        // Gunakan named routes untuk navigasi
-        Navigator.pushNamed(context, '/prodi/search');
+        // Navigasi ke pencarian dosen
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => DosenSearchScreen(),
+          ),
+        );
       },
       child: Container(
         margin: EdgeInsets.symmetric(
@@ -47,7 +53,7 @@ class ProdiSearchButton extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Icon(
-              Icons.school,
+              Icons.person_search,
               color: HackerColors.primary,
               size: 20.0,
             ),
@@ -57,7 +63,7 @@ class ProdiSearchButton extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const FlexibleText(
-                    "PENCARIAN PROGRAM STUDI",
+                    "PENCARIAN DOSEN",
                     style: TextStyle(
                       color: HackerColors.primary,
                       fontFamily: 'Courier',
@@ -68,7 +74,7 @@ class ProdiSearchButton extends StatelessWidget {
                   ),
                   if (!isCompact) 
                     const FlexibleText(
-                      "Cari dan akses data seluruh program studi",
+                      "Cari dan akses data dosen seluruh Indonesia",
                       style: TextStyle(
                         color: HackerColors.text,
                         fontFamily: 'Courier',

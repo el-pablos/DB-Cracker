@@ -12,6 +12,7 @@ import '../widgets/terminal_window.dart';
 import '../widgets/filter_search_bar.dart';
 import '../widgets/filter_status.dart';
 import '../widgets/filter_overlay.dart';
+import '../widgets/dosen_search_button.dart'; // Tambahkan import
 import '../utils/constants.dart';
 import 'detail_screen.dart';
 
@@ -569,6 +570,13 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                 textAlign: TextAlign.center,
                                 maxLines: 2,
                               ),
+                              
+                              // Tambahkan tombol-tombol menu disini
+                              const SizedBox(height: 24),
+                              
+                              // Tambahkan tombol pencarian dosen
+                              const DosenSearchButton(),
+                              
                               const SizedBox(height: 8),
                               const Text(
                                 "SIAP UNTUK MEMULAI PERETASAN",

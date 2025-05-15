@@ -474,4 +474,89 @@ class MultiApiFactory {
       return {};
     }
   }
+
+  /// Mendapatkan detail dosen dari berbagai sumber
+  Future<DosenDetail> getDosenDetailFromAllSources(String dosenId) async {
+    try {
+      // Coba dapatkan dari PDDIKTI terlebih dahulu
+      final detail = await _pddiktiApi.getDosenProfile(dosenId);
+      
+      // Tambahkan data eksternal jika ada
+      try {
+        // Coba untuk memperkaya data dengan sumber-sumber lain jika ada waktu
+        // Ini bisa diimplementasikan di masa mendatang
+      } catch (e) {
+        print('Gagal mendapatkan data tambahan: $e');
+        // Tidak perlu melakukan apa-apa, gunakan data yang sudah ada
+      }
+      
+      return detail;
+    } catch (e) {
+      print('Error mendapatkan detail dari PDDIKTI: $e');
+      
+      // Fallback to minimal detail
+      return DosenDetail(
+        idSdm: dosenId,
+        namaDosen: 'Data tidak tersedia (error)',
+        namaPt: 'Data tidak tersedia',
+        namaProdi: 'Data tidak tersedia',
+        jenisKelamin: '-',
+        jabatanAkademik: '-',
+        pendidikanTertinggi: '-',
+        statusIkatanKerja: '-',
+        statusAktivitas: '-',
+        penelitian: [],
+        pengabdian: [],
+        karya: [],
+        paten: [],
+        riwayatStudi: [],
+        riwayatMengajar: [],
+      );
+    }
+  }
+
+  /// Cari data dosen dari berbagai sumber
+  Future<List<Dosen>> searchAllDosen(String keyword) async {
+    try {
+      List<Dosen> results = [];
+      List<Future<List<Dosen>>> futures = [];
+      
+      // Cari dari PDDIKTI
+      futures.add(_pddiktiApi.searchDosen(keyword));
+      
+      // Cari dari API lain
+      futures.add(_searchDosenFromOtherSources(keyword));
+      
+      // Jalankan semua pencarian secara paralel
+      final responses = await Future.wait(futures);
+      
+      // Gabungkan semua hasil
+      for (var response in responses) {
+        results.addAll(response);
+      }
+      
+      // Hapus duplikat berdasarkan kombinasi nama dan nidn
+      final uniqueResults = <String, Dosen>{};
+      for (var dosen in results) {
+        final key = '${dosen.nama}-${dosen.nidn}';
+        uniqueResults[key] = dosen;
+      }
+      
+      return uniqueResults.values.toList();
+    } catch (e) {
+      print('Error mencari dosen: $e');
+      // Jika terjadi error, coba kembalikan apa saja yang berhasil
+      List<Dosen> backupResults = [];
+      
+      try {
+        // Coba dapatkan dari mock service sebagai fallback
+        backupResults = await _pddiktiApi.getMockService().searchDosen(keyword);
+      } catch (e2) {
+        print('Error getting mock data: $e2');
+      }
+      
+      return backupResults;
+    }
+  }
+
 }

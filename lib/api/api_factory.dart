@@ -5,6 +5,7 @@ import '../models/mahasiswa.dart';
 import '../models/dosen.dart';
 import '../models/prodi.dart';
 import '../models/pt.dart';
+import 'dart:math';
 
 /// Factory class to provide the appropriate API implementation
 /// This handles the switching between real API and mock data based on environment
@@ -333,6 +334,57 @@ class ApiFactory {
           return [];
         }
         rethrow;
+      }
+    }
+  }
+  
+  /// Getter untuk mendapatkan MockPddiktiService
+  MockPddiktiService getMockService() {
+    return _mockService;
+  }
+
+  /// Mencari dosen dan mendapatkan detail dosen
+  Future<DosenDetail> getDosenProfile(String dosenId) async {
+    if (_useMockData) {
+      // Gunakan mock service untuk testing
+      try {
+        return await _mockService.getDosenProfile(dosenId);
+      } catch (e) {
+        print('Error dengan mock service: $e');
+        rethrow;
+      }
+    } else {
+      try {
+        print('Meminta profil dosen dari API asli untuk id: $dosenId');
+        return await _realApi.getDosenProfile(dosenId);
+      } catch (e) {
+        print('Error dengan API asli, fallback ke mock: $e');
+        
+        // Fallback ke mock data
+        try {
+          return await _mockService.getDosenProfile(dosenId);
+        } catch (mockError) {
+          print('Error dengan mock service juga: $mockError');
+          
+          // Jika bahkan mock service gagal, buat objek minimal valid
+          return DosenDetail(
+            idSdm: dosenId,
+            namaDosen: 'Data tidak tersedia (error)',
+            namaPt: 'Data tidak tersedia',
+            namaProdi: 'Data tidak tersedia',
+            jenisKelamin: '-',
+            jabatanAkademik: '-',
+            pendidikanTertinggi: '-',
+            statusIkatanKerja: '-',
+            statusAktivitas: '-',
+            penelitian: [],
+            pengabdian: [],
+            karya: [],
+            paten: [],
+            riwayatStudi: [],
+            riwayatMengajar: [],
+          );
+        }
       }
     }
   }
