@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../models/mahasiswa.dart';
 import '../models/dosen.dart';
@@ -27,9 +26,6 @@ class MultiApiFactory {
   
   /// API Services Integration
   final ApiServicesIntegration _apiServices = ApiServicesIntegration();
-  
-  /// Base URL untuk API Pendidikan Indonesia
-  final String _pendidikanApiUrl = 'https://api-sekolah-indonesia.herokuapp.com';
   
   /// Base URL untuk API Data Mahasiswa Kemdikbud
   final String _kemdikbudApiUrl = 'https://api-frontend.kemdikbud.go.id';
@@ -144,54 +140,6 @@ class MultiApiFactory {
       return [];
     } catch (e) {
       print('Error mencari dari Kemdikbud: $e');
-      return [];
-    }
-  }
-  
-  /// Mencari data mahasiswa dari API Pendidikan
-  Future<List<Mahasiswa>> _searchPendidikanApi(String keyword) async {
-    try {
-      final Uri url = Uri.parse('$_pendidikanApiUrl/mahasiswa/search/${_parseString(keyword)}');
-      
-      final response = await http.get(
-        url,
-        headers: _headers,
-      ).timeout(
-        Duration(seconds: 10),
-      );
-      
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> data = jsonDecode(response.body);
-        
-        if (data.containsKey('data') && data['data'] is List) {
-          final List mahasiswaList = data['data'] as List;
-          
-          return mahasiswaList.map((item) {
-            if (item is Map<String, dynamic>) {
-              return Mahasiswa(
-                id: item['id'] ?? '',
-                nama: item['nama'] ?? '',
-                nim: item['nim'] ?? '',
-                namaPt: item['universitas'] ?? '',
-                singkatanPt: item['kode_pt'] ?? '',
-                namaProdi: item['program_studi'] ?? '',
-              );
-            }
-            return Mahasiswa(
-              id: '',
-              nama: '',
-              nim: '',
-              namaPt: '',
-              singkatanPt: '',
-              namaProdi: '',
-            );
-          }).where((m) => m.id.isNotEmpty).toList();
-        }
-      }
-      
-      return [];
-    } catch (e) {
-      print('Error mencari dari API Pendidikan: $e');
       return [];
     }
   }

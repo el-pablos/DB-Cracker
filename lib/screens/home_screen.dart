@@ -45,7 +45,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   // Tambahkan variabel untuk filter universitas
   List<String> _universities = [];
   String? _selectedUniversity;
-  bool _isFiltering = false;
   Timer? _filterDebounce;
 
   @override
@@ -257,14 +256,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     
     setState(() {
       _universities = uniqueUniversities.toList()..sort();
-      _isFiltering = false;
     });
   }
 
   // Filter hasil berdasarkan universitas yang dipilih
   void _filterResults(String? university) {
     setState(() {
-      _isFiltering = true;
       _selectedUniversity = university;
     });
     
@@ -288,7 +285,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               .where((mahasiswa) => mahasiswa.namaPt == university)
               .toList();
         }
-        _isFiltering = false;
       });
       
       // Tutup overlay dialog

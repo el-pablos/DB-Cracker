@@ -3,8 +3,6 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/mahasiswa.dart';
 import '../models/dosen.dart';
-import '../models/prodi.dart';
-import '../models/pt.dart';
 
 /// Class untuk mengintegrasikan berbagai API publik terkait pendidikan dari Indonesia
 class ApiServicesIntegration {

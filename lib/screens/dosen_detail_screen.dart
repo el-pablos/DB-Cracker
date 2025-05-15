@@ -6,8 +6,6 @@ import '../models/dosen.dart';
 import '../widgets/hacker_loading_indicator.dart';
 import '../widgets/console_text.dart';
 import '../widgets/terminal_window.dart';
-import '../widgets/flexible_text.dart';
-import '../widgets/responsive_card.dart';
 import '../utils/constants.dart';
 import '../utils/screen_utils.dart';
 

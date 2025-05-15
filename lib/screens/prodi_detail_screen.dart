@@ -2,8 +2,6 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../api/api_factory.dart';
 import '../api/multi_api_factory.dart';
 import '../models/prodi.dart';
 import '../widgets/hacker_loading_indicator.dart';

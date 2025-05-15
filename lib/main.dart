@@ -38,7 +38,7 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
           primaryColor: HackerColors.primary,
           scaffoldBackgroundColor: HackerColors.background,
-          colorScheme: ColorScheme.dark(
+          colorScheme: const ColorScheme.dark(
             primary: HackerColors.primary,
             secondary: HackerColors.accent,
             surface: HackerColors.surface,
@@ -53,15 +53,13 @@ class MyApp extends StatelessWidget {
             displaySmall: TextStyle(color: HackerColors.primary),
           ),
           fontFamily: 'Courier',
-          // Perbaiki cardTheme dengan implementasi yang kompatibel
+          // Perbaiki cardTheme dengan menghapus properti cardTheme
           cardColor: HackerColors.surface,
-          cardTheme: const CardTheme(
-            elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(8)),
-              side: BorderSide(color: HackerColors.accent, width: 1),
-            ),
-          ),
+          // Ini yang menyebabkan error - menghapus cardTheme
+          // Menggunakan cara yang lebih aman dengan fitur Material 3
+          // (Versi Flutter yang lebih baru memiliki struktur ThemeData yang berbeda)
+          // Dengan menghapus properti cardTheme dan menggunakan Material 3, Card akan mengambil
+          // properti dari colorScheme yang sudah didefinisikan
           appBarTheme: const AppBarTheme(
             backgroundColor: HackerColors.surface,
             foregroundColor: HackerColors.primary,

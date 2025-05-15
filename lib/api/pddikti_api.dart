@@ -1,6 +1,4 @@
 import 'dart:convert';
-import 'dart:math';
-import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:http/http.dart' as http;
 import '../models/mahasiswa.dart';
@@ -33,22 +31,6 @@ class PddiktiApi {
   }
 
   // Ambil list data aman
-  List<dynamic> _safeGetList(dynamic data, String key) {
-    // If data is already a List, return it directly
-    if (data is List) {
-      return data;
-    }
-    
-    // If data is a Map, try to extract the list
-    if (data is Map<String, dynamic>) {
-      final value = data[key];
-      if (value == null) return [];
-      if (value is List) return value;
-    }
-    
-    // Default empty list if nothing works
-    return [];
-  }
 
   // Proses response API
   Future<dynamic> _processApiResponse(http.Response response, String errorMessage) async {
@@ -375,7 +357,7 @@ class PddiktiApi {
           }
           
           // Log the keys available in the item
-          print('Available keys: ${(item as Map<String, dynamic>).keys.toList()}');
+          print('Available keys: ${(item).keys.toList()}');
           
           return MahasiswaDetail.fromJson(item);
         } 
@@ -464,7 +446,7 @@ class PddiktiApi {
           }
           
           // Log the keys available in the item
-          print('Available keys: ${(item as Map<String, dynamic>).keys.toList()}');
+          print('Available keys: ${(item).keys.toList()}');
           
           return DosenDetail(
             idSdm: item['id_sdm'] ?? dosenId,
