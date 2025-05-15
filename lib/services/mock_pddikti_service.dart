@@ -425,6 +425,112 @@ class MockPddiktiService {
     return prodiList;
   }
 
+  // Profil detail dosen
+  Future<DosenDetail> getDosenProfile(String dosenId) async {
+    // Simulasi delay jaringan
+    await Future.delayed(Duration(milliseconds: 800 + _random.nextInt(1200)));
+
+    // Data dosen detail standard
+    final Map<String, dynamic> dosenData = {
+      "id_sdm": dosenId,
+      "nama_dosen": "Dr. Mock Profile ${dosenId.substring(0, min(4, dosenId.length))}",
+      "nama_pt": "Universitas Indonesia",
+      "nama_prodi": "Ilmu Komputer",
+      "jenis_kelamin": _random.nextBool() ? "Laki-laki" : "Perempuan",
+      "jabatan_akademik": ["Asisten Ahli", "Lektor", "Lektor Kepala", "Guru Besar"][_random.nextInt(4)],
+      "pendidikan_tertinggi": ["S2", "S3"][_random.nextInt(2)],
+      "status_ikatan_kerja": ["Tetap", "Tidak Tetap"][_random.nextInt(2)],
+      "status_aktivitas": ["Aktif", "Tugas Belajar", "Cuti"][_random.nextInt(3)],
+    };
+    
+    // Generate beberapa penelitian dan pengabdian
+    List<DosenPortofolio> penelitian = List.generate(
+      _random.nextInt(5) + 1, 
+      (i) => DosenPortofolio(
+        idSdm: dosenId,
+        jenisKegiatan: "Penelitian",
+        judulKegiatan: "Penelitian ke-${i+1} Bidang ${["Komputer", "Informatika", "AI", "Machine Learning", "Cyber Security"][_random.nextInt(5)]}",
+        tahunKegiatan: (2015 + _random.nextInt(9)).toString(),
+      )
+    );
+    
+    List<DosenPortofolio> pengabdian = List.generate(
+      _random.nextInt(3) + 1, 
+      (i) => DosenPortofolio(
+        idSdm: dosenId,
+        jenisKegiatan: "Pengabdian",
+        judulKegiatan: "Pengabdian Masyarakat: ${["Pelatihan", "Pendampingan", "Workshop", "Seminar"][_random.nextInt(4)]} ${["Komputer", "Internet", "Teknologi", "Digital"][_random.nextInt(4)]}",
+        tahunKegiatan: (2018 + _random.nextInt(6)).toString(),
+      )
+    );
+    
+    // Tambahkan riwayat studi
+    List<DosenRiwayatStudi> riwayatStudi = [
+      DosenRiwayatStudi(
+        idSdm: dosenId,
+        jenjang: "S1",
+        gelar: "S.Kom.",
+        bidangStudi: "Teknik Informatika",
+        perguruan: "Universitas Indonesia",
+        tahunLulus: (1990 + _random.nextInt(10)).toString(),
+      ),
+      DosenRiwayatStudi(
+        idSdm: dosenId,
+        jenjang: "S2",
+        gelar: "M.Kom.",
+        bidangStudi: "Ilmu Komputer",
+        perguruan: "Institut Teknologi Bandung",
+        tahunLulus: (2000 + _random.nextInt(5)).toString(),
+      ),
+    ];
+    
+    // Jika pendidikan tertinggi S3, tambahkan data S3
+    if (dosenData["pendidikan_tertinggi"] == "S3") {
+      riwayatStudi.add(
+        DosenRiwayatStudi(
+          idSdm: dosenId,
+          jenjang: "S3",
+          gelar: "Dr.",
+          bidangStudi: "Ilmu Komputer",
+          perguruan: "Universitas Gadjah Mada",
+          tahunLulus: (2010 + _random.nextInt(10)).toString(),
+        )
+      );
+    }
+    
+    // Tambahkan riwayat mengajar
+    List<DosenRiwayatMengajar> riwayatMengajar = List.generate(
+      _random.nextInt(4) + 2, 
+      (i) => DosenRiwayatMengajar(
+        idSdm: dosenId,
+        namaSemester: "20${20 + _random.nextInt(4)}${_random.nextInt(2) + 1}",
+        kodeMatkul: "IF${100 + _random.nextInt(400)}",
+        namaMatkul: ["Pemrograman Dasar", "Struktur Data", "Algoritma", "Sistem Operasi", "Database", "Jaringan Komputer", "Machine Learning"][_random.nextInt(7)],
+        namaKelas: ["A", "B", "C", "D"][_random.nextInt(4)],
+        namaPt: dosenData["nama_pt"],
+      )
+    );
+    
+    // Buat dan kembalikan objek DosenDetail
+    return DosenDetail(
+      idSdm: dosenData["id_sdm"],
+      namaDosen: dosenData["nama_dosen"],
+      namaPt: dosenData["nama_pt"],
+      namaProdi: dosenData["nama_prodi"],
+      jenisKelamin: dosenData["jenis_kelamin"],
+      jabatanAkademik: dosenData["jabatan_akademik"],
+      pendidikanTertinggi: dosenData["pendidikan_tertinggi"],
+      statusIkatanKerja: dosenData["status_ikatan_kerja"],
+      statusAktivitas: dosenData["status_aktivitas"],
+      penelitian: penelitian,
+      pengabdian: pengabdian,
+      karya: [],
+      paten: [],
+      riwayatStudi: riwayatStudi,
+      riwayatMengajar: riwayatMengajar,
+    );
+  }
+
   // Pencarian dosen (mock)
   Future<List<Dosen>> searchDosen(String keyword) async {
     // Simulasi delay jaringan
