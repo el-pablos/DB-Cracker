@@ -9,8 +9,8 @@ class ScreenUtils {
   static double blockSizeVertical = 2400 / 100;    // Tetap 24.0
   
   // Batasan ukuran untuk mencegah overflow
-  static const double MAX_FONT_SIZE = 24.0;
-  static const double MAX_ICON_SIZE = 48.0;
+  static const double maxFontSize = 24.0;
+  static const double maxIconSize = 48.0;
 
   /// Mengembalikan ukuran relatif terhadap lebar layar dengan batasan
   static double w(double width) {
@@ -74,9 +74,9 @@ class ScreenUtils {
 
 /// Extension untuk memudahkan penggunaan
 extension SizeExtension on num {
-  double get w => this.toDouble();  // Ubah ke nilai tetap
-  double get h => this.toDouble();  // Ubah ke nilai tetap
-  double get sp => this.toDouble();  // Ubah ke nilai tetap
-  double get iconSize => ScreenUtils.iconSize(this.toDouble());
-  double get adaptiveFont => ScreenUtils.getAdaptiveFontSize(this.toDouble());
+  double get w => toDouble();  // Ubah ke nilai tetap
+  double get h => toDouble();  // Ubah ke nilai tetap
+  double get sp => toDouble();  // Ubah ke nilai tetap
+  double get iconSize => ScreenUtils.iconSize(toDouble());
+  double get adaptiveFont => ScreenUtils.getAdaptiveFontSize(toDouble());
 }
