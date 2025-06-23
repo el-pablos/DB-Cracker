@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'screens/home_screen.dart';
-import 'screens/detail_screen.dart';
 import 'screens/prodi_detail_screen.dart';
 import 'screens/prodi_search_screen.dart';
 import 'screens/pt_detail_screen.dart';
-// Import screens dosen akan ditambahkan nanti setelah filenya dibuat
 import 'screens/dosen_search_screen.dart';
 import 'screens/dosen_detail_screen.dart';
 import 'api/api_factory.dart';

@@ -3,8 +3,6 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import '../api/multi_api_factory.dart';
 import '../models/dosen.dart';
-import '../models/pt.dart';
-import '../widgets/dosen_navigation_button.dart';
 import '../widgets/hacker_search_bar.dart';
 import '../widgets/console_text.dart';
 import '../widgets/terminal_window.dart';
