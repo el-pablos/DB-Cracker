@@ -40,7 +40,6 @@ class MyApp extends StatelessWidget {
             primary: HackerColors.primary,
             secondary: HackerColors.accent,
             surface: HackerColors.surface,
-            background: HackerColors.background,
             error: HackerColors.error,
           ),
           textTheme: const TextTheme(
