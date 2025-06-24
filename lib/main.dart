@@ -4,7 +4,7 @@ import 'screens/home_screen.dart';
 import 'screens/prodi_detail_screen.dart';
 import 'screens/prodi_search_screen.dart';
 import 'screens/pt_detail_screen.dart';
-import 'screens/dosen_search_screen.dart';
+import 'screens/dosen_search_screen_new.dart';
 import 'screens/dosen_detail_screen.dart';
 import 'api/api_factory.dart';
 import 'utils/constants.dart';
@@ -15,7 +15,7 @@ void main() {
     FlutterError.presentError(details);
     print('Flutter error: ${details.exception}');
   };
-  
+
   runApp(const MyApp());
 }
 
@@ -27,20 +27,20 @@ class MyApp extends StatelessWidget {
     // Poco X3 Pro specific dimensions
     const double screenWidth = 1080;
     const double screenHeight = 2400;
-    
+
     return Provider<ApiFactory>(
       create: (_) => ApiFactory(),
       child: MaterialApp(
         title: 'DB Cracker - Tamaengs',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
-          primaryColor: HackerColors.primary,
-          scaffoldBackgroundColor: HackerColors.background,
+          primaryColor: CtOSColors.primary,
+          scaffoldBackgroundColor: CtOSColors.background,
           colorScheme: const ColorScheme.dark(
-            primary: HackerColors.primary,
-            secondary: HackerColors.accent,
-            surface: HackerColors.surface,
-            error: HackerColors.error,
+            primary: CtOSColors.primary,
+            secondary: CtOSColors.secondary,
+            surface: CtOSColors.surface,
+            error: CtOSColors.error,
           ),
           textTheme: const TextTheme(
             bodyLarge: TextStyle(color: HackerColors.text),
@@ -74,7 +74,8 @@ class MyApp extends StatelessWidget {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: HackerColors.primary, width: 2),
+              borderSide:
+                  const BorderSide(color: HackerColors.primary, width: 2),
             ),
           ),
           elevatedButtonTheme: ElevatedButtonThemeData(
@@ -93,7 +94,7 @@ class MyApp extends StatelessWidget {
         // Tambahkan routes untuk navigasi
         routes: {
           '/prodi/search': (context) => const ProdiSearchScreen(),
-          '/dosen/search': (context) => const DosenSearchScreen(),
+          '/dosen/search': (context) => const DosenSearchScreenNew(),
         },
         // Untuk routes yang membutuhkan parameter
         onGenerateRoute: (settings) {
