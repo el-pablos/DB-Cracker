@@ -19,6 +19,10 @@ class CtOSResponsiveLayout extends StatelessWidget {
   Widget build(BuildContext context) {
     Widget content = Container(
       width: double.infinity,
+      constraints: const BoxConstraints(
+        minHeight: 0,
+        maxHeight: double.infinity,
+      ),
       padding: padding ?? const EdgeInsets.all(16.0),
       child: child,
     );
@@ -26,7 +30,14 @@ class CtOSResponsiveLayout extends StatelessWidget {
     if (enableScroll) {
       content = SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
-        child: content,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            minHeight: MediaQuery.of(context).size.height -
+                MediaQuery.of(context).padding.top -
+                kToolbarHeight,
+          ),
+          child: content,
+        ),
       );
     }
 
@@ -95,7 +106,8 @@ class CtOSListItem extends StatelessWidget {
           onTap: onTap,
           borderRadius: BorderRadius.circular(4.0),
           child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
+            padding:
+                const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
             child: Row(
               children: [
                 if (leadingIcon != null) ...[
@@ -192,7 +204,9 @@ class CtOSDataRow extends StatelessWidget {
               fontSize: 12.0,
               color: isHighlighted
                   ? CtOSColors.textAccent
-                  : (value.isNotEmpty ? CtOSColors.textPrimary : CtOSColors.textTertiary),
+                  : (value.isNotEmpty
+                      ? CtOSColors.textPrimary
+                      : CtOSColors.textTertiary),
               maxLines: 3,
             ),
           ),
@@ -262,7 +276,8 @@ class CtOSSearchBar extends StatelessWidget {
                   padding: const EdgeInsets.all(12.0),
                   child: CircularProgressIndicator(
                     strokeWidth: 2.0,
-                    valueColor: AlwaysStoppedAnimation<Color>(CtOSColors.primary),
+                    valueColor:
+                        AlwaysStoppedAnimation<Color>(CtOSColors.primary),
                   ),
                 )
               : (onSearch != null

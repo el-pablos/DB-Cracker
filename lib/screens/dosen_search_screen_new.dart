@@ -104,14 +104,20 @@ class _DosenSearchScreenNewState extends State<DosenSearchScreenNew>
     return Scaffold(
       backgroundColor: CtOSColors.background,
       appBar: _buildAppBar(),
-      body: CtOSResponsiveLayout(
+      body: SafeArea(
         child: Column(
           children: [
             _buildHeader(),
             _buildSearchSection(),
             if (_searchResults.isNotEmpty && _ptList.isNotEmpty)
               _buildFilterSection(),
-            Expanded(child: _buildMainContent()),
+            Expanded(
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: _buildMainContent(),
+              ),
+            ),
             _buildFooter(),
           ],
         ),
@@ -450,6 +456,7 @@ class _DosenSearchScreenNewState extends State<DosenSearchScreenNew>
     return CtOSContainer(
       padding: const EdgeInsets.all(8.0),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           CtOSHeader(
             title: "HASIL PENCARIAN",
@@ -464,10 +471,19 @@ class _DosenSearchScreenNewState extends State<DosenSearchScreenNew>
                 : null,
           ),
           Expanded(
-            child: ListView.builder(
-              itemCount: _filteredResults.length,
-              itemBuilder: (context, index) => _buildDosenCard(index),
-            ),
+            child: _filteredResults.isEmpty
+                ? const Center(
+                    child: CtOSText(
+                      "Tidak ada data dosen",
+                      fontSize: 14.0,
+                      color: CtOSColors.textSecondary,
+                    ),
+                  )
+                : ListView.builder(
+                    physics: const BouncingScrollPhysics(),
+                    itemCount: _filteredResults.length,
+                    itemBuilder: (context, index) => _buildDosenCard(index),
+                  ),
           ),
         ],
       ),
@@ -478,36 +494,39 @@ class _DosenSearchScreenNewState extends State<DosenSearchScreenNew>
     final dosen = _filteredResults[index];
     final isEven = index % 2 == 0;
 
-    return CtOSListItem(
-      title: dosen.nama,
-      subtitle: 'NIDN: ${dosen.nidn}\n${dosen.namaProdi}',
-      trailing: dosen.namaPt,
-      leadingIcon: Container(
-        width: 40.0,
-        height: 40.0,
-        decoration: BoxDecoration(
-          color: CtOSColors.background,
-          borderRadius: BorderRadius.circular(4.0),
-          border: Border.all(
-            color: isEven ? CtOSColors.primary : CtOSColors.secondary,
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8.0),
+      child: CtOSListItem(
+        title: dosen.nama,
+        subtitle: 'NIDN: ${dosen.nidn}\n${dosen.namaProdi}',
+        trailing: dosen.namaPt,
+        leadingIcon: Container(
+          width: 40.0,
+          height: 40.0,
+          decoration: BoxDecoration(
+            color: CtOSColors.background,
+            borderRadius: BorderRadius.circular(4.0),
+            border: Border.all(
+              color: isEven ? CtOSColors.primary : CtOSColors.secondary,
+            ),
+          ),
+          child: Center(
+            child: CtOSText(
+              dosen.nama.isNotEmpty ? dosen.nama[0].toUpperCase() : 'D',
+              fontSize: 18.0,
+              fontWeight: FontWeight.bold,
+              color: isEven ? CtOSColors.primary : CtOSColors.secondary,
+            ),
           ),
         ),
-        child: Center(
-          child: CtOSText(
-            dosen.nama.isNotEmpty ? dosen.nama[0].toUpperCase() : 'D',
-            fontSize: 18.0,
-            fontWeight: FontWeight.bold,
-            color: isEven ? CtOSColors.primary : CtOSColors.secondary,
-          ),
-        ),
+        onTap: () {
+          Navigator.pushNamed(
+            context,
+            '/dosen/detail/${dosen.id}',
+            arguments: {'dosenName': dosen.nama},
+          );
+        },
       ),
-      onTap: () {
-        Navigator.pushNamed(
-          context,
-          '/dosen/detail/${dosen.id}',
-          arguments: {'dosenName': dosen.nama},
-        );
-      },
     );
   }
 
