@@ -86,9 +86,9 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
   }
 
   void _fetchDosenDetail() {
-    // Gunakan API untuk mengambil detail lengkap dosen
+    // Gunakan MultiApiFactory untuk mengambil detail lengkap dosen
     _dosenFuture =
-        _multiApiFactory.pddiktiApi.getDosenDetailLengkap(widget.dosenId);
+        _multiApiFactory.getDosenDetailFromAllSources(widget.dosenId);
 
     _dosenFuture.then((_) {
       setState(() {
