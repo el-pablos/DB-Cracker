@@ -28,16 +28,29 @@
 
 ---
 
-## 🔧 **Update Terbaru (v1.2.0)**
+## 🔧 **Update Terbaru (v1.3.0)**
 
-### ✅ **Perbaikan Data Placeholder**
-- **Fixed**: Masalah tampilan data placeholder ("John Doe", "Dr. Mock Data") pada hasil pencarian
-- **Improved**: Prioritas penggunaan API asli PDDikti dibanding mock data
-- **Enhanced**: Logging system untuk debugging proses data retrieval
-- **Optimized**: DosenSearchScreen menggunakan ApiFactory untuk konsistensi data
+### ✅ **Perbaikan UI Overflow & Responsive Design**
+- **Fixed**: RenderFlex overflow 76 pixels pada hasil pencarian dosen
+- **Fixed**: RenderFlex overflow 8.7 pixels pada layout footer dan header
+- **Improved**: Responsive design untuk Android device M2102J20SG (1080x2400)
+- **Enhanced**: Text wrapping dan ellipsis untuk nama dosen panjang
+- **Optimized**: Ukuran font dan spacing untuk efisiensi ruang layar
 
-### 🚀 **Peningkatan Performa**
-- **Real Data Display**: Hasil pencarian sekarang menampilkan data asli dari PDDikti API
+### 🔧 **Perbaikan API & Error Handling**
+- **Fixed**: API 404 error saat fetch detail dosen dengan multiple endpoint fallback
+- **Added**: Input validation dan sanitization untuk search query
+- **Enhanced**: Timeout handling 30 detik untuk request API
+- **Improved**: Error messages yang user-friendly berdasarkan jenis error
+- **Added**: Memory leak prevention dengan mounted check
+
+### 🎨 **Komponen UI Baru**
+- **CtOSErrorBoundary**: Widget untuk error handling yang konsisten
+- **CtOSLoadingWidget**: Loading states dengan animasi ctOS theme
+- **CtOSEmptyWidget**: Empty states dengan styling yang seragam
+
+### 🚀 **Peningkatan Performa (v1.2.0)**
+- **Real Data Display**: Hasil pencarian menampilkan data asli dari PDDikti API
 - **Better Error Handling**: Fallback yang lebih baik ketika API mengalami masalah
 - **Consistent UI**: Data yang ditampilkan konsisten antara pencarian dan detail view
 
