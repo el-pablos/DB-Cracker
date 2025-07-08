@@ -28,6 +28,21 @@
 
 ---
 
+## 🔧 **Update Terbaru (v1.2.0)**
+
+### ✅ **Perbaikan Data Placeholder**
+- **Fixed**: Masalah tampilan data placeholder ("John Doe", "Dr. Mock Data") pada hasil pencarian
+- **Improved**: Prioritas penggunaan API asli PDDikti dibanding mock data
+- **Enhanced**: Logging system untuk debugging proses data retrieval
+- **Optimized**: DosenSearchScreen menggunakan ApiFactory untuk konsistensi data
+
+### 🚀 **Peningkatan Performa**
+- **Real Data Display**: Hasil pencarian sekarang menampilkan data asli dari PDDikti API
+- **Better Error Handling**: Fallback yang lebih baik ketika API mengalami masalah
+- **Consistent UI**: Data yang ditampilkan konsisten antara pencarian dan detail view
+
+---
+
 ## ✨ **Fitur Utama**
 
 ### 🔍 **Database Scanner**
