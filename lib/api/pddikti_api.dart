@@ -520,9 +520,39 @@ class PddiktiApi {
     try {
       print('Fetching dosen profile for ID: $dosenId');
 
-      final Uri url =
-          Uri.parse('$baseUrl/dosen/profile/${_parseString(dosenId)}');
-      final response = await _makeApiRequest(url);
+      // Coba beberapa endpoint yang mungkin
+      List<String> possibleEndpoints = [
+        '$baseUrl/dosen/profile/${_parseString(dosenId)}',
+        '$baseUrl/detail/dosen/${_parseString(dosenId)}',
+        '$baseUrl/dosen/${_parseString(dosenId)}',
+      ];
+
+      http.Response? response;
+      String? workingEndpoint;
+
+      // Coba setiap endpoint sampai ada yang berhasil
+      for (String endpoint in possibleEndpoints) {
+        try {
+          print('Trying endpoint: $endpoint');
+          final Uri url = Uri.parse(endpoint);
+          response = await _makeApiRequest(url);
+
+          if (response.statusCode == 200) {
+            workingEndpoint = endpoint;
+            print('Success with endpoint: $endpoint');
+            break;
+          } else {
+            print('Failed with endpoint: $endpoint (${response.statusCode})');
+          }
+        } catch (e) {
+          print('Error with endpoint: $endpoint - $e');
+          continue;
+        }
+      }
+
+      if (response == null || response.statusCode != 200) {
+        throw Exception('All endpoints failed for dosen ID: $dosenId');
+      }
 
       if (response.statusCode == 200) {
         final dynamic responseData = json.decode(response.body);

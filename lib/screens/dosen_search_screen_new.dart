@@ -6,6 +6,7 @@ import '../api/api_factory.dart';
 import '../models/dosen.dart';
 import '../widgets/ctos_container.dart';
 import '../widgets/ctos_layout.dart';
+import '../widgets/error_boundary.dart';
 import '../utils/constants.dart';
 
 /// Screen untuk melakukan pencarian dosen dengan tema ctOS yang elegan
@@ -56,7 +57,34 @@ class _DosenSearchScreenNewState extends State<DosenSearchScreenNew>
 
   Future<void> _searchDosen() async {
     final query = _searchController.text.trim();
-    if (query.isEmpty) return;
+
+    // Input validation
+    if (query.isEmpty) {
+      setState(() {
+        _errorMessage = 'Masukkan nama dosen untuk mencari';
+      });
+      return;
+    }
+
+    if (query.length < 2) {
+      setState(() {
+        _errorMessage = 'Nama dosen minimal 2 karakter';
+      });
+      return;
+    }
+
+    // Input sanitization - remove special characters that might cause issues
+    final sanitizedQuery = query
+        .replaceAll('<', '')
+        .replaceAll('>', '')
+        .replaceAll('"', '')
+        .replaceAll("'", '');
+    if (sanitizedQuery.isEmpty) {
+      setState(() {
+        _errorMessage = 'Nama dosen tidak valid';
+      });
+      return;
+    }
 
     setState(() {
       _isLoading = true;
@@ -69,7 +97,13 @@ class _DosenSearchScreenNewState extends State<DosenSearchScreenNew>
 
     try {
       final apiFactory = Provider.of<ApiFactory>(context, listen: false);
-      final results = await apiFactory.searchDosen(query);
+
+      // Add timeout for the search request
+      final results = await apiFactory
+          .searchDosen(sanitizedQuery)
+          .timeout(const Duration(seconds: 30));
+
+      if (!mounted) return; // Check if widget is still mounted
 
       setState(() {
         _searchResults = results;
@@ -77,11 +111,36 @@ class _DosenSearchScreenNewState extends State<DosenSearchScreenNew>
         _ptList = results.map((d) => d.namaPt).toSet().toList()..sort();
         _isLoading = false;
       });
+
+      // Show message if no results found
+      if (results.isEmpty) {
+        setState(() {
+          _errorMessage = 'Tidak ditemukan dosen dengan nama "$sanitizedQuery"';
+        });
+      }
     } catch (e) {
+      if (!mounted) return; // Check if widget is still mounted
+
       setState(() {
-        _errorMessage = 'Error: ${e.toString()}';
+        String errorMsg = 'Terjadi kesalahan saat mencari data';
+
+        if (e.toString().contains('TimeoutException')) {
+          errorMsg = 'Koneksi timeout. Periksa koneksi internet Anda';
+        } else if (e.toString().contains('SocketException')) {
+          errorMsg =
+              'Tidak dapat terhubung ke server. Periksa koneksi internet';
+        } else if (e.toString().contains('403')) {
+          errorMsg = 'Akses ditolak server. Coba lagi nanti';
+        } else if (e.toString().contains('404')) {
+          errorMsg = 'Data tidak ditemukan di server';
+        }
+
+        _errorMessage = errorMsg;
         _isLoading = false;
       });
+
+      // Log error for debugging
+      print('Search error: $e');
     }
   }
 
@@ -212,19 +271,34 @@ class _DosenSearchScreenNewState extends State<DosenSearchScreenNew>
       backgroundColor: CtOSColors.surfaceVariant,
       showBorder: false,
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          // Status indicator
           CtOSStatusIndicator(
             isActive: _isLoading,
             label: _isLoading ? "SCANNING" : "READY",
           ),
-          const SizedBox(width: 24.0),
-          const CtOSText(
-            'ctOS FACULTY DATABASE ACCESS',
-            fontSize: 14.0,
-            color: CtOSColors.textAccent,
-            fontWeight: FontWeight.bold,
+
+          const SizedBox(width: 16.0),
+
+          // Title dengan flexible layout untuk mencegah overflow
+          Expanded(
+            child: Center(
+              child: CtOSText(
+                'ctOS FACULTY DATABASE ACCESS',
+                fontSize: 14.0,
+                color: CtOSColors.textAccent,
+                fontWeight: FontWeight.bold,
+                maxLines: 2,
+                textAlign: TextAlign.center,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
           ),
+
+          const SizedBox(width: 16.0),
+
+          // Spacer untuk balance layout
+          SizedBox(width: 80.0), // Approximate width of status indicator
         ],
       ),
     );
@@ -370,33 +444,15 @@ class _DosenSearchScreenNewState extends State<DosenSearchScreenNew>
   }
 
   Widget _buildErrorState() {
-    return CtOSContainer(
-      borderColor: CtOSColors.error,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(
-            Icons.error_outline,
-            color: CtOSColors.error,
-            size: 64.0,
-          ),
-          const SizedBox(height: 16.0),
-          CtOSText(
-            _errorMessage!,
-            fontSize: 14.0,
-            color: CtOSColors.error,
-            textAlign: TextAlign.center,
-            maxLines: 3,
-          ),
-          const SizedBox(height: 24.0),
-          CtOSButton(
-            text: "COBA LAGI",
-            onPressed: _searchDosen,
-            icon: Icons.refresh,
-            isPrimary: false,
-          ),
-        ],
-      ),
+    return CtOSErrorBoundary(
+      errorMessage: _errorMessage,
+      onRetry: () {
+        setState(() {
+          _errorMessage = null;
+        });
+        _searchDosen();
+      },
+      child: Container(), // This won't be shown since errorMessage is not null
     );
   }
 
@@ -504,7 +560,7 @@ class _DosenSearchScreenNewState extends State<DosenSearchScreenNew>
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12.0),
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(12.0), // Reduced padding
       decoration: BoxDecoration(
         color: CtOSColors.surface,
         borderRadius: BorderRadius.circular(8.0),
@@ -531,11 +587,12 @@ class _DosenSearchScreenNewState extends State<DosenSearchScreenNew>
         },
         borderRadius: BorderRadius.circular(8.0),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start, // Better alignment
           children: [
-            // Avatar
+            // Avatar - smaller size for better space utilization
             Container(
-              width: 60.0,
-              height: 60.0,
+              width: 50.0, // Reduced from 60.0
+              height: 50.0, // Reduced from 60.0
               decoration: BoxDecoration(
                 color: CtOSColors.background,
                 borderRadius: BorderRadius.circular(8.0),
@@ -547,83 +604,96 @@ class _DosenSearchScreenNewState extends State<DosenSearchScreenNew>
               child: Center(
                 child: CtOSText(
                   dosen.nama.isNotEmpty ? dosen.nama[0].toUpperCase() : 'D',
-                  fontSize: 24.0,
+                  fontSize: 20.0, // Reduced from 24.0
                   fontWeight: FontWeight.bold,
                   color: isEven ? CtOSColors.primary : CtOSColors.secondary,
                 ),
               ),
             ),
-            const SizedBox(width: 16.0),
+            const SizedBox(width: 12.0), // Reduced from 16.0
 
-            // Content
+            // Content - with better space management
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min, // Prevent unnecessary expansion
                 children: [
-                  // Nama Dosen
+                  // Nama Dosen - with better text handling
                   CtOSText(
                     dosen.nama,
-                    fontSize: 16.0,
+                    fontSize: 15.0, // Slightly reduced
                     fontWeight: FontWeight.bold,
                     color: CtOSColors.textPrimary,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 4.0),
+                  const SizedBox(height: 3.0), // Reduced spacing
 
-                  // NIDN
+                  // NIDN - with overflow protection
                   if (dosen.nidn.isNotEmpty)
                     CtOSText(
                       'NIDN: ${dosen.nidn}',
-                      fontSize: 12.0,
-                      color: isEven ? CtOSColors.primary : CtOSColors.secondary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  const SizedBox(height: 4.0),
-
-                  // Program Studi
-                  CtOSText(
-                    dosen.namaProdi,
-                    fontSize: 13.0,
-                    color: CtOSColors.textSecondary,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 8.0),
-
-                  // Perguruan Tinggi
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 8.0, vertical: 4.0),
-                    decoration: BoxDecoration(
-                      color:
-                          (isEven ? CtOSColors.primary : CtOSColors.secondary)
-                              .withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(4.0),
-                      border: Border.all(
-                        color:
-                            (isEven ? CtOSColors.primary : CtOSColors.secondary)
-                                .withValues(alpha: 0.3),
-                      ),
-                    ),
-                    child: CtOSText(
-                      dosen.namaPt,
-                      fontSize: 11.0,
+                      fontSize: 11.0, // Reduced from 12.0
                       color: isEven ? CtOSColors.primary : CtOSColors.secondary,
                       fontWeight: FontWeight.w600,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
+                    ),
+                  const SizedBox(height: 3.0), // Reduced spacing
+
+                  // Program Studi - with better overflow handling
+                  CtOSText(
+                    dosen.namaProdi,
+                    fontSize: 12.0, // Reduced from 13.0
+                    color: CtOSColors.textSecondary,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 6.0), // Reduced spacing
+
+                  // Perguruan Tinggi - with flexible container
+                  Flexible(
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6.0, vertical: 3.0), // Reduced padding
+                      decoration: BoxDecoration(
+                        color:
+                            (isEven ? CtOSColors.primary : CtOSColors.secondary)
+                                .withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(4.0),
+                        border: Border.all(
+                          color: (isEven
+                                  ? CtOSColors.primary
+                                  : CtOSColors.secondary)
+                              .withValues(alpha: 0.3),
+                        ),
+                      ),
+                      child: CtOSText(
+                        dosen.namaPt,
+                        fontSize: 10.0, // Reduced from 11.0
+                        color:
+                            isEven ? CtOSColors.primary : CtOSColors.secondary,
+                        fontWeight: FontWeight.w600,
+                        maxLines: 2, // Allow 2 lines for long university names
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
 
-            // Arrow Icon
-            Icon(
-              Icons.arrow_forward_ios,
-              color: CtOSColors.textSecondary,
-              size: 16.0,
+            const SizedBox(width: 8.0), // Reduced spacing
+
+            // Arrow Icon - with padding for better touch target
+            Padding(
+              padding: const EdgeInsets.only(top: 4.0),
+              child: Icon(
+                Icons.arrow_forward_ios,
+                color: CtOSColors.textSecondary,
+                size: 14.0, // Slightly reduced
+              ),
             ),
           ],
         ),
@@ -638,38 +708,45 @@ class _DosenSearchScreenNewState extends State<DosenSearchScreenNew>
       backgroundColor: CtOSColors.surface,
       showBorder: false,
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            children: [
-              AnimatedBuilder(
-                animation: _animationController,
-                builder: (context, child) {
-                  return Container(
-                    width: 8.0,
-                    height: 8.0,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: _random.nextBool()
-                          ? CtOSColors.primary
-                          : CtOSColors.secondary,
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(width: 8.0),
-              CtOSText(
-                DateTime.now().toString().substring(0, 19),
-                fontSize: 10.0,
-                color: CtOSColors.textSecondary,
-              ),
-            ],
+          // Status indicator dengan flexible space
+          AnimatedBuilder(
+            animation: _animationController,
+            builder: (context, child) {
+              return Container(
+                width: 8.0,
+                height: 8.0,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: _random.nextBool()
+                      ? CtOSColors.primary
+                      : CtOSColors.secondary,
+                ),
+              );
+            },
           ),
+          const SizedBox(width: 8.0),
+
+          // Timestamp dengan flexible layout
+          Expanded(
+            child: CtOSText(
+              DateTime.now().toString().substring(0, 19),
+              fontSize: 10.0,
+              color: CtOSColors.textSecondary,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+
+          const SizedBox(width: 8.0),
+
+          // Author text dengan ukuran yang aman
           const CtOSText(
             'BY: TAMAENGS',
             fontSize: 10.0,
             color: CtOSColors.textSecondary,
             fontWeight: FontWeight.bold,
+            maxLines: 1,
           ),
         ],
       ),

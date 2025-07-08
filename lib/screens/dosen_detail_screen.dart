@@ -90,18 +90,41 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
     _dosenFuture =
         _multiApiFactory.getDosenDetailFromAllSources(widget.dosenId);
 
-    _dosenFuture.then((_) {
+    _dosenFuture.then((dosenDetail) {
       setState(() {
         _isLoading = false;
       });
       _addConsoleMessageWithDelay("EKSTRAKSI DATA SELESAI", 300);
       _addConsoleMessageWithDelay("AKSES DIBERIKAN", 600);
+
+      // Log detail yang berhasil diambil
+      print('Successfully fetched dosen detail: ${dosenDetail.namaDosen}');
     }).catchError((error) {
       setState(() {
         _isLoading = false;
       });
-      _addConsoleMessageWithDelay("ERROR: EKSTRAKSI DATA GAGAL", 300);
-      _addConsoleMessageWithDelay("AKSES DITOLAK", 600);
+      print('Error fetching dosen detail: $error');
+      _addConsoleMessageWithDelay("ERROR: Gagal mengambil data", 300);
+      _addConsoleMessageWithDelay("MENGGUNAKAN DATA FALLBACK", 600);
+
+      // Buat fallback future dengan data minimal
+      _dosenFuture = Future.value(DosenDetail(
+        idSdm: widget.dosenId,
+        namaDosen: widget.dosenName,
+        namaPt: 'Data tidak tersedia',
+        namaProdi: 'Data tidak tersedia',
+        jenisKelamin: '-',
+        jabatanAkademik: '-',
+        pendidikanTertinggi: '-',
+        statusIkatanKerja: '-',
+        statusAktivitas: '-',
+        penelitian: [],
+        pengabdian: [],
+        karya: [],
+        paten: [],
+        riwayatStudi: [],
+        riwayatMengajar: [],
+      ));
     });
   }
 
