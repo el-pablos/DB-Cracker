@@ -41,25 +41,44 @@ class ApiFactory {
 
   /// Should use mock data?
   bool get _useMockData {
-    // In web environments, we might want to use mock data to avoid CORS issues
-    // Also use mock if it's explicitly forced
-    return _forceMock || (kIsWeb && !kDebugMode);
+    // Prioritaskan API asli, hanya gunakan mock jika dipaksa
+    // Untuk web production, tetap coba API asli dulu
+    final shouldUseMock = _forceMock;
+    print(
+        'ApiFactory._useMockData: $shouldUseMock (forceMock: $_forceMock, kIsWeb: $kIsWeb, kDebugMode: $kDebugMode)');
+    return shouldUseMock;
   }
 
   /// Pencarian mahasiswa
   Future<List<Mahasiswa>> searchMahasiswa(String keyword) async {
+    print(
+        'ApiFactory.searchMahasiswa: keyword="$keyword", useMockData=$_useMockData');
+
     if (_useMockData) {
-      return _mockService.searchMahasiswa(keyword);
+      print('ApiFactory.searchMahasiswa: Using mock service');
+      final results = await _mockService.searchMahasiswa(keyword);
+      print(
+          'ApiFactory.searchMahasiswa: Mock service returned ${results.length} results');
+      return results;
     } else {
       try {
-        return await _realApi.searchMahasiswa(keyword);
+        print('ApiFactory.searchMahasiswa: Using real API');
+        final results = await _realApi.searchMahasiswa(keyword);
+        print(
+            'ApiFactory.searchMahasiswa: Real API returned ${results.length} results');
+        return results;
       } catch (e) {
         print('Error with real API, fallback to mock: $e');
         // Fallback to mock data if the real API fails with specific errors
         if (e.toString().contains('403') ||
             e.toString().contains('CORS') ||
             e.toString().contains('XMLHttpRequest')) {
-          return _mockService.searchMahasiswa(keyword);
+          print(
+              'ApiFactory.searchMahasiswa: Fallback to mock service due to API error');
+          final results = await _mockService.searchMahasiswa(keyword);
+          print(
+              'ApiFactory.searchMahasiswa: Mock fallback returned ${results.length} results');
+          return results;
         }
         rethrow;
       }
@@ -107,18 +126,42 @@ class ApiFactory {
 
   /// Pencarian dosen
   Future<List<Dosen>> searchDosen(String keyword) async {
+    print(
+        'ApiFactory.searchDosen: keyword="$keyword", useMockData=$_useMockData');
+
     if (_useMockData) {
-      return _mockService.searchDosen(keyword);
+      print('ApiFactory.searchDosen: Using mock service');
+      final results = await _mockService.searchDosen(keyword);
+      print(
+          'ApiFactory.searchDosen: Mock service returned ${results.length} results');
+      for (int i = 0; i < results.length && i < 3; i++) {
+        print(
+            'ApiFactory.searchDosen: Mock result $i: ${results[i].nama} (${results[i].nidn})');
+      }
+      return results;
     } else {
       try {
-        return await _realApi.searchDosen(keyword);
+        print('ApiFactory.searchDosen: Using real API');
+        final results = await _realApi.searchDosen(keyword);
+        print(
+            'ApiFactory.searchDosen: Real API returned ${results.length} results');
+        for (int i = 0; i < results.length && i < 3; i++) {
+          print(
+              'ApiFactory.searchDosen: Real result $i: ${results[i].nama} (${results[i].nidn})');
+        }
+        return results;
       } catch (e) {
         print('Error with real API, fallback to mock: $e');
         // Fallback to mock data if the real API fails with specific errors
         if (e.toString().contains('403') ||
             e.toString().contains('CORS') ||
             e.toString().contains('XMLHttpRequest')) {
-          return _mockService.searchDosen(keyword);
+          print(
+              'ApiFactory.searchDosen: Fallback to mock service due to API error');
+          final results = await _mockService.searchDosen(keyword);
+          print(
+              'ApiFactory.searchDosen: Mock fallback returned ${results.length} results');
+          return results;
         }
         rethrow;
       }

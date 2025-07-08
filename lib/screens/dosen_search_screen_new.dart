@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
-import '../api/multi_api_factory.dart';
+import 'package:provider/provider.dart';
+import '../api/api_factory.dart';
 import '../models/dosen.dart';
 import '../widgets/ctos_container.dart';
 import '../widgets/ctos_layout.dart';
@@ -18,7 +19,6 @@ class DosenSearchScreenNew extends StatefulWidget {
 class _DosenSearchScreenNewState extends State<DosenSearchScreenNew>
     with TickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
-  final MultiApiFactory _apiFactory = MultiApiFactory();
   final Random _random = Random();
 
   List<Dosen> _searchResults = [];
@@ -68,7 +68,8 @@ class _DosenSearchScreenNewState extends State<DosenSearchScreenNew>
     });
 
     try {
-      final results = await _apiFactory.searchAllDosen(query);
+      final apiFactory = Provider.of<ApiFactory>(context, listen: false);
+      final results = await apiFactory.searchDosen(query);
 
       setState(() {
         _searchResults = results;

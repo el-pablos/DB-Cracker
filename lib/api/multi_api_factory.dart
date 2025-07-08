@@ -190,25 +190,8 @@ class MultiApiFactory {
       } catch (e2) {
         print('Error getting data from PDDIKTI: $e2');
 
-        // Jika masih error, coba return data mock sederhana
-        backupResults = [
-          Dosen(
-            id: '1',
-            nama: 'Dr. Mock Data',
-            nidn: '12345',
-            namaPt: 'Universitas Testing',
-            singkatanPt: 'UNTEST',
-            namaProdi: 'Informatika',
-          ),
-          Dosen(
-            id: '2',
-            nama: 'Prof. Dummy Data',
-            nidn: '67890',
-            namaPt: 'Institut Testing',
-            singkatanPt: 'IT',
-            namaProdi: 'Teknik Informatika',
-          ),
-        ];
+        // Jika masih error, return empty list daripada data dummy
+        backupResults = [];
       }
 
       return backupResults;
