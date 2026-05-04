@@ -24,6 +24,7 @@ class _ProdiSearchScreenState extends State<ProdiSearchScreen> with SingleTicker
   final TextEditingController _searchController = TextEditingController();
   List<Prodi> _searchResults = [];
   bool _isLoading = false;
+  bool _isSearchInProgress = false;
   String? _errorMessage;
   late AnimationController _animationController;
   List<String> _consoleMessages = [];
@@ -69,6 +70,8 @@ class _ProdiSearchScreenState extends State<ProdiSearchScreen> with SingleTicker
   }
 
   void _simulateHacking() {
+    if (_isSearchInProgress) return;
+    _isSearchInProgress = true;
     setState(() {
       _consoleMessages = [];
       _isLoading = true;
@@ -93,7 +96,8 @@ class _ProdiSearchScreenState extends State<ProdiSearchScreen> with SingleTicker
         _searchResults = [];
         _errorMessage = AppStrings.pleaseEnterSearchTerm;
         _isLoading = false;
-      });
+      _isSearchInProgress = false;
+    });
       _addConsoleMessageWithDelay("ERROR: TARGET TIDAK DITENTUKAN", 500);
       return;
     }

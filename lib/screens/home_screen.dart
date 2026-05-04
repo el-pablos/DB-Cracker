@@ -30,6 +30,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   List<Mahasiswa> _searchResults = [];
   List<Mahasiswa> _filteredResults = [];
   bool _isLoading = false;
+  bool _isSearchInProgress = false;
   String? _errorMessage;
   late AnimationController _animationController;
   bool _showIntro = true;
@@ -140,6 +141,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   }
 
   void _simulateHacking() {
+    if (_isSearchInProgress) return;
+    _isSearchInProgress = true;
     setState(() {
       _consoleMessages = [];
       _isLoading = true;
@@ -176,7 +179,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         _filteredResults = [];
         _errorMessage = AppStrings.pleaseEnterSearchTerm;
         _isLoading = false;
-      });
+      _isSearchInProgress = false;
+    });
       _addConsoleMessageWithDelay("ERROR: TARGET TIDAK DITENTUKAN", 500);
       return;
     }
