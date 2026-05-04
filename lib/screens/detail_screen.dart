@@ -9,6 +9,7 @@ import '../widgets/hacker_loading_indicator.dart';
 import '../widgets/console_text.dart';
 import '../widgets/terminal_window.dart';
 import '../utils/constants.dart';
+import '../utils/screen_utils.dart';
 
 class DetailScreen extends StatefulWidget {
   final String mahasiswaId;
@@ -213,7 +214,8 @@ class _DetailScreenState extends State<DetailScreen>
           ),
         ],
       ),
-      body: Container(
+      body: SafeArea(
+        child: Container(
         color: CtOSColors.background,
         child: Column(
           children: [
@@ -391,6 +393,7 @@ class _DetailScreenState extends State<DetailScreen>
             ),
           ],
         ),
+      ),
       ),
     );
   }
