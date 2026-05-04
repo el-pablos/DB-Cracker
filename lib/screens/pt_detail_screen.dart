@@ -32,6 +32,7 @@ class _PTDetailScreenState extends State<PTDetailScreen> with SingleTickerProvid
   List<String> _consoleMessages = [];
   final List<Timer> _activeTimers = [];
   final Random _random = Random();
+  late final bool _statusDotIsGreen;
   Timer? _loadTimer;
   late AnimationController _animationController;
   
@@ -41,6 +42,7 @@ class _PTDetailScreenState extends State<PTDetailScreen> with SingleTickerProvid
   @override
   void initState() {
     super.initState();
+    _statusDotIsGreen = Random().nextBool();
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1500),
@@ -182,7 +184,7 @@ class _PTDetailScreenState extends State<PTDetailScreen> with SingleTickerProvid
                       height: 8,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: _random.nextBool() 
+                        color: _statusDotIsGreen 
                             ? HackerColors.primary 
                             : HackerColors.accent,
                       ),
@@ -306,7 +308,7 @@ class _PTDetailScreenState extends State<PTDetailScreen> with SingleTickerProvid
                           height: 8,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: _random.nextBool() 
+                            color: _statusDotIsGreen 
                                 ? HackerColors.primary 
                                 : HackerColors.accent,
                           ),

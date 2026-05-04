@@ -30,6 +30,7 @@ class _ProdiSearchScreenState extends State<ProdiSearchScreen> with SingleTicker
   List<String> _consoleMessages = [];
   final List<Timer> _activeTimers = [];
   final Random _random = Random();
+  late final bool _statusDotIsGreen;
   Timer? _consoleTimer;
   
   // Tambahkan instance MultiApiFactory
@@ -38,6 +39,7 @@ class _ProdiSearchScreenState extends State<ProdiSearchScreen> with SingleTicker
   @override
   void initState() {
     super.initState();
+    _statusDotIsGreen = Random().nextBool();
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2000),
@@ -389,7 +391,7 @@ class _ProdiSearchScreenState extends State<ProdiSearchScreen> with SingleTicker
                           height: 8.0,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: _random.nextBool() ? HackerColors.primary : HackerColors.accent,
+                            color: _statusDotIsGreen ? HackerColors.primary : HackerColors.accent,
                           ),
                         ),
                         const SizedBox(width: 8.0),

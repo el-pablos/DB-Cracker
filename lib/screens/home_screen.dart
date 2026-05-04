@@ -37,6 +37,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   List<String> _consoleMessages = [];
   final List<Timer> _activeTimers = [];
   final Random _random = Random();
+  late final bool _statusDotIsGreen;
   Timer? _consoleTimer;
   
   // Tambahkan instance MultiApiFactory
@@ -53,6 +54,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   @override
   void initState() {
     super.initState();
+    _statusDotIsGreen = Random().nextBool();
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2000),
@@ -715,7 +717,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                           height: 8,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: _random.nextBool() ? HackerColors.primary : HackerColors.accent,
+                            color: _statusDotIsGreen ? HackerColors.primary : HackerColors.accent,
                           ),
                         ),
                         const SizedBox(width: 8),

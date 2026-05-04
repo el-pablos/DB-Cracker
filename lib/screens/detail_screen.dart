@@ -31,6 +31,7 @@ class _DetailScreenState extends State<DetailScreen>
   List<String> _consoleMessages = [];
   final List<Timer> _activeTimers = [];
   final Random _random = Random();
+  late final bool _statusDotIsGreen;
   Timer? _decryptTimer;
   late AnimationController _animationController;
 
@@ -47,6 +48,7 @@ class _DetailScreenState extends State<DetailScreen>
   @override
   void initState() {
     super.initState();
+    _statusDotIsGreen = Random().nextBool();
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1500),
@@ -226,7 +228,7 @@ class _DetailScreenState extends State<DetailScreen>
                     height: 8,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: _random.nextBool()
+                      color: _statusDotIsGreen
                           ? HackerColors.primary
                           : HackerColors.accent,
                     ),
@@ -358,7 +360,7 @@ class _DetailScreenState extends State<DetailScreen>
                         height: 8,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: _random.nextBool()
+                          color: _statusDotIsGreen
                               ? HackerColors.primary
                               : HackerColors.accent,
                         ),
@@ -1296,7 +1298,7 @@ class _DetailScreenState extends State<DetailScreen>
             length > 0 ? mahasiswa.id.substring(0, length) : "UNKNOWN";
         return "UPDATE TERAKHIR: ${DateTime.now().toString().substring(0, 16)} | ID RECORD: $idPrefix...";
       case 4:
-        return "STATUS: ${_random.nextBool() ? "AMAN" : "MONITOR"} | CHECKSUM: ${_getRandomHexValue(8)} | AUTH: ${_getRandomHexValue(6)}";
+        return "STATUS: ${_statusDotIsGreen ? "AMAN" : "MONITOR"} | CHECKSUM: ${_getRandomHexValue(8)} | AUTH: ${_getRandomHexValue(6)}";
       default:
         return "";
     }
