@@ -29,7 +29,14 @@ class Mahasiswa {
     } catch (e) {
       if (kDebugMode) debugPrint('Error parsing Mahasiswa: $e');
       if (kDebugMode) debugPrint('JSON data: $json');
-      throw Exception('Failed to parse Mahasiswa data: $e');
+      return Mahasiswa(
+        id: '',
+        nama: 'Error: $e',
+        nim: '',
+        namaPt: '',
+        singkatanPt: '',
+        namaProdi: '',
+      );
     }
   }
 
