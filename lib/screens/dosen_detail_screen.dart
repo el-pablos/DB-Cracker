@@ -72,7 +72,7 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
     _addConsoleMessageWithDelay("KOMPILASI PROFIL DOSEN...", 3800);
 
     // Fetch data setelah simulasi
-    _loadTimer = Timer(const Duration(milliseconds: 4200), () {
+    _loadTimer = Timer(const Duration(milliseconds: 1200), () {
       _fetchDosenDetail();
     });
   }

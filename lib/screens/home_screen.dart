@@ -110,7 +110,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     _addConsoleMessageWithDelay("DB CRACKER v3.0 SIAP - Author: Tamaengs", 4500);
     
     // Sembunyikan intro setelah selesai
-    Timer(const Duration(milliseconds: 5000), () {
+    Timer(const Duration(milliseconds: 1500), () {
       if (mounted) {
         setState(() {
           _showIntro = false;
@@ -224,7 +224,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       }
       
       // Delay untuk simulasi hacking
-      await Future.delayed(const Duration(milliseconds: 3000));
+      await Future.delayed(const Duration(milliseconds: 800));
       
       setState(() {
         _searchResults = results;

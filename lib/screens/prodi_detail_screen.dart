@@ -70,7 +70,7 @@ class _ProdiDetailScreenState extends State<ProdiDetailScreen> with SingleTicker
     _addConsoleMessageWithDelay("MENGAMBIL DATA KOMPETENSI...", 2600);
     
     // Fetch data setelah simulasi
-    _loadTimer = Timer(const Duration(milliseconds: 3000), () {
+    _loadTimer = Timer(const Duration(milliseconds: 800), () {
       _fetchProdiDetail();
     });
   }

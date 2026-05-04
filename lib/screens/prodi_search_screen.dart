@@ -135,7 +135,7 @@ class _ProdiSearchScreenState extends State<ProdiSearchScreen> with SingleTicker
       }
       
       // Delay untuk simulasi hacking
-      await Future.delayed(const Duration(milliseconds: 3000));
+      await Future.delayed(const Duration(milliseconds: 800));
       
       setState(() {
         _searchResults = results;

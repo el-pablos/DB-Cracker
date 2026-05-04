@@ -81,7 +81,7 @@ class _DetailScreenState extends State<DetailScreen>
         "KORELASI DATA DENGAN DATABASE EKSTERNAL...", 3800); // Pesan baru
 
     // Fetch data setelah simulasi
-    _decryptTimer = Timer(const Duration(milliseconds: 4000), () {
+    _decryptTimer = Timer(const Duration(milliseconds: 1000), () {
       _fetchMahasiswaDetail();
     });
   }

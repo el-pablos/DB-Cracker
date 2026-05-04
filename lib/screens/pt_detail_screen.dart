@@ -69,7 +69,7 @@ class _PTDetailScreenState extends State<PTDetailScreen> with SingleTickerProvid
     _addConsoleMessageWithDelay("MEMBUAT PETA LOKASI...", 2600);
     
     // Fetch data setelah simulasi
-    _loadTimer = Timer(const Duration(milliseconds: 3000), () {
+    _loadTimer = Timer(const Duration(milliseconds: 800), () {
       _fetchPTDetail();
     });
   }
