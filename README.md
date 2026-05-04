@@ -4,256 +4,306 @@
 
 ![ctOS Logo](https://img.shields.io/badge/ctOS-DATABASE%20SCANNER-00ff41?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDJMMTMuMDkgOC4yNkwyMCA5TDEzLjA5IDE1Ljc0TDEyIDIyTDEwLjkxIDE1Ljc0TDQgOUwxMC45MSA4LjI2TDEyIDJaIiBmaWxsPSIjMDBmZjQxIi8+Cjwvc3ZnPgo=)
 
-[![Flutter](https://img.shields.io/badge/Flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white)](https://flutter.dev)
-[![Dart](https://img.shields.io/badge/Dart-0175C2?style=for-the-badge&logo=dart&logoColor=white)](https://dart.dev)
-[![Android](https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://developer.android.com)
+[![Flutter](https://img.shields.io/badge/Flutter-3.27-02569B?style=for-the-badge&logo=flutter&logoColor=white)](https://flutter.dev)
+[![Dart](https://img.shields.io/badge/Dart-3.7-0175C2?style=for-the-badge&logo=dart&logoColor=white)](https://dart.dev)
+[![Version](https://img.shields.io/badge/Version-2.0.0-00E5FF?style=for-the-badge)](https://github.com/el-pablos/DB-Cracker/releases)
+[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
+[![CI/CD](https://img.shields.io/github/actions/workflow/status/el-pablos/DB-Cracker/ci.yml?style=for-the-badge&label=CI/CD)](https://github.com/el-pablos/DB-Cracker/actions)
 
 **🔥 Advanced Faculty & Student Database Intelligence System 🔥**
 
-*Inspired by Watch Dogs ctOS - Elegant, Futuristic, Powerful*
+*Terinspirasi dari Watch Dogs ctOS — Elegan, Futuristik, Powerful*
 
 </div>
 
 ---
 
-## 🚀 **Tentang Proyek**
+## 🚀 Tentang Proyek
 
-**DB-Cracker** adalah aplikasi mobile canggih yang dirancang untuk mengakses dan menganalisis database akademik Indonesia dengan antarmuka yang terinspirasi dari sistem ctOS dalam game Watch Dogs. Aplikasi ini menyediakan akses comprehensive ke data dosen dan mahasiswa dari berbagai sumber API pendidikan Indonesia.
+**DB-Cracker** itu aplikasi mobile canggih yang gw bikin buat ngakses dan nganalisis database akademik Indonesia. UI-nya terinspirasi dari sistem ctOS di game Watch Dogs — dark theme, aksen cyan/hijau neon, typography monospace, dan efek hacker yang bikin pengalaman pake app ini jadi beda dari yang lain.
 
-### 🎨 **Design Philosophy**
-- **ctOS Aesthetic**: Dark theme dengan aksen cyan/hijau neon
-- **Futuristic UI**: Typography monospace, animasi glow, efek hacker
-- **Responsive Layout**: Mengikuti prinsip design Gojek untuk mobile-first experience
-- **Data Visualization**: Presentasi data yang elegan dan mudah dibaca
+Aplikasi ini nyediain akses komprehensif ke data dosen dan mahasiswa dari API PDDikti (Pangkalan Data Pendidikan Tinggi) milik Kementerian Pendidikan Indonesia. Jadi lu bisa search data mahasiswa, dosen, program studi, dan perguruan tinggi dari satu tempat dengan interface yang keren abis.
 
----
+### Kenapa DB-Cracker?
 
-## 🔧 **Update Terbaru (v1.3.0)**
-
-### ✅ **Perbaikan UI Overflow & Responsive Design**
-- **Fixed**: RenderFlex overflow 76 pixels pada hasil pencarian dosen
-- **Fixed**: RenderFlex overflow 8.7 pixels pada layout footer dan header
-- **Improved**: Responsive design untuk Android device M2102J20SG (1080x2400)
-- **Enhanced**: Text wrapping dan ellipsis untuk nama dosen panjang
-- **Optimized**: Ukuran font dan spacing untuk efisiensi ruang layar
-
-### 🔧 **Perbaikan API & Error Handling**
-- **Fixed**: API 404 error saat fetch detail dosen dengan multiple endpoint fallback
-- **Added**: Input validation dan sanitization untuk search query
-- **Enhanced**: Timeout handling 30 detik untuk request API
-- **Improved**: Error messages yang user-friendly berdasarkan jenis error
-- **Added**: Memory leak prevention dengan mounted check
-
-### 🎨 **Komponen UI Baru**
-- **CtOSErrorBoundary**: Widget untuk error handling yang konsisten
-- **CtOSLoadingWidget**: Loading states dengan animasi ctOS theme
-- **CtOSEmptyWidget**: Empty states dengan styling yang seragam
-
-### 🚀 **Peningkatan Performa (v1.2.0)**
-- **Real Data Display**: Hasil pencarian menampilkan data asli dari PDDikti API
-- **Better Error Handling**: Fallback yang lebih baik ketika API mengalami masalah
-- **Consistent UI**: Data yang ditampilkan konsisten antara pencarian dan detail view
+- **Satu app buat semua data pendidikan** — Ga perlu buka website PDDikti yang lemot, cukup search dari app ini
+- **Multi-source search** — Data diambil dari beberapa API sekaligus buat hasil yang lebih lengkap
+- **Offline-ready mock data** — Kalau API lagi down, app tetep bisa jalan pake data mock
+- **UI yang bikin betah** — Bukan app boring biasa, ini app dengan tema hacker yang immersive
 
 ---
 
-## ✨ **Fitur Utama**
+## 🏗️ Arsitektur Proyek
 
-### 🔍 **Database Scanner**
-- **Multi-Source Search**: Pencarian dari berbagai API pendidikan Indonesia
-- **Real-time Results**: Hasil pencarian langsung dengan animasi loading
-- **Smart Filtering**: Filter berdasarkan perguruan tinggi, program studi
-- **Comprehensive Data**: Akses ke semua data yang tersedia dari PDDikti API
+DB-Cracker dibangun dengan arsitektur yang terstruktur, memisahkan concern antara UI, business logic, dan data layer.
 
-### 👨‍🏫 **Profil Dosen Lengkap**
-- ✅ **Informasi Personal**: Nama, NIDN/NIDK, gelar, jenis kelamin, tempat/tanggal lahir
-- ✅ **Status Kepegawaian**: Ikatan kerja, status aktivitas, jabatan akademik
-- ✅ **Riwayat Pendidikan**: S1/S2/S3, perguruan tinggi asal, tahun lulus
-- ✅ **Jabatan Fungsional**: Asisten Ahli, Lektor, Lektor Kepala, Guru Besar
-- ✅ **Sertifikasi Dosen**: Status, tahun, nomor sertifikat
-- ✅ **Riwayat Mengajar**: Mata kuliah, semester, perguruan tinggi
-- ✅ **Portfolio Akademik**: Penelitian, pengabdian, karya ilmiah, paten
-- ✅ **Homebase & Penugasan**: Status homebase, riwayat penugasan
+### Diagram Arsitektur
 
-### 🎓 **Profil Mahasiswa Lengkap**
-- ✅ **Informasi Personal**: Nama, NIM, jenis kelamin, tempat/tanggal lahir, alamat
-- ✅ **Status Akademik**: Aktif, cuti, lulus, DO, semester saat ini
-- ✅ **Perguruan Tinggi**: Nama PT, program studi, akreditasi
-- ✅ **Riwayat Studi**: Tahun masuk, jalur masuk, semester aktif terakhir
-- ✅ **Transkrip Nilai**: Mata kuliah, nilai huruf & angka, SKS, IP per semester
-- ✅ **Riwayat Kelas**: Mata kuliah, nama dosen pengajar, kelas/kelompok
-- ✅ **Data Kelulusan**: Tanggal lulus, nomor ijazah, IPK, predikat, judul skripsi
-
-### 🏛️ **Database Perguruan Tinggi**
-- **Informasi PT**: Nama, status, akreditasi, alamat
-- **Program Studi**: Daftar prodi, akreditasi, jenjang
-- **Statistik**: Jumlah dosen, mahasiswa, lulusan
-
----
-
-## 🛠️ **Teknologi & Arsitektur**
-
-### **Frontend**
-- **Flutter 3.x**: Cross-platform mobile development
-- **Dart**: Programming language
-- **Material Design 3**: Modern UI components
-- **Custom Widgets**: ctOS-themed components
-
-### **Backend Integration**
-- **PDDikti API**: Sumber data utama Kementerian Pendidikan
-- **Multi-API Factory**: Integrasi berbagai sumber data
-- **HTTP Client**: Networking dengan error handling
-- **JSON Parsing**: Robust data processing
-
-### **Architecture Pattern**
-- **Clean Architecture**: Separation of concerns
-- **Repository Pattern**: Data abstraction layer
-- **Factory Pattern**: API service management
-- **Singleton Pattern**: State management
-
----
-
-## 🚀 **Instalasi & Setup**
-
-### **Prerequisites**
-```bash
-Flutter SDK >= 3.0.0
-Dart SDK >= 3.0.0
-Android Studio / VS Code
-Android Device / Emulator
+```mermaid
+graph TD
+    A[👤 User] --> B[📱 Screens / UI Layer]
+    B --> C[🔄 State Management - Provider + setState]
+    C --> D[🏭 API Factory Layer]
+    D --> E[🌐 MultiApiFactory - Orchestrator]
+    E --> F[📡 PddiktiApi - PDDIKTI API Client]
+    E --> G[🔗 ApiServicesIntegration - Third Party]
+    E --> H[🎭 MockPddiktiService - Mock Data]
+    F --> I[🏛️ API PDDIKTI Kemdiktisaintek]
+    G --> J[📚 Wikipedia API]
+    
+    B --> K[🧩 Widgets Layer]
+    K --> L[TerminalWindow]
+    K --> M[HackerSearchBar]
+    K --> N[CtOSContainer]
+    K --> O[ConsoleText]
+    
+    style A fill:#00E5FF,color:#000
+    style I fill:#00E676,color:#000
+    style J fill:#FF6D00,color:#000
 ```
 
-### **Clone Repository**
+### Struktur Folder
+
+```
+lib/
+├── main.dart                    # Entry point aplikasi
+├── api/                         # API layer & networking
+│   ├── pddikti_api.dart        # HTTP client ke PDDIKTI API
+│   ├── api_factory.dart         # Factory pattern + mock fallback
+│   ├── multi_api_factory.dart   # Multi-source search orchestrator
+│   └── api_services_integration.dart  # Integrasi API pihak ketiga
+├── models/                      # Data models
+│   ├── dosen.dart              # Model Dosen + DosenDetail + sub-models
+│   ├── mahasiswa.dart          # Model Mahasiswa + MahasiswaDetail
+│   ├── prodi.dart              # Model Prodi + ProdiDetail
+│   └── pt.dart                 # Model PerguruanTinggi + Detail
+├── screens/                     # UI screens
+│   ├── home_screen.dart        # Home + search mahasiswa
+│   ├── detail_screen.dart      # Detail mahasiswa (5 tab)
+│   ├── dosen_search_screen_new.dart  # Search dosen
+│   ├── dosen_detail_screen.dart     # Detail dosen (4 tab)
+│   ├── prodi_search_screen.dart     # Search program studi
+│   ├── prodi_detail_screen.dart     # Detail prodi
+│   └── pt_detail_screen.dart        # Detail perguruan tinggi
+├── services/                    # Business logic services
+│   └── mock_pddikti_service.dart    # Mock data untuk development
+├── utils/                       # Utilities & constants
+│   ├── constants.dart          # Colors, strings, dimensions, API config
+│   ├── screen_utils.dart       # Responsive design utilities
+│   └── json_utils.dart         # JSON parsing helpers
+└── widgets/                     # Reusable UI components
+    ├── terminal_window.dart    # Terminal-style container
+    ├── hacker_search_bar.dart  # Search bar dengan tema hacker
+    ├── hacker_result_item.dart # Result item card
+    ├── console_text.dart       # Typewriter text animation
+    ├── ctos_container.dart     # ctOS styled container
+    ├── ctos_layout.dart        # Responsive layout widgets
+    ├── error_boundary.dart     # Error/loading/empty states
+    ├── filter_search_bar.dart  # Filter autocomplete
+    ├── filter_overlay.dart     # Filter animation overlay
+    ├── filter_status.dart      # Active filter indicator
+    ├── flexible_text.dart      # Overflow-safe text
+    ├── responsive_card.dart    # Responsive card wrapper
+    ├── terminal_window.dart    # Terminal window container
+    ├── dosen_search_button.dart     # Navigasi ke search dosen
+    ├── dosen_navigation_button.dart # Navigasi ke detail dosen
+    └── prodi_navigation_button.dart # Navigasi ke detail prodi
+```
+
+---
+
+## ✨ Fitur Utama
+
+### 🔍 Database Scanner
+- **Multi-Source Search** — Pencarian dari beberapa API pendidikan Indonesia sekaligus
+- **Real-time Results** — Hasil pencarian langsung dengan animasi loading ctOS
+- **Smart Filtering** — Filter berdasarkan perguruan tinggi dengan autocomplete
+- **Input Sanitization** — Proteksi dari karakter berbahaya di search query
+
+### 👨‍🏫 Profil Dosen Lengkap
+- ✅ Informasi Personal — Nama, NIDN/NIDK, gelar, jenis kelamin
+- ✅ Status Kepegawaian — Ikatan kerja, status aktivitas, jabatan akademik
+- ✅ Riwayat Pendidikan — S1/S2/S3, perguruan tinggi asal
+- ✅ Riwayat Mengajar — Mata kuliah, semester, perguruan tinggi
+- ✅ Portfolio Akademik — Penelitian, pengabdian, karya ilmiah, paten
+
+### 🎓 Profil Mahasiswa Lengkap
+- ✅ Informasi Personal — Nama, NIM, jenis kelamin
+- ✅ Status Akademik — Aktif, cuti, lulus, DO
+- ✅ Perguruan Tinggi — Nama PT, program studi, akreditasi
+- ✅ Riwayat Studi — Tahun masuk, jalur masuk, semester aktif
+- ✅ Transkrip Nilai — Mata kuliah, nilai, SKS, IP per semester
+
+### 🏛️ Database Perguruan Tinggi
+- Informasi PT — Nama, status, akreditasi, alamat
+- Program Studi — Daftar prodi, akreditasi, jenjang
+- Statistik — Jumlah dosen, mahasiswa, lulusan
+
+---
+
+## 🛠️ Tech Stack
+
+| Teknologi | Versi | Fungsi |
+|-----------|-------|--------|
+| Flutter | 3.27.x | Cross-platform mobile framework |
+| Dart | 3.7.x | Programming language |
+| Provider | 6.x | State management |
+| HTTP | 0.13.x | Networking & API calls |
+| Material Design 3 | - | UI components |
+| GitHub Actions | - | CI/CD pipeline |
+
+---
+
+## 🚀 Instalasi & Setup
+
+### Prerequisites
+
+- Flutter SDK 3.27+ ([install guide](https://flutter.dev/docs/get-started/install))
+- Dart SDK 3.7+
+- Android Studio / VS Code
+- Git
+
+### Langkah Instalasi
+
 ```bash
+# 1. Clone repository
 git clone https://github.com/el-pablos/DB-Cracker.git
+
+# 2. Masuk ke folder project
 cd DB-Cracker
-```
 
-### **Install Dependencies**
-```bash
+# 3. Install dependencies
 flutter pub get
-```
 
-### **Run Application**
-```bash
-# Debug mode
+# 4. Jalankan aplikasi
 flutter run
 
-# Release mode
-flutter run --release
+# 5. Build APK release
+flutter build apk --release
+```
 
-# Specific device
-flutter run -d <device-id>
+### Jalankan Tests
+
+```bash
+# Run semua tests
+flutter test
+
+# Run dengan coverage
+flutter test --coverage
+
+# Run flutter analyze
+flutter analyze
 ```
 
 ---
 
-## 🎯 **Penggunaan**
+## 🔌 API yang Digunakan
 
-### **1. Pencarian Dosen**
-1. Buka aplikasi dan pilih "Cari Dosen"
-2. Masukkan nama dosen yang ingin dicari
-3. Gunakan filter perguruan tinggi jika diperlukan
-4. Tap pada hasil untuk melihat detail lengkap
-
-### **2. Pencarian Mahasiswa**
-1. Pilih "Cari Mahasiswa" dari menu utama
-2. Masukkan nama atau NIM mahasiswa
-3. Filter berdasarkan perguruan tinggi atau program studi
-4. Akses profil lengkap dengan riwayat akademik
-
-### **3. Database Perguruan Tinggi**
-1. Pilih "Database PT" untuk menjelajahi perguruan tinggi
-2. Cari berdasarkan nama atau lokasi
-3. Lihat detail lengkap termasuk program studi
+| API | Base URL | Fungsi |
+|-----|----------|--------|
+| PDDIKTI API | `api-pddikti.kemdiktisaintek.go.id` | Data utama mahasiswa, dosen, prodi, PT |
+| Kemdikbud API | `api-frontend.kemdikbud.go.id` | Data tambahan mahasiswa |
+| Wikipedia API | `id.wikipedia.org/api/rest_v1` | Informasi tambahan |
 
 ---
 
-## 🔧 **Konfigurasi**
+## 🧪 Testing
 
-### **API Configuration**
-```dart
-// lib/utils/constants.dart
-class ApiConstants {
-  static const String pddiktiBaseUrl = 'https://api-pddikti.kemdiktisaintek.go.id';
-  static const int requestTimeout = 30; // seconds
-  static const bool enableMockData = false; // for testing
-}
+Project ini dilengkapi dengan unit tests untuk memastikan kualitas kode:
+
+```
+test/
+├── utils/
+│   ├── json_utils_test.dart    # 14 test cases
+│   └── constants_test.dart     # 17 test cases
+└── (more tests coming)
 ```
 
-### **Theme Customization**
-```dart
-// lib/utils/constants.dart
-class CtOSColors {
-  static const Color primary = Color(0xFF00FF41);
-  static const Color secondary = Color(0xFF00D4FF);
-  static const Color background = Color(0xFF0A0A0A);
-  static const Color surface = Color(0xFF1A1A1A);
-}
-```
+Jalankan `flutter test` untuk verifikasi semua tests passed.
 
 ---
 
-## 🤝 **Contributing**
+## 🔄 CI/CD Pipeline
 
-Kontribusi sangat diterima! Silakan ikuti langkah berikut:
+Project ini menggunakan GitHub Actions untuk automated CI/CD:
 
-1. **Fork** repository ini
-2. **Create** feature branch (`git checkout -b feature/AmazingFeature`)
-3. **Commit** perubahan (`git commit -m 'Add: AmazingFeature'`)
-4. **Push** ke branch (`git push origin feature/AmazingFeature`)
-5. **Open** Pull Request
-
-### **Commit Convention**
-```
-add: menambahkan fitur baru
-fix: memperbaiki bug
-update: memperbarui fitur yang ada
-remove: menghapus fitur/file
-docs: perubahan dokumentasi
-style: perubahan styling/UI
-refactor: refactoring code
-test: menambahkan/memperbaiki test
-```
+1. **Analyze & Test** — Setiap push/PR ke `main` otomatis di-analyze dan di-test
+2. **Build Android** — APK release otomatis di-build setelah tests passed
+3. **Create Release** — Release otomatis dibuat dengan APK artifact
 
 ---
 
-## 📄 **License**
+## 📊 Changelog
+
+### v2.0.0 (Major Refactor)
+- 🔒 Fix 170+ print statements → conditional debugPrint (security)
+- 🐛 Fix memory leak timer di 6 screens
+- 🐛 Fix setState after dispose crashes
+- 🐛 Fix race condition di search
+- 🐛 Fix unsafe type casts di routing dan API
+- 🐛 Fix visual flickering dari random di build()
+- 🗑️ Hapus 749 baris dead code (backup files, unused widgets, unused services)
+- 🗑️ Hapus 4 unused dependencies (-1.1MB APK size)
+- 🗑️ Hapus endpoint fiktif (anime API, dll)
+- ♻️ Extract shared JSON utils (hapus 17 duplikasi)
+- ♻️ Rewrite ScreenUtils biar beneran responsif
+- ♻️ Tambah AppDimensions, AppTextStyles, ApiConstants
+- ⚡ Kurangi artificial delays (4-7s → <1.5s)
+- ✅ Tambah 31 unit tests (100% passed)
+- 🔧 Setup GitHub Actions CI/CD
+- 📝 Rewrite README lengkap
+
+### v1.3.0
+- Fix RenderFlex overflow pada hasil pencarian
+- Fix API 404 error dengan multiple endpoint fallback
+- Tambah input validation dan sanitization
+- Tambah CtOSErrorBoundary, CtOSLoadingWidget, CtOSEmptyWidget
+
+### v1.2.0
+- Real data display dari PDDikti API
+- Better error handling dengan fallback
+- Consistent UI antara pencarian dan detail view
+
+---
+
+## 👨‍💻 Kontributor
+
+<div align="center">
+
+| <img src="https://github.com/el-pablos.png" width="100" style="border-radius: 50%"> |
+|:---:|
+| **Pablos** |
+| *Full-Stack Developer & Mobile App Specialist* |
+| [![GitHub](https://img.shields.io/badge/GitHub-el--pablos-100000?style=flat&logo=github)](https://github.com/el-pablos) |
+
+</div>
+
+---
+
+## 📄 License
 
 Distributed under the MIT License. See `LICENSE` for more information.
 
 ---
 
-## 👨‍💻 **Author**
+## 🙏 Acknowledgments
 
-<div align="center">
-
-**Pablos**
-*Full-Stack Developer & Mobile App Specialist*
-
-[![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/el-pablos)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com/in/pablos)
-[![Email](https://img.shields.io/badge/Email-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:yeteprem.end23juni@gmail.com)
-
-*"Building the future, one line of code at a time"*
-
-</div>
-
----
-
-## 🙏 **Acknowledgments**
-
-- **Kementerian Pendidikan Indonesia** - Untuk API PDDikti
-- **Flutter Team** - Framework yang luar biasa
-- **Watch Dogs Series** - Inspirasi design ctOS
-- **Gojek Design Team** - Referensi responsive layout
-- **Open Source Community** - Dukungan dan kontribusi
+- **Kementerian Pendidikan Indonesia** — Untuk API PDDikti
+- **Flutter Team** — Framework yang luar biasa
+- **Watch Dogs Series** — Inspirasi design ctOS
+- **Open Source Community** — Dukungan dan kontribusi
 
 ---
 
 <div align="center">
 
-**⭐ Jika proyek ini membantu, jangan lupa berikan star! ⭐**
+**⭐ Kalau project ini berguna, jangan lupa kasih star ya! ⭐**
 
 *Made with ❤️ by Pablos*
+
+![Repo Stats](https://img.shields.io/github/stars/el-pablos/DB-Cracker?style=social)
+![Repo Forks](https://img.shields.io/github/forks/el-pablos/DB-Cracker?style=social)
+![Last Commit](https://img.shields.io/github/last-commit/el-pablos/DB-Cracker?style=flat-square)
+![Repo Size](https://img.shields.io/github/repo-size/el-pablos/DB-Cracker?style=flat-square)
 
 </div>
