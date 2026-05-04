@@ -145,19 +145,36 @@ class MahasiswaDetail {
             json['nomor_mahasiswa'] ??
             ''),
         jenisDaftar: _ensureString(
-            json['jenis_daftar'] ?? json['jalur_daftar'] ?? 'Reguler'),
+            json['jenis_daftar'] ?? json['jalur_daftar'] ?? ''),
         idPt: _ensureString(json['id_pt'] ?? json['pt_id'] ?? ''),
         idSms: _ensureString(json['id_sms'] ?? json['sms_id'] ?? ''),
         jenisKelamin:
             _ensureString(json['jenis_kelamin'] ?? json['gender'] ?? ''),
         jenjang:
             _ensureString(json['jenjang'] ?? json['jenjang_pendidikan'] ?? ''),
-        statusSaatIni: _ensureString(json['status_saat_ini'] ??
+        statusSatIni: _ensureString(json['status_saat_ini'] ??
             json['status'] ??
             json['status_mahasiswa'] ??
-            'Aktif'),
+            ''),
         tahunMasuk:
             _ensureString(json['tahun_masuk'] ?? json['angkatan'] ?? ''),
+        // Fields yang sebelumnya ga diisi — sekarang di-mapping
+        semesterSaatIni: _ensureString(json['semester_saat_ini'] ?? json['semester'] ?? ''),
+        tempatLahir: _ensureString(json['tempat_lahir'] ?? ''),
+        tanggalLahir: _ensureString(json['tanggal_lahir'] ?? ''),
+        agama: _ensureString(json['agama'] ?? ''),
+        alamat: _ensureString(json['alamat'] ?? ''),
+        akreditasiProdi: _ensureString(json['akreditasi_prodi'] ?? json['akreditasi'] ?? ''),
+        jalurMasuk: _ensureString(json['jalur_masuk'] ?? ''),
+        tahunLulus: _ensureString(json['tahun_lulus'] ?? ''),
+        semesterAktifTerakhir: _ensureString(json['semester_aktif_terakhir'] ?? ''),
+        statusAkhir: _ensureString(json['status_akhir'] ?? ''),
+        tanggalLulus: _ensureString(json['tanggal_lulus'] ?? ''),
+        nomorIjazah: _ensureString(json['nomor_ijazah'] ?? ''),
+        ipk: _ensureString(json['ipk'] ?? ''),
+        totalSks: _ensureString(json['total_sks'] ?? json['sks_total'] ?? ''),
+        predikatKelulusan: _ensureString(json['predikat_kelulusan'] ?? ''),
+        judulSkripsi: _ensureString(json['judul_skripsi'] ?? json['judul_tugas_akhir'] ?? ''),
       );
     } catch (e) {
       if (kDebugMode) debugPrint('Error parsing MahasiswaDetail: $e');

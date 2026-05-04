@@ -149,20 +149,38 @@ class DosenDetail {
 
   factory DosenDetail.fromJson(Map<String, dynamic> json) {
     try {
-      // Data dosen dasar
+      // Data dosen dasar — mapping SEMUA field dari JSON
       final dosenDetail = DosenDetail(
         idSdm: _getStringValue(json, 'id_sdm'),
         namaDosen: _getStringValue(json, 'nama_dosen'),
+        nidn: _getStringValue(json, 'nidn'),
+        nidk: _getStringValue(json, 'nidk'),
+        gelarDepan: _getStringValue(json, 'gelar_depan'),
+        gelarBelakang: _getStringValue(json, 'gelar_belakang'),
+        jenisKelamin: _getStringValue(json, 'jenis_kelamin'),
+        tempatLahir: _getStringValue(json, 'tempat_lahir'),
+        tanggalLahir: _getStringValue(json, 'tanggal_lahir'),
+        agama: _getStringValue(json, 'agama'),
         namaPt: _getStringValue(json, 'nama_pt'),
         namaProdi: _getStringValue(json, 'nama_prodi'),
-        jenisKelamin: _getStringValue(json, 'jenis_kelamin'),
-        jabatanAkademik: _getStringValue(json, 'jabatan_akademik'),
-        pendidikanTertinggi: _getStringValue(json, 'pendidikan_tertinggi'),
-        statusIkatanKerja: _getStringValue(json, 'status_ikatan_kerja'),
-        statusAktivitas: _getStringValue(json, 'status_aktivitas'),
         homePt: _getStringValue(json, 'home_pt'),
         homeProdi: _getStringValue(json, 'home_prodi'),
         rasioHomebase: _getStringValue(json, 'rasio_homebase'),
+        statusHomebase: _getStringValue(json, 'status_homebase'),
+        jabatanAkademik: _getStringValue(json, 'jabatan_akademik'),
+        tanggalSk: _getStringValue(json, 'tanggal_sk'),
+        tmtJabatan: _getStringValue(json, 'tmt_jabatan'),
+        nomorSk: _getStringValue(json, 'nomor_sk'),
+        pendidikanTertinggi: _getStringValue(json, 'pendidikan_tertinggi'),
+        bidangIlmu: _getStringValue(json, 'bidang_ilmu'),
+        institusiPendidikan: _getStringValue(json, 'institusi_pendidikan'),
+        tahunLulusTertinggi: _getStringValue(json, 'tahun_lulus_tertinggi'),
+        statusIkatanKerja: _getStringValue(json, 'status_ikatan_kerja'),
+        statusAktivitas: _getStringValue(json, 'status_aktivitas'),
+        statusSertifikasi: _getStringValue(json, 'status_sertifikasi'),
+        tahunSertifikasi: _getStringValue(json, 'tahun_sertifikasi'),
+        nomorSertifikat: _getStringValue(json, 'nomor_sertifikat'),
+        bidangSertifikasi: _getStringValue(json, 'bidang_sertifikasi'),
 
         // Data portofolio akan diisi nanti jika ada
         penelitian: [],
@@ -171,6 +189,8 @@ class DosenDetail {
         paten: [],
         riwayatStudi: [],
         riwayatMengajar: [],
+        riwayatPenugasan: [],
+        riwayatJabatan: [],
       );
 
       return dosenDetail;
