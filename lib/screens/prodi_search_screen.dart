@@ -78,6 +78,8 @@ class _ProdiSearchScreenState extends State<ProdiSearchScreen> with SingleTicker
     });
 
     final String query = _searchController.text.trim();
+    final sanitizedQuery = query.replaceAll('<', '').replaceAll('>', '').replaceAll('"', '').replaceAll("'", '');
+    if (sanitizedQuery.length < 2) { setState(() { _errorMessage = 'Minimal 2 karakter untuk pencarian'; _isLoading = false; }); _isSearchInProgress = false; return; }
     
     _addConsoleMessageWithDelay("MEMULAI PEMINDAIAN DATABASE PRODI UNTUK: $query", 300);
     _addConsoleMessageWithDelay("MELEWATI LAPISAN KEAMANAN 1...", 800);
@@ -91,6 +93,8 @@ class _ProdiSearchScreenState extends State<ProdiSearchScreen> with SingleTicker
 
   Future<void> _actuallyPerformSearch() async {
     final String query = _searchController.text.trim();
+    final sanitizedQuery = query.replaceAll('<', '').replaceAll('>', '').replaceAll('"', '').replaceAll("'", '');
+    if (sanitizedQuery.length < 2) { setState(() { _errorMessage = 'Minimal 2 karakter untuk pencarian'; _isLoading = false; }); _isSearchInProgress = false; return; }
     if (query.isEmpty) {
       setState(() {
         _searchResults = [];
