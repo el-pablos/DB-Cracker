@@ -101,7 +101,10 @@ class MyApp extends StatelessWidget {
         onGenerateRoute: (settings) {
           if (settings.name?.startsWith('/prodi/detail/') ?? false) {
             final prodiId = settings.name!.split('/').last;
-            final args = settings.arguments as Map<String, dynamic>?;
+            if (prodiId.isEmpty) return MaterialPageRoute(builder: (_) => const HomeScreen());
+            final args = settings.arguments is Map<String, dynamic>
+                ? settings.arguments as Map<String, dynamic>
+                : null;
             return MaterialPageRoute(
               builder: (context) => ProdiDetailScreen(
                 prodiId: prodiId,
@@ -110,7 +113,10 @@ class MyApp extends StatelessWidget {
             );
           } else if (settings.name?.startsWith('/pt/detail/') ?? false) {
             final ptId = settings.name!.split('/').last;
-            final args = settings.arguments as Map<String, dynamic>?;
+            if (ptId.isEmpty) return MaterialPageRoute(builder: (_) => const HomeScreen());
+            final args = settings.arguments is Map<String, dynamic>
+                ? settings.arguments as Map<String, dynamic>
+                : null;
             return MaterialPageRoute(
               builder: (context) => PTDetailScreen(
                 ptId: ptId,
@@ -119,7 +125,10 @@ class MyApp extends StatelessWidget {
             );
           } else if (settings.name?.startsWith('/dosen/detail/') ?? false) {
             final dosenId = settings.name!.split('/').last;
-            final args = settings.arguments as Map<String, dynamic>?;
+            if (dosenId.isEmpty) return MaterialPageRoute(builder: (_) => const HomeScreen());
+            final args = settings.arguments is Map<String, dynamic>
+                ? settings.arguments as Map<String, dynamic>
+                : null;
             return MaterialPageRoute(
               builder: (context) => DosenDetailScreen(
                 dosenId: dosenId,
@@ -127,7 +136,8 @@ class MyApp extends StatelessWidget {
               ),
             );
           }
-          return null;
+          // Fallback route ke home
+          return MaterialPageRoute(builder: (_) => const HomeScreen());
         },
       ),
     );

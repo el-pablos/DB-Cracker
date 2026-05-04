@@ -136,7 +136,7 @@ class PddiktiApi {
           // Response is a Map with mahasiswa field
           if (kDebugMode) debugPrint('Response is a Map with mahasiswa field');
           if (responseData.containsKey('mahasiswa')) {
-            mhsList = responseData['mahasiswa'] as List<dynamic>;
+            mhsList = (responseData['mahasiswa'] is List ? (responseData['mahasiswa'] is List ? responseData['mahasiswa'] as List<dynamic> : <dynamic>[]) : <dynamic>[]);
           } else {
             if (kDebugMode) debugPrint('Data mahasiswa tidak ditemukan dalam Map');
             return [];
@@ -209,7 +209,7 @@ class PddiktiApi {
           dosenList = responseData;
         } else if (responseData is Map<String, dynamic> &&
             responseData.containsKey('dosen')) {
-          dosenList = responseData['dosen'] as List<dynamic>;
+          dosenList = (responseData['dosen'] is List ? (responseData['dosen'] is List ? responseData['dosen'] as List<dynamic> : <dynamic>[]) : <dynamic>[]);
         } else {
           return [];
         }
@@ -263,7 +263,7 @@ class PddiktiApi {
           ptList = responseData;
         } else if (responseData is Map<String, dynamic> &&
             responseData.containsKey('pt')) {
-          ptList = responseData['pt'] as List<dynamic>;
+          ptList = (responseData['pt'] is List ? (responseData['pt'] is List ? responseData['pt'] as List<dynamic> : <dynamic>[]) : <dynamic>[]);
         } else {
           return [];
         }
@@ -318,7 +318,7 @@ class PddiktiApi {
           prodiList = responseData;
         } else if (responseData is Map<String, dynamic> &&
             responseData.containsKey('prodi')) {
-          prodiList = responseData['prodi'] as List<dynamic>;
+          prodiList = (responseData['prodi'] is List ? (responseData['prodi'] is List ? responseData['prodi'] as List<dynamic> : <dynamic>[]) : <dynamic>[]);
         } else {
           return [];
         }
@@ -664,7 +664,7 @@ class PddiktiApi {
         ptList = responseData;
       } else if (responseData is Map<String, dynamic> &&
           responseData.containsKey('pt')) {
-        ptList = responseData['pt'] as List<dynamic>;
+        ptList = (responseData['pt'] is List ? (responseData['pt'] is List ? responseData['pt'] as List<dynamic> : <dynamic>[]) : <dynamic>[]);
       } else {
         throw Exception('Data perguruan tinggi tidak ditemukan');
       }
@@ -709,7 +709,7 @@ class PddiktiApi {
         prodiList = responseData;
       } else if (responseData is Map<String, dynamic> &&
           responseData.containsKey('prodi')) {
-        prodiList = responseData['prodi'] as List<dynamic>;
+        prodiList = (responseData['prodi'] is List ? (responseData['prodi'] is List ? responseData['prodi'] as List<dynamic> : <dynamic>[]) : <dynamic>[]);
       } else {
         throw Exception('Data program studi tidak ditemukan');
       }
@@ -740,7 +740,7 @@ class PddiktiApi {
             descList = descData;
           } else if (descData is Map<String, dynamic> &&
               descData.containsKey('prodi')) {
-            descList = descData['prodi'] as List<dynamic>;
+            descList = (descData['prodi'] is List ? descData['prodi'] as List<dynamic> : <dynamic>[]);
           }
 
           if (descList.isNotEmpty && descList.first is Map<String, dynamic>) {
@@ -781,7 +781,7 @@ class PddiktiApi {
         prodiList = responseData;
       } else if (responseData is Map<String, dynamic> &&
           responseData.containsKey('prodi')) {
-        prodiList = responseData['prodi'] as List<dynamic>;
+        prodiList = (responseData['prodi'] is List ? (responseData['prodi'] is List ? responseData['prodi'] as List<dynamic> : <dynamic>[]) : <dynamic>[]);
       } else {
         return [];
       }
@@ -857,7 +857,7 @@ class PddiktiApi {
           dataList = responseData;
         } else if (responseData is Map<String, dynamic> &&
             responseData.containsKey('riwayat_studi')) {
-          dataList = responseData['riwayat_studi'] as List<dynamic>;
+          dataList = (responseData['riwayat_studi'] is List ? (responseData['riwayat_studi'] is List ? responseData['riwayat_studi'] as List<dynamic> : <dynamic>[]) : <dynamic>[]);
         }
 
         return dataList
@@ -887,7 +887,7 @@ class PddiktiApi {
           dataList = responseData;
         } else if (responseData is Map<String, dynamic> &&
             responseData.containsKey('riwayat_mengajar')) {
-          dataList = responseData['riwayat_mengajar'] as List<dynamic>;
+          dataList = (responseData['riwayat_mengajar'] is List ? (responseData['riwayat_mengajar'] is List ? responseData['riwayat_mengajar'] as List<dynamic> : <dynamic>[]) : <dynamic>[]);
         }
 
         return dataList
@@ -916,7 +916,7 @@ class PddiktiApi {
           dataList = responseData;
         } else if (responseData is Map<String, dynamic> &&
             responseData.containsKey('penelitian')) {
-          dataList = responseData['penelitian'] as List<dynamic>;
+          dataList = (responseData['penelitian'] is List ? (responseData['penelitian'] is List ? responseData['penelitian'] as List<dynamic> : <dynamic>[]) : <dynamic>[]);
         }
 
         return dataList
@@ -945,7 +945,7 @@ class PddiktiApi {
           dataList = responseData;
         } else if (responseData is Map<String, dynamic> &&
             responseData.containsKey('pengabdian')) {
-          dataList = responseData['pengabdian'] as List<dynamic>;
+          dataList = (responseData['pengabdian'] is List ? (responseData['pengabdian'] is List ? responseData['pengabdian'] as List<dynamic> : <dynamic>[]) : <dynamic>[]);
         }
 
         return dataList
@@ -974,7 +974,7 @@ class PddiktiApi {
           dataList = responseData;
         } else if (responseData is Map<String, dynamic> &&
             responseData.containsKey('karya')) {
-          dataList = responseData['karya'] as List<dynamic>;
+          dataList = (responseData['karya'] is List ? (responseData['karya'] is List ? responseData['karya'] as List<dynamic> : <dynamic>[]) : <dynamic>[]);
         }
 
         return dataList
@@ -1003,7 +1003,7 @@ class PddiktiApi {
           dataList = responseData;
         } else if (responseData is Map<String, dynamic> &&
             responseData.containsKey('paten')) {
-          dataList = responseData['paten'] as List<dynamic>;
+          dataList = (responseData['paten'] is List ? (responseData['paten'] is List ? responseData['paten'] as List<dynamic> : <dynamic>[]) : <dynamic>[]);
         }
 
         return dataList
@@ -1033,7 +1033,7 @@ class PddiktiApi {
           dataList = responseData;
         } else if (responseData is Map<String, dynamic> &&
             responseData.containsKey('riwayat_jabatan')) {
-          dataList = responseData['riwayat_jabatan'] as List<dynamic>;
+          dataList = (responseData['riwayat_jabatan'] is List ? (responseData['riwayat_jabatan'] is List ? responseData['riwayat_jabatan'] as List<dynamic> : <dynamic>[]) : <dynamic>[]);
         }
 
         return dataList
@@ -1062,7 +1062,7 @@ class PddiktiApi {
           dataList = responseData;
         } else if (responseData is Map<String, dynamic> &&
             responseData.containsKey('riwayat_penugasan')) {
-          dataList = responseData['riwayat_penugasan'] as List<dynamic>;
+          dataList = (responseData['riwayat_penugasan'] is List ? (responseData['riwayat_penugasan'] is List ? responseData['riwayat_penugasan'] as List<dynamic> : <dynamic>[]) : <dynamic>[]);
         }
 
         return dataList
@@ -1153,7 +1153,7 @@ class PddiktiApi {
           dataList = responseData;
         } else if (responseData is Map<String, dynamic> &&
             responseData.containsKey('riwayat_semester')) {
-          dataList = responseData['riwayat_semester'] as List<dynamic>;
+          dataList = (responseData['riwayat_semester'] is List ? (responseData['riwayat_semester'] is List ? responseData['riwayat_semester'] as List<dynamic> : <dynamic>[]) : <dynamic>[]);
         }
 
         return dataList
@@ -1183,7 +1183,7 @@ class PddiktiApi {
           dataList = responseData;
         } else if (responseData is Map<String, dynamic> &&
             responseData.containsKey('riwayat_nilai')) {
-          dataList = responseData['riwayat_nilai'] as List<dynamic>;
+          dataList = (responseData['riwayat_nilai'] is List ? (responseData['riwayat_nilai'] is List ? responseData['riwayat_nilai'] as List<dynamic> : <dynamic>[]) : <dynamic>[]);
         }
 
         return dataList
@@ -1213,7 +1213,7 @@ class PddiktiApi {
           dataList = responseData;
         } else if (responseData is Map<String, dynamic> &&
             responseData.containsKey('riwayat_kelas')) {
-          dataList = responseData['riwayat_kelas'] as List<dynamic>;
+          dataList = (responseData['riwayat_kelas'] is List ? (responseData['riwayat_kelas'] is List ? responseData['riwayat_kelas'] as List<dynamic> : <dynamic>[]) : <dynamic>[]);
         }
 
         return dataList
