@@ -46,6 +46,16 @@ class MultiApiFactory {
     return Uri.encodeComponent(text);
   }
 
+  /// Wrap future dengan try-catch biar partial failure ga bikin semua gagal
+  Future<List<Mahasiswa>> _safeSearch(Future<List<Mahasiswa>> future) async {
+    try {
+      return await future;
+    } catch (e) {
+      if (kDebugMode) debugPrint('Partial search failed: $e');
+      return [];
+    }
+  }
+
   /// Metode utama untuk mencari data mahasiswa dari berbagai sumber API
   Future<List<Mahasiswa>> searchAllSources(String keyword) async {
     List<Mahasiswa> results = [];
@@ -60,28 +70,24 @@ class MultiApiFactory {
     // Cari data dari API lain dan konversi ke model Mahasiswa
     futures.add(_searchFromEducationApis(keyword));
 
-    // Jalankan semua pencarian secara paralel
-    try {
-      final responses = await Future.wait(futures);
+    // Jalankan semua pencarian secara paralel dengan error isolation
+    final responses = await Future.wait(
+      futures.map((f) => _safeSearch(f)).toList(),
+    );
 
-      // Gabungkan semua hasil
-      for (var response in responses) {
-        results.addAll(response);
-      }
-
-      // Hapus duplikat berdasarkan kombinasi nama dan nim
-      final uniqueResults = <String, Mahasiswa>{};
-      for (var mahasiswa in results) {
-        final key = '${mahasiswa.nama}-${mahasiswa.nim}';
-        uniqueResults[key] = mahasiswa;
-      }
-
-      return uniqueResults.values.toList();
-    } catch (e) {
-      if (kDebugMode) debugPrint('Error mencari dari semua sumber: $e');
-      // Jika terjadi error, coba kembalikan apa saja yang berhasil
-      return results;
+    // Gabungkan semua hasil
+    for (var response in responses) {
+      results.addAll(response);
     }
+
+    // Hapus duplikat berdasarkan kombinasi nama dan nim
+    final uniqueResults = <String, Mahasiswa>{};
+    for (var mahasiswa in results) {
+      final key = '${mahasiswa.nama}-${mahasiswa.nim}';
+      uniqueResults[key] = mahasiswa;
+    }
+
+    return uniqueResults.values.toList();
   }
 
   /// Cari data mahasiswa dari API pendidikan lain
