@@ -117,3 +117,56 @@ class AnimationDurations {
   static const Duration slow = Duration(milliseconds: 500);
   static const Duration verySlow = Duration(milliseconds: 800);
 }
+
+/// Spacing & dimension constants
+class AppDimensions {
+  static const double xs = 4.0;
+  static const double sm = 8.0;
+  static const double md = 12.0;
+  static const double lg = 16.0;
+  static const double xl = 24.0;
+  static const double xxl = 32.0;
+
+  static const double radiusSm = 4.0;
+  static const double radiusMd = 8.0;
+  static const double radiusLg = 12.0;
+  static const double radiusXl = 20.0;
+}
+
+/// Text style constants buat konsistensi typography
+class AppTextStyles {
+  static const String fontFamily = 'Courier';
+
+  static const TextStyle heading = TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 18,
+    fontWeight: FontWeight.bold,
+    color: CtOSColors.textPrimary,
+  );
+
+  static const TextStyle body = TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 14,
+    color: CtOSColors.textPrimary,
+  );
+
+  static const TextStyle caption = TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 12,
+    color: CtOSColors.textSecondary,
+  );
+
+  static const TextStyle small = TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 10,
+    color: CtOSColors.textSecondary,
+  );
+}
+
+/// API configuration constants
+class ApiConstants {
+  static const String pddiktiBaseUrl = 'https://api-pddikti.kemdiktisaintek.go.id';
+  static const String kemdikbudBaseUrl = 'https://api-frontend.kemdikbud.go.id';
+  static const Duration defaultTimeout = Duration(seconds: 20);
+  static const Duration searchTimeout = Duration(seconds: 30);
+}
