@@ -1,96 +1,87 @@
 import 'package:flutter/material.dart';
 
-/// Utility class untuk mengatur responsivitas UI dan mencegah overflow
+/// Utility class untuk responsive design yang beneran jalan
+/// Harus panggil init(context) di build() sebelum pake method lain
 class ScreenUtils {
-  // Spesifik untuk Poco X3 Pro (1080 x 2400 pixels)
-  static double screenWidth = 1080;
-  static double screenHeight = 2400;
-  static double blockSizeHorizontal = 1080 / 100; // Tetap 10.8
-  static double blockSizeVertical = 2400 / 100; // Tetap 24.0
+  static double screenWidth = 0;
+  static double screenHeight = 0;
+  static double blockSizeHorizontal = 0;
+  static double blockSizeVertical = 0;
 
-  // Batasan ukuran untuk mencegah overflow
   static const double maxFontSize = 24.0;
   static const double maxIconSize = 48.0;
 
-  /// Mengembalikan ukuran relatif terhadap lebar layar dengan batasan
-  static double w(double width) {
-    return width; // Gunakan ukuran tetap untuk mencegah masalah layout
+  /// Inisialisasi dengan MediaQuery dari context
+  static void init(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+    screenWidth = mediaQuery.size.width;
+    screenHeight = mediaQuery.size.height;
+    blockSizeHorizontal = screenWidth / 100;
+    blockSizeVertical = screenHeight / 100;
   }
 
-  /// Mengembalikan ukuran relatif terhadap tinggi layar dengan batasan
-  static double h(double height) {
-    return height; // Gunakan ukuran tetap untuk mencegah masalah layout
-  }
+  /// Cek apakah layar mobile (< 600px)
+  static bool isMobileScreen() => screenWidth > 0 && screenWidth < 600;
 
-  /// Skala font sesuai ukuran layar dengan batasan maksimum
-  static double sp(double size) {
-    return size.clamp(0.0, maxFontSize); // Terapkan batasan untuk font
-  }
+  /// Cek apakah layar tablet (600-1024px)
+  static bool isTabletScreen() => screenWidth >= 600 && screenWidth < 1024;
 
-  /// Ukuran ikon dengan batasan maksimum
-  static double iconSize(double size) {
-    return size.clamp(0.0, maxIconSize); // Terapkan batasan untuk ikon
-  }
+  /// Cek apakah layar desktop (>= 1024px)
+  static bool isDesktopScreen() => screenWidth >= 1024;
 
-  /// Menentukan apakah layar berukuran kecil (mobile)
-  static bool isMobileScreen() {
-    return true; // Selalu true karena ini app mobile
-  }
-
-  /// Mendapatkan faktor skala yang sesuai
+  /// Scale factor berdasarkan ukuran layar
   static double getScaleFactor() {
-    return 1.0; // Gunakan skala 1.0 untuk konsistensi
+    if (screenWidth <= 0) return 1.0;
+    if (screenWidth < 360) return 0.8;
+    if (screenWidth < 600) return 1.0;
+    if (screenWidth < 1024) return 1.2;
+    return 1.4;
   }
 
-  /// Membuat ukuran padding yang responsif dan aman
-  static EdgeInsets responsivePadding(
-      {double horizontal = 0.0,
-      double vertical = 0.0,
-      double all = 0.0,
-      double left = 0.0,
-      double right = 0.0,
-      double top = 0.0,
-      double bottom = 0.0}) {
-    if (all > 0) {
-      return EdgeInsets.all(all);
-    }
-
-    return EdgeInsets.fromLTRB(
-        left > 0
-            ? left
-            : horizontal > 0
-                ? horizontal
-                : 0.0,
-        top > 0
-            ? top
-            : vertical > 0
-                ? vertical
-                : 0.0,
-        right > 0
-            ? right
-            : horizontal > 0
-                ? horizontal
-                : 0.0,
-        bottom > 0
-            ? bottom
-            : vertical > 0
-                ? vertical
-                : 0.0);
+  /// Font size yang di-clamp antara min dan max
+  static double sp(double size) {
+    final scaled = size * getScaleFactor();
+    return scaled.clamp(8.0, maxFontSize);
   }
 
-  /// Mendapatkan font size yang aman berdasarkan ukuran layar
+  /// Icon size yang di-clamp
+  static double iconSize(double size) {
+    return size.clamp(12.0, maxIconSize);
+  }
+
+  /// Adaptive font size
   static double getAdaptiveFontSize(double size) {
     return size.clamp(8.0, maxFontSize);
   }
 
-  static void init(BuildContext context) {}
+  /// Responsive padding helper
+  static EdgeInsets responsivePadding({
+    double all = 0,
+    double horizontal = 0,
+    double vertical = 0,
+    double left = 0,
+    double top = 0,
+    double right = 0,
+    double bottom = 0,
+  }) {
+    if (all > 0) return EdgeInsets.all(all);
+    if (horizontal > 0 || vertical > 0) {
+      return EdgeInsets.symmetric(horizontal: horizontal, vertical: vertical);
+    }
+    return EdgeInsets.only(
+      left: left > 0 ? left : horizontal,
+      top: top > 0 ? top : vertical,
+      right: right > 0 ? right : horizontal,
+      bottom: bottom > 0 ? bottom : vertical,
+    );
+  }
 }
 
-/// Extension untuk memudahkan penggunaan
+/// Extension buat num supaya bisa pake .w, .h, .sp langsung
 extension SizeExtension on num {
-  double get w => toDouble(); // Ubah ke nilai tetap
-  double get h => toDouble(); // Ubah ke nilai tetap
-  double get sp => toDouble(); // Ubah ke nilai tetap
+  double get w => toDouble() * (ScreenUtils.screenWidth > 0 ? ScreenUtils.screenWidth / 375 : 1.0);
+  double get h => toDouble() * (ScreenUtils.screenHeight > 0 ? ScreenUtils.screenHeight / 812 : 1.0);
+  double get sp => ScreenUtils.sp(toDouble());
   double get iconSize => ScreenUtils.iconSize(toDouble());
   double get adaptiveFont => ScreenUtils.getAdaptiveFontSize(toDouble());
 }
