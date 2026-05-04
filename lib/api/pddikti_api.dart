@@ -123,6 +123,7 @@ class PddiktiApi {
             );
       }
     } catch (e) {
+      print('PDDIKTI_DEBUG: _makeApiRequest ERROR: $e');
       if (kDebugMode) debugPrint('Error in _makeApiRequest: $e');
 
       if (e.toString().contains('XMLHttpRequest')) {
@@ -153,6 +154,8 @@ class PddiktiApi {
       final response = await _makeApiRequest(url);
 
       if (kDebugMode) debugPrint('Status kode: ${response.statusCode}');
+      // TEMP DEBUG - remove after testing
+      print('PDDIKTI_DEBUG: statusCode=${response.statusCode}, bodyLen=${response.body.length}');
 
       if (response.statusCode == 200) {
         // Parse response - could be a List or a Map
@@ -162,7 +165,7 @@ class PddiktiApi {
         // Handle different response structures
         if (responseData is List) {
           // Response is already a list of mahasiswa
-          if (kDebugMode) debugPrint('Response is a direct List');
+          print('PDDIKTI_DEBUG: responseData is List, length=${responseData.length}');
           mhsList = responseData;
         } else if (responseData is Map<String, dynamic>) {
           // Response is a Map with mahasiswa field
