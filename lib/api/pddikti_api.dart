@@ -35,23 +35,11 @@ class PddiktiApi {
   // Header untuk request - wajib ada x-api-key dan X-User-IP
   Map<String, String> get _headers => {
         'Accept': 'application/json, text/plain, */*',
-        'Accept-Encoding': 'gzip, deflate, br, zstd',
         'Accept-Language': 'en-US,en;q=0.9,id;q=0.8',
-        'Connection': 'keep-alive',
-        'Content-Type': 'application/json',
-        'DNT': '1',
-        'Host': 'api-pddikti.kemdiktisaintek.go.id',
         'Origin': 'https://pddikti.kemdiktisaintek.go.id',
         'Referer': 'https://pddikti.kemdiktisaintek.go.id/',
-        'sec-ch-ua': '"Microsoft Edge";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
-        'sec-ch-ua-mobile': '?0',
-        'sec-ch-ua-platform': '"Windows"',
-        'sec-fetch-dest': 'empty',
-        'sec-fetch-mode': 'cors',
-        'sec-fetch-site': 'same-site',
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0',
         'x-api-key': 'undefined',
-        'X-User-IP': '103.0.0.1',
       };
 
   // Encode parameter URL
