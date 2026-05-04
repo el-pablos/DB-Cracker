@@ -37,6 +37,10 @@ class Prodi {
     }
   }
 
+  Map<String, dynamic> toJson() => {'id': id, 'nama': nama, 'jenjang': jenjang, 'pt': pt, 'pt_singkat': ptSingkat};
+  @override
+  String toString() => 'Prodi(id: $id, nama: $nama, jenjang: $jenjang)';
+
   // Helper method untuk mengambil nilai string dengan aman
   static String _getStringValue(Map<String, dynamic> json, String key) {
     final value = json[key];
@@ -194,6 +198,10 @@ class ProdiDetail {
       );
     }
   }
+
+  Map<String, dynamic> toJson() => {'id_sp': idSp, 'id_sms': idSms, 'nama_pt': namaPt, 'kode_pt': kodePt, 'nama_prodi': namaProdi, 'kode_prodi': kodeProdi, 'akreditasi': akreditasi, 'status': status, 'visi': visi, 'misi': misi};
+  @override
+  String toString() => 'ProdiDetail(id: $idSms, nama: $namaProdi, akreditasi: $akreditasi)';
 
   // Helper method untuk mengambil nilai string dengan aman
   static String _getStringValue(Map<String, dynamic> json, String key) {

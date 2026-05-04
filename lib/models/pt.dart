@@ -33,6 +33,10 @@ class PerguruanTinggi {
     }
   }
 
+  Map<String, dynamic> toJson() => {'id': id, 'kode': kode, 'nama_singkat': namaSingkat, 'nama': nama};
+  @override
+  String toString() => 'PerguruanTinggi(id: $id, kode: $kode, nama: $nama)';
+
   // Helper method untuk mengambil nilai string dengan aman
   static String _getStringValue(Map<String, dynamic> json, String key) {
     final value = json[key];
@@ -184,6 +188,10 @@ class PerguruanTinggiDetail {
     }
   }
 
+  Map<String, dynamic> toJson() => {'id_sp': idSp, 'kode_pt': kodePt, 'nama_pt': namaPt, 'nm_singkat': nmSingkat, 'status_pt': statusPt, 'akreditasi_pt': akreditasiPt, 'alamat': alamat, 'email': email, 'website': website};
+  @override
+  String toString() => 'PerguruanTinggiDetail(id: $idSp, nama: $namaPt, akreditasi: $akreditasiPt)';
+
   // Helper method untuk mengambil nilai string dengan aman
   static String _getStringValue(Map<String, dynamic> json, String key) {
     final value = json[key];
@@ -261,6 +269,10 @@ class ProdiPt {
       );
     }
   }
+
+  Map<String, dynamic> toJson() => {'id_sms': idSms, 'kode_prodi': kodeProdi, 'nama_prodi': namaProdi, 'akreditasi': akreditasi, 'jenjang_prodi': jenjangProdi, 'status_prodi': statusProdi, 'jumlah_dosen': jumlahDosen, 'jumlah_mahasiswa': jumlahMahasiswa, 'rasio': rasio};
+  @override
+  String toString() => 'ProdiPt(nama: $namaProdi, jenjang: $jenjangProdi, akreditasi: $akreditasi)';
 
   // Helper method untuk mengambil nilai string dengan aman
   static String _getStringValue(Map<String, dynamic> json, String key) {

@@ -40,6 +40,10 @@ class Mahasiswa {
     }
   }
 
+  Map<String, dynamic> toJson() => {'id': id, 'nama': nama, 'nim': nim, 'nama_pt': namaPt, 'singkatan_pt': singkatanPt, 'nama_prodi': namaProdi};
+  @override
+  String toString() => 'Mahasiswa(id: $id, nama: $nama, nim: $nim)';
+
   // Helper method to ensure all values are strings
   static String _ensureString(dynamic value) {
     if (value == null) return '';
@@ -207,6 +211,10 @@ class MahasiswaDetail {
     }
   }
 
+  Map<String, dynamic> toJson() => {'id': id, 'nama': nama, 'nim': nim, 'jenis_kelamin': jenisKelamin, 'status_saat_ini': statusSaatIni, 'nama_pt': namaPt, 'kode_pt': kodePt, 'prodi': prodi, 'kode_prodi': kodeProdi, 'tahun_masuk': tahunMasuk, 'ipk': ipk, 'total_sks': totalSks, 'judul_skripsi': judulSkripsi};
+  @override
+  String toString() => 'MahasiswaDetail(id: $id, nama: $nama, nim: $nim, prodi: $prodi)';
+
   // Helper method to ensure all values are strings
   static String _ensureString(dynamic value) {
     if (value == null) return '';
@@ -256,6 +264,10 @@ class MahasiswaRiwayatSemester {
       );
     }
   }
+
+  Map<String, dynamic> toJson() => {'id_sms': idSms, 'nama_semester': namaSemester, 'status_semester': statusSemester, 'ips': ips, 'ipk': ipk, 'sks_total': sksTotal, 'sks_diambil': sksDiambil, 'sks_lulus': sksLulus};
+  @override
+  String toString() => 'MahasiswaRiwayatSemester(semester: $namaSemester, ips: $ips)';
 
   static String _ensureString(dynamic value) {
     if (value == null) return '';
@@ -307,6 +319,10 @@ class MahasiswaNilai {
     }
   }
 
+  Map<String, dynamic> toJson() => {'id_sms': idSms, 'kode_matkul': kodeMatkul, 'nama_matkul': namaMatkul, 'sks': sks, 'nilai_huruf': nilaiHuruf, 'nilai_angka': nilaiAngka, 'nama_semester': namaSemester};
+  @override
+  String toString() => 'MahasiswaNilai(matkul: $namaMatkul, nilai: $nilaiHuruf)';
+
   static String _ensureString(dynamic value) {
     if (value == null) return '';
     return value.toString();
@@ -352,6 +368,10 @@ class MahasiswaKelas {
       );
     }
   }
+
+  Map<String, dynamic> toJson() => {'id_sms': idSms, 'kode_matkul': kodeMatkul, 'nama_matkul': namaMatkul, 'nama_kelas': namaKelas, 'nama_dosen': namaDosen, 'nama_semester': namaSemester};
+  @override
+  String toString() => 'MahasiswaKelas(matkul: $namaMatkul, dosen: $namaDosen)';
 
   static String _ensureString(dynamic value) {
     if (value == null) return '';
