@@ -100,6 +100,7 @@ class _DetailScreenState extends State<DetailScreen>
     _mahasiswaFuture = _multiApiFactory.getMahasiswaDetail(widget.mahasiswaId);
 
     _mahasiswaFuture.then((_) {
+      if (!mounted) return;
       setState(() {
         _isDecrypting = false;
       });
