@@ -43,3 +43,30 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Environment & Secrets
+.env
+.env.*
+*.key
+*.pem
+*.jks
+*.keystore
+key.properties
+credentials.json
+secrets/
+
+# Coverage
+coverage/
+*.lcov
+
+# Generated
+*.g.dart
+*.freezed.dart
+*.mocks.dart
+
+# IDE (personal)
+.vscode/
+
+# Analysis report (generated)
+DEEP_DIVE_ANALYSIS.md
+PROMPTING_OPUS_REFACTOR.md
