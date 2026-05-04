@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 class PerguruanTinggi {
   final String id;
   final String kode;
@@ -20,8 +21,8 @@ class PerguruanTinggi {
         nama: _getStringValue(json, 'nama'),
       );
     } catch (e) {
-      print('Error parsing PerguruanTinggi: $e');
-      print('JSON data: $json');
+      if (kDebugMode) debugPrint('Error parsing PerguruanTinggi: $e');
+      if (kDebugMode) debugPrint('JSON data: $json');
       // Return objek dengan field kosong daripada melempar error
       return PerguruanTinggi(
         id: '',
@@ -152,8 +153,8 @@ class PerguruanTinggiDetail {
         jumlahProdi: prodiJson != null ? _getStringValue(prodiJson, 'jumlah_prodi') : '',
       );
     } catch (e) {
-      print('Error parsing PerguruanTinggiDetail: $e');
-      print('JSON data: $json');
+      if (kDebugMode) debugPrint('Error parsing PerguruanTinggiDetail: $e');
+      if (kDebugMode) debugPrint('JSON data: $json');
       // Return objek dengan data minimal untuk mencegah error
       return PerguruanTinggiDetail(
         kelompok: '',
@@ -240,8 +241,8 @@ class ProdiPt {
         indikatorKelengkapanData: _getStringValue(json, 'indikator_kelengkapan_data'),
       );
     } catch (e) {
-      print('Error parsing ProdiPt: $e');
-      print('JSON data: $json');
+      if (kDebugMode) debugPrint('Error parsing ProdiPt: $e');
+      if (kDebugMode) debugPrint('JSON data: $json');
       // Return objek dengan field kosong daripada melempar error
       return ProdiPt(
         idSms: '',

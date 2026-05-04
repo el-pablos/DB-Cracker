@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
@@ -129,7 +130,7 @@ class _DetailScreenState extends State<DetailScreen>
         });
       }
     } catch (e) {
-      print('Error fetching external data: $e');
+      if (kDebugMode) debugPrint('Error fetching external data: $e');
     }
   }
 

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
@@ -140,7 +141,7 @@ class _DosenSearchScreenNewState extends State<DosenSearchScreenNew>
       });
 
       // Log error for debugging
-      print('Search error: $e');
+      if (kDebugMode) debugPrint('Search error: $e');
     }
   }
 

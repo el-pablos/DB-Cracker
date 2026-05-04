@@ -42,12 +42,12 @@ class PddiktiApi {
         // Decode the response, could be a List or a Map
         return json.decode(response.body);
       } catch (e) {
-        print('Error parsing JSON: $e');
+        if (kDebugMode) debugPrint('Error parsing JSON: $e');
         throw Exception('Format data tidak valid: $e');
       }
     } else {
-      print('HTTP Error: ${response.statusCode}');
-      print('Response body: ${response.body}');
+      if (kDebugMode) debugPrint('HTTP Error: ${response.statusCode}');
+      if (kDebugMode) debugPrint('Response body: ${response.body}');
       throw Exception('$errorMessage: ${response.statusCode}');
     }
   }
@@ -70,7 +70,7 @@ class PddiktiApi {
                 Duration(seconds: timeoutSeconds),
               );
         } catch (e) {
-          print('Direct web request failed: $e');
+          if (kDebugMode) debugPrint('Direct web request failed: $e');
           // Jika direct request gagal, kita bisa mencoba pendekatan lain
 
           // Opsi 2: Gunakan JSONp atau backend proxy Anda sendiri
@@ -91,7 +91,7 @@ class PddiktiApi {
             );
       }
     } catch (e) {
-      print('Error in _makeApiRequest: $e');
+      if (kDebugMode) debugPrint('Error in _makeApiRequest: $e');
 
       if (e.toString().contains('XMLHttpRequest')) {
         throw Exception(
@@ -111,16 +111,16 @@ class PddiktiApi {
   // Pencarian mahasiswa
   Future<List<Mahasiswa>> searchMahasiswa(String keyword) async {
     try {
-      print('Mencari mahasiswa: $keyword');
+      if (kDebugMode) debugPrint('Mencari mahasiswa: $keyword');
 
       final Uri url =
           Uri.parse('$baseUrl/pencarian/mhs/${_parseString(keyword)}');
-      print('URL Request: ${url.toString()}');
+      if (kDebugMode) debugPrint('URL Request: ${url.toString()}');
 
       // Request dengan error handling yang lebih baik
       final response = await _makeApiRequest(url);
 
-      print('Status kode: ${response.statusCode}');
+      if (kDebugMode) debugPrint('Status kode: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         // Parse response - could be a List or a Map
@@ -130,35 +130,35 @@ class PddiktiApi {
         // Handle different response structures
         if (responseData is List) {
           // Response is already a list of mahasiswa
-          print('Response is a direct List');
+          if (kDebugMode) debugPrint('Response is a direct List');
           mhsList = responseData;
         } else if (responseData is Map<String, dynamic>) {
           // Response is a Map with mahasiswa field
-          print('Response is a Map with mahasiswa field');
+          if (kDebugMode) debugPrint('Response is a Map with mahasiswa field');
           if (responseData.containsKey('mahasiswa')) {
             mhsList = responseData['mahasiswa'] as List<dynamic>;
           } else {
-            print('Data mahasiswa tidak ditemukan dalam Map');
+            if (kDebugMode) debugPrint('Data mahasiswa tidak ditemukan dalam Map');
             return [];
           }
         } else {
-          print('Unknown response type: ${responseData.runtimeType}');
+          if (kDebugMode) debugPrint('Unknown response type: ${responseData.runtimeType}');
           return [];
         }
 
-        print('Ditemukan ${mhsList.length} mahasiswa');
+        if (kDebugMode) debugPrint('Ditemukan ${mhsList.length} mahasiswa');
 
         return mhsList
             .map((item) {
               if (item is! Map<String, dynamic>) {
-                print('Item is not a Map: $item');
+                if (kDebugMode) debugPrint('Item is not a Map: $item');
                 return Mahasiswa.fromJson({});
               }
 
               try {
                 return Mahasiswa.fromJson(item);
               } catch (e) {
-                print('Error parsing Mahasiswa: $e');
+                if (kDebugMode) debugPrint('Error parsing Mahasiswa: $e');
                 return Mahasiswa.fromJson({});
               }
             })
@@ -171,7 +171,7 @@ class PddiktiApi {
         throw Exception('Gagal mencari data: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error: $e');
+      if (kDebugMode) debugPrint('Error: $e');
       // Buat pesan error yang lebih informatif
       if (e.toString().contains('XMLHttpRequest')) {
         throw Exception(
@@ -191,7 +191,7 @@ class PddiktiApi {
   // Pencarian dosen
   Future<List<Dosen>> searchDosen(String keyword) async {
     try {
-      print('Mencari dosen: $keyword');
+      if (kDebugMode) debugPrint('Mencari dosen: $keyword');
 
       final Uri url =
           Uri.parse('$baseUrl/pencarian/dosen/${_parseString(keyword)}');
@@ -232,7 +232,7 @@ class PddiktiApi {
         throw Exception('Gagal mencari dosen: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error: $e');
+      if (kDebugMode) debugPrint('Error: $e');
       if (e.toString().contains('403')) {
         throw Exception(
             'Server menolak akses (403 Forbidden). Coba gunakan VPN atau gunakan versi mobile.');
@@ -245,7 +245,7 @@ class PddiktiApi {
   // Pencarian PT
   Future<List<PerguruanTinggi>> searchPt(String keyword) async {
     try {
-      print('Mencari perguruan tinggi: $keyword');
+      if (kDebugMode) debugPrint('Mencari perguruan tinggi: $keyword');
 
       final Uri url =
           Uri.parse('$baseUrl/pencarian/pt/${_parseString(keyword)}');
@@ -287,7 +287,7 @@ class PddiktiApi {
             'Gagal mencari perguruan tinggi: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error: $e');
+      if (kDebugMode) debugPrint('Error: $e');
       if (e.toString().contains('403')) {
         throw Exception(
             'Server menolak akses (403 Forbidden). Coba gunakan VPN atau gunakan versi mobile.');
@@ -300,7 +300,7 @@ class PddiktiApi {
   // Pencarian prodi
   Future<List<Prodi>> searchProdi(String keyword) async {
     try {
-      print('Mencari program studi: $keyword');
+      if (kDebugMode) debugPrint('Mencari program studi: $keyword');
 
       final Uri url =
           Uri.parse('$baseUrl/pencarian/prodi/${_parseString(keyword)}');
@@ -341,7 +341,7 @@ class PddiktiApi {
         throw Exception('Gagal mencari program studi: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error: $e');
+      if (kDebugMode) debugPrint('Error: $e');
       if (e.toString().contains('403')) {
         throw Exception(
             'Server menolak akses (403 Forbidden). Coba gunakan VPN atau gunakan versi mobile.');
@@ -354,7 +354,7 @@ class PddiktiApi {
   // Detail mahasiswa
   Future<MahasiswaDetail> getMahasiswaDetail(String mahasiswaId) async {
     try {
-      print('Fetching mahasiswa detail for ID: $mahasiswaId');
+      if (kDebugMode) debugPrint('Fetching mahasiswa detail for ID: $mahasiswaId');
 
       // The API might expect a different format of ID, let's try to handle both formats
       String processedId = mahasiswaId;
@@ -363,24 +363,24 @@ class PddiktiApi {
 
       final Uri url =
           Uri.parse('$baseUrl/detail/mhs/${_parseString(processedId)}');
-      print('Detail URL: ${url.toString()}');
+      if (kDebugMode) debugPrint('Detail URL: ${url.toString()}');
 
       final response = await _makeApiRequest(url);
-      print('Detail response status: ${response.statusCode}');
+      if (kDebugMode) debugPrint('Detail response status: ${response.statusCode}');
 
       // Log the response body for debugging
-      print(
+      if (kDebugMode) debugPrint(
           'Response body: ${response.body.substring(0, min(100, response.body.length))}...');
 
       if (response.statusCode == 200) {
         // Try to parse the response
         final dynamic responseData = json.decode(response.body);
-        print('Response type: ${responseData.runtimeType}');
+        if (kDebugMode) debugPrint('Response type: ${responseData.runtimeType}');
 
         // Handle different response formats
         if (responseData is List) {
           // Direct list response
-          print('Detail response is a List with ${responseData.length} items');
+          if (kDebugMode) debugPrint('Detail response is a List with ${responseData.length} items');
           if (responseData.isEmpty) {
             throw Exception('Detail mahasiswa kosong');
           }
@@ -391,20 +391,20 @@ class PddiktiApi {
           }
 
           // Log the keys available in the item
-          print('Available keys: ${(item).keys.toList()}');
+          if (kDebugMode) debugPrint('Available keys: ${(item).keys.toList()}');
 
           return MahasiswaDetail.fromJson(item);
         } else if (responseData is Map<String, dynamic>) {
           // Map with mahasiswa field
-          print('Detail response is a Map');
+          if (kDebugMode) debugPrint('Detail response is a Map');
 
           // Check for mahasiswa field
           if (!responseData.containsKey('mahasiswa')) {
             // Try direct parsing if no mahasiswa field
-            print('No mahasiswa field, trying direct parsing');
+            if (kDebugMode) debugPrint('No mahasiswa field, trying direct parsing');
 
             // Log the keys available in the response
-            print('Available keys: ${responseData.keys.toList()}');
+            if (kDebugMode) debugPrint('Available keys: ${responseData.keys.toList()}');
 
             // Some APIs might return the detail directly without a mahasiswa field
             // Let's try to parse it directly if it has essential fields
@@ -435,7 +435,7 @@ class PddiktiApi {
         throw Exception('Gagal mendapatkan detail: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error in getMahasiswaDetail: $e');
+      if (kDebugMode) debugPrint('Error in getMahasiswaDetail: $e');
       if (e.toString().contains('403')) {
         throw Exception(
             'Server menolak akses (403 Forbidden). Coba gunakan VPN atau gunakan versi mobile.');
@@ -448,7 +448,7 @@ class PddiktiApi {
   // Detail dosen lengkap dengan semua data
   Future<DosenDetail> getDosenDetailLengkap(String dosenId) async {
     try {
-      print('Fetching comprehensive dosen detail for ID: $dosenId');
+      if (kDebugMode) debugPrint('Fetching comprehensive dosen detail for ID: $dosenId');
 
       // Ambil profil dasar dosen
       final DosenDetail profileDasar = await getDosenProfile(dosenId);
@@ -509,7 +509,7 @@ class PddiktiApi {
         riwayatPenugasan: results[7] as List<DosenPenugasan>? ?? [],
       );
     } catch (e) {
-      print('Error in getDosenDetailLengkap: $e');
+      if (kDebugMode) debugPrint('Error in getDosenDetailLengkap: $e');
       // Fallback ke profil dasar jika ada error
       return await getDosenProfile(dosenId);
     }
@@ -518,7 +518,7 @@ class PddiktiApi {
   // Detail dosen profil dasar
   Future<DosenDetail> getDosenProfile(String dosenId) async {
     try {
-      print('Fetching dosen profile for ID: $dosenId');
+      if (kDebugMode) debugPrint('Fetching dosen profile for ID: $dosenId');
 
       // Coba beberapa endpoint yang mungkin
       List<String> possibleEndpoints = [
@@ -533,19 +533,19 @@ class PddiktiApi {
       // Coba setiap endpoint sampai ada yang berhasil
       for (String endpoint in possibleEndpoints) {
         try {
-          print('Trying endpoint: $endpoint');
+          if (kDebugMode) debugPrint('Trying endpoint: $endpoint');
           final Uri url = Uri.parse(endpoint);
           response = await _makeApiRequest(url);
 
           if (response.statusCode == 200) {
             workingEndpoint = endpoint;
-            print('Success with endpoint: $endpoint');
+            if (kDebugMode) debugPrint('Success with endpoint: $endpoint');
             break;
           } else {
-            print('Failed with endpoint: $endpoint (${response.statusCode})');
+            if (kDebugMode) debugPrint('Failed with endpoint: $endpoint (${response.statusCode})');
           }
         } catch (e) {
-          print('Error with endpoint: $endpoint - $e');
+          if (kDebugMode) debugPrint('Error with endpoint: $endpoint - $e');
           continue;
         }
       }
@@ -616,7 +616,7 @@ class PddiktiApi {
             'Gagal mendapatkan detail dosen: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error in getDosenProfile: $e');
+      if (kDebugMode) debugPrint('Error in getDosenProfile: $e');
       // Return mock data untuk development
       return _createMockDosenDetail(dosenId);
     }
@@ -681,7 +681,7 @@ class PddiktiApi {
 
       return PerguruanTinggiDetail.fromJson(item);
     } catch (e) {
-      print('Error: $e');
+      if (kDebugMode) debugPrint('Error: $e');
       if (e.toString().contains('403')) {
         throw Exception(
             'Server menolak akses (403 Forbidden). Coba gunakan VPN atau gunakan versi mobile.');
@@ -748,12 +748,12 @@ class PddiktiApi {
           }
         }
       } catch (e) {
-        print('Error mendapatkan deskripsi prodi: $e');
+        if (kDebugMode) debugPrint('Error mendapatkan deskripsi prodi: $e');
       }
 
       return ProdiDetail.fromJson(item, descJson);
     } catch (e) {
-      print('Error: $e');
+      if (kDebugMode) debugPrint('Error: $e');
       if (e.toString().contains('403')) {
         throw Exception(
             'Server menolak akses (403 Forbidden). Coba gunakan VPN atau gunakan versi mobile.');
@@ -801,7 +801,7 @@ class PddiktiApi {
           .where((p) => p.idSms.isNotEmpty)
           .toList();
     } catch (e) {
-      print('Error: $e');
+      if (kDebugMode) debugPrint('Error: $e');
       if (e.toString().contains('403')) {
         throw Exception(
             'Server menolak akses (403 Forbidden). Coba gunakan VPN atau gunakan versi mobile.');
@@ -832,7 +832,7 @@ class PddiktiApi {
         return {};
       }
     } catch (e) {
-      print('Error: $e');
+      if (kDebugMode) debugPrint('Error: $e');
       if (e.toString().contains('403')) {
         throw Exception(
             'Server menolak akses (403 Forbidden). Coba gunakan VPN atau gunakan versi mobile.');
@@ -866,7 +866,7 @@ class PddiktiApi {
             .toList();
       }
     } catch (e) {
-      print('Error getting dosen riwayat studi: $e');
+      if (kDebugMode) debugPrint('Error getting dosen riwayat studi: $e');
     }
     return [];
   }
@@ -896,7 +896,7 @@ class PddiktiApi {
             .toList();
       }
     } catch (e) {
-      print('Error getting dosen riwayat mengajar: $e');
+      if (kDebugMode) debugPrint('Error getting dosen riwayat mengajar: $e');
     }
     return [];
   }
@@ -925,7 +925,7 @@ class PddiktiApi {
             .toList();
       }
     } catch (e) {
-      print('Error getting dosen penelitian: $e');
+      if (kDebugMode) debugPrint('Error getting dosen penelitian: $e');
     }
     return [];
   }
@@ -954,7 +954,7 @@ class PddiktiApi {
             .toList();
       }
     } catch (e) {
-      print('Error getting dosen pengabdian: $e');
+      if (kDebugMode) debugPrint('Error getting dosen pengabdian: $e');
     }
     return [];
   }
@@ -983,7 +983,7 @@ class PddiktiApi {
             .toList();
       }
     } catch (e) {
-      print('Error getting dosen karya: $e');
+      if (kDebugMode) debugPrint('Error getting dosen karya: $e');
     }
     return [];
   }
@@ -1012,7 +1012,7 @@ class PddiktiApi {
             .toList();
       }
     } catch (e) {
-      print('Error getting dosen paten: $e');
+      if (kDebugMode) debugPrint('Error getting dosen paten: $e');
     }
     return [];
   }
@@ -1042,7 +1042,7 @@ class PddiktiApi {
             .toList();
       }
     } catch (e) {
-      print('Error getting dosen riwayat jabatan: $e');
+      if (kDebugMode) debugPrint('Error getting dosen riwayat jabatan: $e');
     }
     return [];
   }
@@ -1071,7 +1071,7 @@ class PddiktiApi {
             .toList();
       }
     } catch (e) {
-      print('Error getting dosen riwayat penugasan: $e');
+      if (kDebugMode) debugPrint('Error getting dosen riwayat penugasan: $e');
     }
     return [];
   }
@@ -1079,7 +1079,7 @@ class PddiktiApi {
   // Method untuk mengambil detail lengkap mahasiswa
   Future<MahasiswaDetail> getMahasiswaDetailLengkap(String mahasiswaId) async {
     try {
-      print('Fetching comprehensive mahasiswa detail for ID: $mahasiswaId');
+      if (kDebugMode) debugPrint('Fetching comprehensive mahasiswa detail for ID: $mahasiswaId');
 
       // Ambil profil dasar mahasiswa
       final MahasiswaDetail profileDasar =
@@ -1131,7 +1131,7 @@ class PddiktiApi {
         riwayatKelas: results[2] as List<MahasiswaKelas>? ?? [],
       );
     } catch (e) {
-      print('Error in getMahasiswaDetailLengkap: $e');
+      if (kDebugMode) debugPrint('Error in getMahasiswaDetailLengkap: $e');
       // Fallback ke profil dasar jika ada error
       return await getMahasiswaDetail(mahasiswaId);
     }
@@ -1162,7 +1162,7 @@ class PddiktiApi {
             .toList();
       }
     } catch (e) {
-      print('Error getting mahasiswa riwayat semester: $e');
+      if (kDebugMode) debugPrint('Error getting mahasiswa riwayat semester: $e');
     }
     return [];
   }
@@ -1192,7 +1192,7 @@ class PddiktiApi {
             .toList();
       }
     } catch (e) {
-      print('Error getting mahasiswa riwayat nilai: $e');
+      if (kDebugMode) debugPrint('Error getting mahasiswa riwayat nilai: $e');
     }
     return [];
   }
@@ -1222,7 +1222,7 @@ class PddiktiApi {
             .toList();
       }
     } catch (e) {
-      print('Error getting mahasiswa riwayat kelas: $e');
+      if (kDebugMode) debugPrint('Error getting mahasiswa riwayat kelas: $e');
     }
     return [];
   }

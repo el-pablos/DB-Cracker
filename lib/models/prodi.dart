@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 class Prodi {
   final String id;
   final String nama;
@@ -23,8 +24,8 @@ class Prodi {
         ptSingkat: _getStringValue(json, 'pt_singkat'),
       );
     } catch (e) {
-      print('Error parsing Prodi: $e');
-      print('JSON data: $json');
+      if (kDebugMode) debugPrint('Error parsing Prodi: $e');
+      if (kDebugMode) debugPrint('JSON data: $json');
       // Return objek dengan field kosong daripada melempar error
       return Prodi(
         id: '',
@@ -155,8 +156,8 @@ class ProdiDetail {
         rataMasaStudi: descJson != null ? _getStringValue(descJson, 'rata_masa_studi') : '',
       );
     } catch (e) {
-      print('Error parsing ProdiDetail: $e');
-      print('JSON data: $json');
+      if (kDebugMode) debugPrint('Error parsing ProdiDetail: $e');
+      if (kDebugMode) debugPrint('JSON data: $json');
       // Return objek dengan data minimal untuk mencegah error
       return ProdiDetail(
         idSp: '',

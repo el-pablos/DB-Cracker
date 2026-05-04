@@ -134,7 +134,7 @@ class MockPddiktiService {
     await Future.delayed(Duration(milliseconds: 800 + _random.nextInt(1200)));
     
     if (kIsWeb) {
-      print('Using mock data for web');
+      if (kDebugMode) debugPrint('Using mock data for web');
     }
     
     // Filter berdasarkan keyword
@@ -160,7 +160,7 @@ class MockPddiktiService {
     await Future.delayed(Duration(milliseconds: 800 + _random.nextInt(1200)));
     
     if (kIsWeb) {
-      print('Using mock data for prodi search (web)');
+      if (kDebugMode) debugPrint('Using mock data for prodi search (web)');
     }
     
     // Filter berdasarkan keyword
@@ -186,7 +186,7 @@ class MockPddiktiService {
     await Future.delayed(Duration(milliseconds: 800 + _random.nextInt(1200)));
     
     if (kIsWeb) {
-      print('Using mock data for PT search (web)');
+      if (kDebugMode) debugPrint('Using mock data for PT search (web)');
     }
     
     // Filter berdasarkan keyword
@@ -210,7 +210,7 @@ class MockPddiktiService {
     await Future.delayed(Duration(milliseconds: 800 + _random.nextInt(1200)));
     
     if (kIsWeb) {
-      print('Using mock data for mahasiswa detail (web)');
+      if (kDebugMode) debugPrint('Using mock data for mahasiswa detail (web)');
     }
     
     // Cari mahasiswa berdasarkan ID di data sample
@@ -219,7 +219,7 @@ class MockPddiktiService {
       orElse: () {
         // If not found by exact ID, create a sample data for any ID
         // This ensures we always return something for any ID
-        print('Creating sample data for unknown mahasiswa ID: $mahasiswaId');
+        if (kDebugMode) debugPrint('Creating sample data for unknown mahasiswa ID: $mahasiswaId');
         return {
           "id": mahasiswaId,
           "nama": "Mahasiswa ${mahasiswaId.substring(0, min(5, mahasiswaId.length))}",
@@ -255,7 +255,7 @@ class MockPddiktiService {
     await Future.delayed(Duration(milliseconds: 800 + _random.nextInt(1200)));
     
     if (kIsWeb) {
-      print('Using mock data for prodi detail (web)');
+      if (kDebugMode) debugPrint('Using mock data for prodi detail (web)');
     }
     
     // Cari prodi berdasarkan ID di data sample
@@ -263,7 +263,7 @@ class MockPddiktiService {
       (item) => item['id'] == prodiId,
       orElse: () {
         // Jika tidak ditemukan dengan ID yang tepat, buat data sampel
-        print('Creating sample data for unknown prodi ID: $prodiId');
+        if (kDebugMode) debugPrint('Creating sample data for unknown prodi ID: $prodiId');
         return {
           "id": prodiId,
           "nama": "Program Studi ${prodiId.substring(0, min(5, prodiId.length))}",
@@ -318,7 +318,7 @@ class MockPddiktiService {
     await Future.delayed(Duration(milliseconds: 800 + _random.nextInt(1200)));
     
     if (kIsWeb) {
-      print('Using mock data for PT detail (web)');
+      if (kDebugMode) debugPrint('Using mock data for PT detail (web)');
     }
     
     // Cari PT berdasarkan ID di data sample
@@ -326,7 +326,7 @@ class MockPddiktiService {
       (item) => item['id'] == ptId,
       orElse: () {
         // Jika tidak ditemukan dengan ID yang tepat, buat data sampel
-        print('Creating sample data for unknown PT ID: $ptId');
+        if (kDebugMode) debugPrint('Creating sample data for unknown PT ID: $ptId');
         return {
           "id": ptId,
           "kode": "${100000 + _random.nextInt(900000)}",
@@ -372,7 +372,7 @@ class MockPddiktiService {
     await Future.delayed(Duration(milliseconds: 800 + _random.nextInt(1200)));
     
     if (kIsWeb) {
-      print('Using mock data for PT prodi list (web)');
+      if (kDebugMode) debugPrint('Using mock data for PT prodi list (web)');
     }
     
     // Buat 5 program studi acak untuk PT ini

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
@@ -98,12 +99,12 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
       _addConsoleMessageWithDelay("AKSES DIBERIKAN", 600);
 
       // Log detail yang berhasil diambil
-      print('Successfully fetched dosen detail: ${dosenDetail.namaDosen}');
+      if (kDebugMode) debugPrint('Successfully fetched dosen detail: ${dosenDetail.namaDosen}');
     }).catchError((error) {
       setState(() {
         _isLoading = false;
       });
-      print('Error fetching dosen detail: $error');
+      if (kDebugMode) debugPrint('Error fetching dosen detail: $error');
       _addConsoleMessageWithDelay("ERROR: Gagal mengambil data", 300);
       _addConsoleMessageWithDelay("MENGGUNAKAN DATA FALLBACK", 600);
 

@@ -44,39 +44,39 @@ class ApiFactory {
     // Prioritaskan API asli, hanya gunakan mock jika dipaksa
     // Untuk web production, tetap coba API asli dulu
     final shouldUseMock = _forceMock;
-    print(
+    if (kDebugMode) debugPrint(
         'ApiFactory._useMockData: $shouldUseMock (forceMock: $_forceMock, kIsWeb: $kIsWeb, kDebugMode: $kDebugMode)');
     return shouldUseMock;
   }
 
   /// Pencarian mahasiswa
   Future<List<Mahasiswa>> searchMahasiswa(String keyword) async {
-    print(
+    if (kDebugMode) debugPrint(
         'ApiFactory.searchMahasiswa: keyword="$keyword", useMockData=$_useMockData');
 
     if (_useMockData) {
-      print('ApiFactory.searchMahasiswa: Using mock service');
+      if (kDebugMode) debugPrint('ApiFactory.searchMahasiswa: Using mock service');
       final results = await _mockService.searchMahasiswa(keyword);
-      print(
+      if (kDebugMode) debugPrint(
           'ApiFactory.searchMahasiswa: Mock service returned ${results.length} results');
       return results;
     } else {
       try {
-        print('ApiFactory.searchMahasiswa: Using real API');
+        if (kDebugMode) debugPrint('ApiFactory.searchMahasiswa: Using real API');
         final results = await _realApi.searchMahasiswa(keyword);
-        print(
+        if (kDebugMode) debugPrint(
             'ApiFactory.searchMahasiswa: Real API returned ${results.length} results');
         return results;
       } catch (e) {
-        print('Error with real API, fallback to mock: $e');
+        if (kDebugMode) debugPrint('Error with real API, fallback to mock: $e');
         // Fallback to mock data if the real API fails with specific errors
         if (e.toString().contains('403') ||
             e.toString().contains('CORS') ||
             e.toString().contains('XMLHttpRequest')) {
-          print(
+          if (kDebugMode) debugPrint(
               'ApiFactory.searchMahasiswa: Fallback to mock service due to API error');
           final results = await _mockService.searchMahasiswa(keyword);
-          print(
+          if (kDebugMode) debugPrint(
               'ApiFactory.searchMahasiswa: Mock fallback returned ${results.length} results');
           return results;
         }
@@ -91,16 +91,16 @@ class ApiFactory {
       return _mockService.getMahasiswaDetail(mahasiswaId);
     } else {
       try {
-        print('Requesting mahasiswa detail from real API for id: $mahasiswaId');
+        if (kDebugMode) debugPrint('Requesting mahasiswa detail from real API for id: $mahasiswaId');
         return await _realApi.getMahasiswaDetail(mahasiswaId);
       } catch (e) {
-        print('Error with real API, fallback to mock: $e');
+        if (kDebugMode) debugPrint('Error with real API, fallback to mock: $e');
 
         // Always fallback to mock on detail errors to ensure the UI can show something
         try {
           return _mockService.getMahasiswaDetail(mahasiswaId);
         } catch (mockError) {
-          print('Error with mock service too: $mockError');
+          if (kDebugMode) debugPrint('Error with mock service too: $mockError');
 
           // If even the mock service fails, create a minimal valid object
           return MahasiswaDetail(
@@ -126,40 +126,40 @@ class ApiFactory {
 
   /// Pencarian dosen
   Future<List<Dosen>> searchDosen(String keyword) async {
-    print(
+    if (kDebugMode) debugPrint(
         'ApiFactory.searchDosen: keyword="$keyword", useMockData=$_useMockData');
 
     if (_useMockData) {
-      print('ApiFactory.searchDosen: Using mock service');
+      if (kDebugMode) debugPrint('ApiFactory.searchDosen: Using mock service');
       final results = await _mockService.searchDosen(keyword);
-      print(
+      if (kDebugMode) debugPrint(
           'ApiFactory.searchDosen: Mock service returned ${results.length} results');
       for (int i = 0; i < results.length && i < 3; i++) {
-        print(
+        if (kDebugMode) debugPrint(
             'ApiFactory.searchDosen: Mock result $i: ${results[i].nama} (${results[i].nidn})');
       }
       return results;
     } else {
       try {
-        print('ApiFactory.searchDosen: Using real API');
+        if (kDebugMode) debugPrint('ApiFactory.searchDosen: Using real API');
         final results = await _realApi.searchDosen(keyword);
-        print(
+        if (kDebugMode) debugPrint(
             'ApiFactory.searchDosen: Real API returned ${results.length} results');
         for (int i = 0; i < results.length && i < 3; i++) {
-          print(
+          if (kDebugMode) debugPrint(
               'ApiFactory.searchDosen: Real result $i: ${results[i].nama} (${results[i].nidn})');
         }
         return results;
       } catch (e) {
-        print('Error with real API, fallback to mock: $e');
+        if (kDebugMode) debugPrint('Error with real API, fallback to mock: $e');
         // Fallback to mock data if the real API fails with specific errors
         if (e.toString().contains('403') ||
             e.toString().contains('CORS') ||
             e.toString().contains('XMLHttpRequest')) {
-          print(
+          if (kDebugMode) debugPrint(
               'ApiFactory.searchDosen: Fallback to mock service due to API error');
           final results = await _mockService.searchDosen(keyword);
-          print(
+          if (kDebugMode) debugPrint(
               'ApiFactory.searchDosen: Mock fallback returned ${results.length} results');
           return results;
         }
@@ -177,7 +177,7 @@ class ApiFactory {
       try {
         return await _realApi.searchProdi(keyword);
       } catch (e) {
-        print('Error with real API, fallback to mock: $e');
+        if (kDebugMode) debugPrint('Error with real API, fallback to mock: $e');
         // Fallback to mock data if the real API fails with specific errors
         if (e.toString().contains('403') ||
             e.toString().contains('CORS') ||
@@ -199,7 +199,7 @@ class ApiFactory {
       try {
         return await _realApi.searchPt(keyword);
       } catch (e) {
-        print('Error with real API, fallback to mock: $e');
+        if (kDebugMode) debugPrint('Error with real API, fallback to mock: $e');
         // Fallback to mock data if the real API fails with specific errors
         if (e.toString().contains('403') ||
             e.toString().contains('CORS') ||
@@ -253,7 +253,7 @@ class ApiFactory {
       try {
         return await _realApi.getDetailProdi(prodiId);
       } catch (e) {
-        print('Error with real API, fallback to mock: $e');
+        if (kDebugMode) debugPrint('Error with real API, fallback to mock: $e');
 
         // Fallback to mock data
         return ProdiDetail(
@@ -326,7 +326,7 @@ class ApiFactory {
       try {
         return await _realApi.getDetailPt(ptId);
       } catch (e) {
-        print('Error with real API, fallback to mock: $e');
+        if (kDebugMode) debugPrint('Error with real API, fallback to mock: $e');
 
         // Fallback to mock data
         return PerguruanTinggiDetail(
@@ -367,7 +367,7 @@ class ApiFactory {
       try {
         return await _realApi.getProdiPt(ptId, tahun);
       } catch (e) {
-        print('Error with real API, fallback to mock: $e');
+        if (kDebugMode) debugPrint('Error with real API, fallback to mock: $e');
         // Fallback to mock data if the real API fails with specific errors
         if (e.toString().contains('403') ||
             e.toString().contains('CORS') ||
@@ -392,21 +392,21 @@ class ApiFactory {
       try {
         return await _mockService.getDosenProfile(dosenId);
       } catch (e) {
-        print('Error dengan mock service: $e');
+        if (kDebugMode) debugPrint('Error dengan mock service: $e');
         rethrow;
       }
     } else {
       try {
-        print('Meminta profil dosen dari API asli untuk id: $dosenId');
+        if (kDebugMode) debugPrint('Meminta profil dosen dari API asli untuk id: $dosenId');
         return await _realApi.getDosenProfile(dosenId);
       } catch (e) {
-        print('Error dengan API asli, fallback ke mock: $e');
+        if (kDebugMode) debugPrint('Error dengan API asli, fallback ke mock: $e');
 
         // Fallback ke mock data
         try {
           return await _mockService.getDosenProfile(dosenId);
         } catch (mockError) {
-          print('Error dengan mock service juga: $mockError');
+          if (kDebugMode) debugPrint('Error dengan mock service juga: $mockError');
 
           // Jika bahkan mock service gagal, buat objek minimal valid
           return DosenDetail(
@@ -438,28 +438,28 @@ class ApiFactory {
       try {
         return await _mockService.getDosenProfile(dosenId);
       } catch (e) {
-        print('Error dengan mock service: $e');
+        if (kDebugMode) debugPrint('Error dengan mock service: $e');
         rethrow;
       }
     } else {
       try {
-        print('Meminta detail lengkap dosen dari API asli untuk id: $dosenId');
+        if (kDebugMode) debugPrint('Meminta detail lengkap dosen dari API asli untuk id: $dosenId');
         return await _realApi.getDosenDetailLengkap(dosenId);
       } catch (e) {
-        print('Error dengan API asli, fallback ke profil dasar: $e');
+        if (kDebugMode) debugPrint('Error dengan API asli, fallback ke profil dasar: $e');
 
         // Fallback ke profil dasar
         try {
           return await _realApi.getDosenProfile(dosenId);
         } catch (profileError) {
-          print(
+          if (kDebugMode) debugPrint(
               'Error dengan profil dasar juga, fallback ke mock: $profileError');
 
           // Fallback ke mock data
           try {
             return await _mockService.getDosenProfile(dosenId);
           } catch (mockError) {
-            print('Error dengan mock service juga: $mockError');
+            if (kDebugMode) debugPrint('Error dengan mock service juga: $mockError');
 
             // Jika semua gagal, buat objek minimal valid
             return DosenDetail(

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 class Dosen {
   final String id;
   final String nama;
@@ -26,8 +27,8 @@ class Dosen {
         namaProdi: _getStringValue(json, 'nama_prodi'),
       );
     } catch (e) {
-      print('Error parsing Dosen: $e');
-      print('JSON data: $json');
+      if (kDebugMode) debugPrint('Error parsing Dosen: $e');
+      if (kDebugMode) debugPrint('JSON data: $json');
       // Return objek dengan field kosong daripada melempar error
       return Dosen(
         id: '',
@@ -174,8 +175,8 @@ class DosenDetail {
 
       return dosenDetail;
     } catch (e) {
-      print('Error parsing DosenDetail: $e');
-      print('JSON data: $json');
+      if (kDebugMode) debugPrint('Error parsing DosenDetail: $e');
+      if (kDebugMode) debugPrint('JSON data: $json');
       // Return objek dengan field kosong daripada melempar error
       return DosenDetail(
         idSdm: '',
@@ -227,8 +228,8 @@ class DosenDetail {
         riwayatMengajar: riwayatMengajar ?? const [],
       );
     } catch (e) {
-      print('Error parsing DosenDetail with portfolio: $e');
-      print('JSON data: $json');
+      if (kDebugMode) debugPrint('Error parsing DosenDetail with portfolio: $e');
+      if (kDebugMode) debugPrint('JSON data: $json');
       // Return objek dengan field kosong daripada melempar error
       return DosenDetail(
         idSdm: '',
@@ -280,8 +281,8 @@ class DosenPortofolio {
         statusKegiatan: _getStringValue(json, 'status_kegiatan'),
       );
     } catch (e) {
-      print('Error parsing DosenPortofolio: $e');
-      print('JSON data: $json');
+      if (kDebugMode) debugPrint('Error parsing DosenPortofolio: $e');
+      if (kDebugMode) debugPrint('JSON data: $json');
       // Return objek dengan field kosong daripada melempar error
       return DosenPortofolio(
         idSdm: '',
@@ -328,8 +329,8 @@ class DosenRiwayatStudi {
         tahunLulus: _getStringValue(json, 'tahun_lulus'),
       );
     } catch (e) {
-      print('Error parsing DosenRiwayatStudi: $e');
-      print('JSON data: $json');
+      if (kDebugMode) debugPrint('Error parsing DosenRiwayatStudi: $e');
+      if (kDebugMode) debugPrint('JSON data: $json');
       // Return objek dengan field kosong daripada melempar error
       return DosenRiwayatStudi(
         idSdm: '',
@@ -378,8 +379,8 @@ class DosenRiwayatMengajar {
         namaPt: _getStringValue(json, 'nama_pt'),
       );
     } catch (e) {
-      print('Error parsing DosenRiwayatMengajar: $e');
-      print('JSON data: $json');
+      if (kDebugMode) debugPrint('Error parsing DosenRiwayatMengajar: $e');
+      if (kDebugMode) debugPrint('JSON data: $json');
       // Return objek dengan field kosong daripada melempar error
       return DosenRiwayatMengajar(
         idSdm: '',
@@ -431,8 +432,8 @@ class DosenPenugasan {
         keterangan: _getStringValue(json, 'keterangan'),
       );
     } catch (e) {
-      print('Error parsing DosenPenugasan: $e');
-      print('JSON data: $json');
+      if (kDebugMode) debugPrint('Error parsing DosenPenugasan: $e');
+      if (kDebugMode) debugPrint('JSON data: $json');
       // Return objek dengan field kosong daripada melempar error
       return DosenPenugasan(
         idSdm: '',
@@ -483,8 +484,8 @@ class DosenJabatanFungsional {
         keterangan: _getStringValue(json, 'keterangan'),
       );
     } catch (e) {
-      print('Error parsing DosenJabatanFungsional: $e');
-      print('JSON data: $json');
+      if (kDebugMode) debugPrint('Error parsing DosenJabatanFungsional: $e');
+      if (kDebugMode) debugPrint('JSON data: $json');
       // Return objek dengan field kosong daripada melempar error
       return DosenJabatanFungsional(
         idSdm: '',

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
@@ -194,7 +195,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           results = await api.searchMahasiswa(query);
         }
       } catch (e) {
-        print('Error dalam pencarian: $e');
+        if (kDebugMode) debugPrint('Error dalam pencarian: $e');
         String errorMsg = e.toString();
         
         if (errorMsg.contains('XMLHttpRequest')) {

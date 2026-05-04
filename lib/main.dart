@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'screens/home_screen.dart';
@@ -13,7 +14,7 @@ void main() {
   // Enable Flutter Web error logging in console
   FlutterError.onError = (FlutterErrorDetails details) {
     FlutterError.presentError(details);
-    print('Flutter error: ${details.exception}');
+    if (kDebugMode) debugPrint('Flutter error: ${details.exception}');
   };
 
   runApp(const MyApp());

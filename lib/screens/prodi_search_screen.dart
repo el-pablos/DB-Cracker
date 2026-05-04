@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
@@ -105,7 +106,7 @@ class _ProdiSearchScreenState extends State<ProdiSearchScreen> with SingleTicker
         results = await _multiApiFactory.searchProdi(query);
         _addConsoleMessageWithDelay("MENDAPATKAN DATA PROGRAM STUDI...", 2500);
       } catch (e) {
-        print('Error dalam pencarian: $e');
+        if (kDebugMode) debugPrint('Error dalam pencarian: $e');
         String errorMsg = e.toString();
         
         if (errorMsg.contains('XMLHttpRequest')) {

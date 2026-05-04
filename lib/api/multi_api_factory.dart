@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/mahasiswa.dart';
@@ -77,7 +78,7 @@ class MultiApiFactory {
 
       return uniqueResults.values.toList();
     } catch (e) {
-      print('Error mencari dari semua sumber: $e');
+      if (kDebugMode) debugPrint('Error mencari dari semua sumber: $e');
       // Jika terjadi error, coba kembalikan apa saja yang berhasil
       return results;
     }
@@ -92,7 +93,7 @@ class MultiApiFactory {
       // Konversi ke model Mahasiswa
       return _apiServices.convertToMahasiswa(rawData);
     } catch (e) {
-      print('Error mencari dari API pendidikan: $e');
+      if (kDebugMode) debugPrint('Error mencari dari API pendidikan: $e');
       return [];
     }
   }
@@ -146,7 +147,7 @@ class MultiApiFactory {
 
       return [];
     } catch (e) {
-      print('Error mencari dari Kemdikbud: $e');
+      if (kDebugMode) debugPrint('Error mencari dari Kemdikbud: $e');
       return [];
     }
   }
@@ -180,7 +181,7 @@ class MultiApiFactory {
 
       return uniqueResults.values.toList();
     } catch (e) {
-      print('Error mencari dosen: $e');
+      if (kDebugMode) debugPrint('Error mencari dosen: $e');
       // Jika terjadi error, coba kembalikan apa saja yang berhasil
       List<Dosen> backupResults = [];
 
@@ -188,7 +189,7 @@ class MultiApiFactory {
         // Coba dapatkan dari mock service sebagai fallback
         backupResults = await _pddiktiApi.searchDosen(keyword);
       } catch (e2) {
-        print('Error getting data from PDDIKTI: $e2');
+        if (kDebugMode) debugPrint('Error getting data from PDDIKTI: $e2');
 
         // Jika masih error, return empty list daripada data dummy
         backupResults = [];
@@ -207,7 +208,7 @@ class MultiApiFactory {
       // Konversi ke model Dosen
       return _apiServices.convertToDosen(rawData);
     } catch (e) {
-      print('Error mencari dosen dari sumber lain: $e');
+      if (kDebugMode) debugPrint('Error mencari dosen dari sumber lain: $e');
       return [];
     }
   }
@@ -228,13 +229,13 @@ class MultiApiFactory {
           return kemdikbudDetail;
         }
       } catch (e) {
-        print('Gagal mendapatkan data tambahan: $e');
+        if (kDebugMode) debugPrint('Gagal mendapatkan data tambahan: $e');
         // Tidak perlu melakukan apa-apa, gunakan data yang sudah ada
       }
 
       return detail;
     } catch (e) {
-      print('Error mendapatkan detail dari PDDIKTI: $e');
+      if (kDebugMode) debugPrint('Error mendapatkan detail dari PDDIKTI: $e');
 
       // Fallback to minimal detail
       return MahasiswaDetail(
@@ -267,13 +268,13 @@ class MultiApiFactory {
         // Coba untuk memperkaya data dengan sumber-sumber lain jika ada waktu
         // Ini bisa diimplementasikan di masa mendatang
       } catch (e) {
-        print('Gagal mendapatkan data tambahan: $e');
+        if (kDebugMode) debugPrint('Gagal mendapatkan data tambahan: $e');
         // Tidak perlu melakukan apa-apa, gunakan data yang sudah ada
       }
 
       return detail;
     } catch (e) {
-      print('Error mendapatkan detail dari PDDIKTI: $e');
+      if (kDebugMode) debugPrint('Error mendapatkan detail dari PDDIKTI: $e');
 
       // Fallback to minimal detail
       return DosenDetail(
@@ -337,7 +338,7 @@ class MultiApiFactory {
 
       return null;
     } catch (e) {
-      print('Error mencari detail dari Kemdikbud: $e');
+      if (kDebugMode) debugPrint('Error mencari detail dari Kemdikbud: $e');
       return null;
     }
   }
@@ -349,7 +350,7 @@ class MultiApiFactory {
       final detail = await _pddiktiApi.getDetailPt(ptId);
       return detail;
     } catch (e) {
-      print('Error mendapatkan detail PT: $e');
+      if (kDebugMode) debugPrint('Error mendapatkan detail PT: $e');
 
       // Buat data dummy jika error
       return PerguruanTinggiDetail(
@@ -387,7 +388,7 @@ class MultiApiFactory {
       final detail = await _pddiktiApi.getDetailProdi(prodiId);
       return detail;
     } catch (e) {
-      print('Error mendapatkan detail Prodi: $e');
+      if (kDebugMode) debugPrint('Error mendapatkan detail Prodi: $e');
 
       // Buat data dummy jika error
       return ProdiDetail(
@@ -432,7 +433,7 @@ class MultiApiFactory {
       // Gunakan API PDDIKTI untuk mencari Prodi
       return await _pddiktiApi.searchProdi(keyword);
     } catch (e) {
-      print('Error mencari Prodi: $e');
+      if (kDebugMode) debugPrint('Error mencari Prodi: $e');
       return [];
     }
   }
@@ -443,7 +444,7 @@ class MultiApiFactory {
       // Gunakan API PDDIKTI untuk mencari PT
       return await _pddiktiApi.searchPt(keyword);
     } catch (e) {
-      print('Error mencari PT: $e');
+      if (kDebugMode) debugPrint('Error mencari PT: $e');
       return [];
     }
   }
@@ -454,7 +455,7 @@ class MultiApiFactory {
       // Gunakan API PDDIKTI untuk mendapatkan daftar Prodi
       return await _pddiktiApi.getProdiPt(ptId, tahun);
     } catch (e) {
-      print('Error mendapatkan daftar Prodi di PT: $e');
+      if (kDebugMode) debugPrint('Error mendapatkan daftar Prodi di PT: $e');
       return [];
     }
   }
@@ -475,7 +476,7 @@ class MultiApiFactory {
       }
       return {};
     } catch (e) {
-      print('Error mendapatkan lokasi Prodi: $e');
+      if (kDebugMode) debugPrint('Error mendapatkan lokasi Prodi: $e');
       return {};
     }
   }

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 class Mahasiswa {
   final String id;
   final String nama;
@@ -26,8 +27,8 @@ class Mahasiswa {
         namaProdi: _ensureString(json['nama_prodi']),
       );
     } catch (e) {
-      print('Error parsing Mahasiswa: $e');
-      print('JSON data: $json');
+      if (kDebugMode) debugPrint('Error parsing Mahasiswa: $e');
+      if (kDebugMode) debugPrint('JSON data: $json');
       throw Exception('Failed to parse Mahasiswa data: $e');
     }
   }
@@ -122,7 +123,7 @@ class MahasiswaDetail {
   factory MahasiswaDetail.fromJson(Map<String, dynamic> json) {
     try {
       // Print keys for debugging
-      print('Keys in MahasiswaDetail.fromJson: ${json.keys.toList()}');
+      if (kDebugMode) debugPrint('Keys in MahasiswaDetail.fromJson: ${json.keys.toList()}');
 
       // More flexible field handling
       // Use alternative field names if primary ones don't exist
@@ -159,8 +160,8 @@ class MahasiswaDetail {
             _ensureString(json['tahun_masuk'] ?? json['angkatan'] ?? ''),
       );
     } catch (e) {
-      print('Error parsing MahasiswaDetail: $e');
-      print('JSON data: $json');
+      if (kDebugMode) debugPrint('Error parsing MahasiswaDetail: $e');
+      if (kDebugMode) debugPrint('JSON data: $json');
 
       // Create a minimal valid object instead of throwing an exception
       return MahasiswaDetail(
@@ -223,7 +224,7 @@ class MahasiswaRiwayatSemester {
         sksLulus: _ensureString(json['sks_lulus']),
       );
     } catch (e) {
-      print('Error parsing MahasiswaRiwayatSemester: $e');
+      if (kDebugMode) debugPrint('Error parsing MahasiswaRiwayatSemester: $e');
       return MahasiswaRiwayatSemester(
         idSms: '',
         namaSemester: 'Error: $e',
@@ -269,7 +270,7 @@ class MahasiswaNilai {
         namaSemester: _ensureString(json['nama_semester']),
       );
     } catch (e) {
-      print('Error parsing MahasiswaNilai: $e');
+      if (kDebugMode) debugPrint('Error parsing MahasiswaNilai: $e');
       return MahasiswaNilai(
         idSms: '',
         kodeMatkul: '',
@@ -316,7 +317,7 @@ class MahasiswaKelas {
         namaSemester: _ensureString(json['nama_semester']),
       );
     } catch (e) {
-      print('Error parsing MahasiswaKelas: $e');
+      if (kDebugMode) debugPrint('Error parsing MahasiswaKelas: $e');
       return MahasiswaKelas(
         idSms: '',
         kodeMatkul: '',
