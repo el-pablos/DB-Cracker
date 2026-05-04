@@ -27,6 +27,7 @@ class _ProdiSearchScreenState extends State<ProdiSearchScreen> with SingleTicker
   String? _errorMessage;
   late AnimationController _animationController;
   List<String> _consoleMessages = [];
+  final List<Timer> _activeTimers = [];
   final Random _random = Random();
   Timer? _consoleTimer;
   
@@ -47,13 +48,14 @@ class _ProdiSearchScreenState extends State<ProdiSearchScreen> with SingleTicker
   }
 
   void _addConsoleMessageWithDelay(String message, int delay) {
-    Timer(Duration(milliseconds: delay), () {
+    final timer = Timer(Duration(milliseconds: delay), () {
       if (mounted) {
         setState(() {
           _consoleMessages.add(message);
         });
       }
     });
+    _activeTimers.add(timer);
   }
 
   @override
@@ -61,6 +63,8 @@ class _ProdiSearchScreenState extends State<ProdiSearchScreen> with SingleTicker
     _searchController.dispose();
     _animationController.dispose();
     _consoleTimer?.cancel();
+    for (final timer in _activeTimers) { timer.cancel(); }
+    _activeTimers.clear();
     super.dispose();
   }
 

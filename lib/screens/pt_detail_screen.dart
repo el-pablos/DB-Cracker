@@ -30,6 +30,7 @@ class _PTDetailScreenState extends State<PTDetailScreen> with SingleTickerProvid
   late Future<PerguruanTinggiDetail?> _ptFuture;
   bool _isLoading = true;
   List<String> _consoleMessages = [];
+  final List<Timer> _activeTimers = [];
   final Random _random = Random();
   Timer? _loadTimer;
   late AnimationController _animationController;
@@ -72,13 +73,14 @@ class _PTDetailScreenState extends State<PTDetailScreen> with SingleTickerProvid
   }
 
   void _addConsoleMessageWithDelay(String message, int delay) {
-    Timer(Duration(milliseconds: delay), () {
+    final timer = Timer(Duration(milliseconds: delay), () {
       if (mounted) {
         setState(() {
           _consoleMessages.add(message);
         });
       }
     });
+    _activeTimers.add(timer);
   }
 
   void _fetchPTDetail() {
@@ -104,6 +106,8 @@ class _PTDetailScreenState extends State<PTDetailScreen> with SingleTickerProvid
   void dispose() {
     _loadTimer?.cancel();
     _animationController.dispose();
+    for (final timer in _activeTimers) { timer.cancel(); }
+    _activeTimers.clear();
     super.dispose();
   }
 

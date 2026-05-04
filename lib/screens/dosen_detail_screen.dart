@@ -30,6 +30,7 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
   late Future<DosenDetail> _dosenFuture;
   bool _isLoading = true;
   List<String> _consoleMessages = [];
+  final List<Timer> _activeTimers = [];
   final Random _random = Random();
   Timer? _loadTimer;
   late AnimationController _animationController;
@@ -77,13 +78,14 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
   }
 
   void _addConsoleMessageWithDelay(String message, int delay) {
-    Timer(Duration(milliseconds: delay), () {
+    final timer = Timer(Duration(milliseconds: delay), () {
       if (mounted) {
         setState(() {
           _consoleMessages.add(message);
         });
       }
     });
+    _activeTimers.add(timer);
   }
 
   void _fetchDosenDetail() {
@@ -133,6 +135,8 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
   void dispose() {
     _loadTimer?.cancel();
     _animationController.dispose();
+    for (final timer in _activeTimers) { timer.cancel(); }
+    _activeTimers.clear();
     super.dispose();
   }
 

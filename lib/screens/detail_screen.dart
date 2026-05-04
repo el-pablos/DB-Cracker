@@ -29,6 +29,7 @@ class _DetailScreenState extends State<DetailScreen>
   late Future<MahasiswaDetail> _mahasiswaFuture;
   bool _isDecrypting = true;
   List<String> _consoleMessages = [];
+  final List<Timer> _activeTimers = [];
   final Random _random = Random();
   Timer? _decryptTimer;
   late AnimationController _animationController;
@@ -84,13 +85,14 @@ class _DetailScreenState extends State<DetailScreen>
   }
 
   void _addConsoleMessageWithDelay(String message, int delay) {
-    Timer(Duration(milliseconds: delay), () {
+    final timer = Timer(Duration(milliseconds: delay), () {
       if (mounted) {
         setState(() {
           _consoleMessages.add(message);
         });
       }
     });
+    _activeTimers.add(timer);
   }
 
   void _fetchMahasiswaDetail() {
@@ -138,6 +140,8 @@ class _DetailScreenState extends State<DetailScreen>
   void dispose() {
     _decryptTimer?.cancel();
     _animationController.dispose();
+    for (final timer in _activeTimers) { timer.cancel(); }
+    _activeTimers.clear();
     super.dispose();
   }
 

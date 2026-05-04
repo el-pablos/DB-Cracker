@@ -34,6 +34,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   late AnimationController _animationController;
   bool _showIntro = true;
   List<String> _consoleMessages = [];
+  final List<Timer> _activeTimers = [];
   final Random _random = Random();
   Timer? _consoleTimer;
   
@@ -116,13 +117,14 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   }
 
   void _addConsoleMessageWithDelay(String message, int delay) {
-    Timer(Duration(milliseconds: delay), () {
+    final timer = Timer(Duration(milliseconds: delay), () {
       if (mounted) {
         setState(() {
           _consoleMessages.add(message);
         });
       }
     });
+    _activeTimers.add(timer);
   }
 
   @override
@@ -132,6 +134,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     _animationController.dispose();
     _consoleTimer?.cancel();
     _filterDebounce?.cancel();
+    for (final timer in _activeTimers) { timer.cancel(); }
+    _activeTimers.clear();
     super.dispose();
   }
 
