@@ -23,7 +23,7 @@ class Mahasiswa {
         nama: _ensureString(json['nama']),
         nim: _ensureString(json['nim']),
         namaPt: _ensureString(json['nama_pt']),
-        singkatanPt: _ensureString(json['singkatan_pt']),
+        singkatanPt: _ensureString(json['singkatan_pt'] ?? json['sinkatan_pt']),
         namaProdi: _ensureString(json['nama_prodi']),
       );
     } catch (e) {

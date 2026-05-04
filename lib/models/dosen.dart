@@ -23,7 +23,7 @@ class Dosen {
         nama: _getStringValue(json, 'nama'),
         nidn: _getStringValue(json, 'nidn'),
         namaPt: _getStringValue(json, 'nama_pt'),
-        singkatanPt: _getStringValue(json, 'singkatan_pt'),
+        singkatanPt: _getStringValue(json, 'singkatan_pt').isNotEmpty ? _getStringValue(json, 'singkatan_pt') : _getStringValue(json, 'sinkatan_pt'),
         namaProdi: _getStringValue(json, 'nama_prodi'),
       );
     } catch (e) {
