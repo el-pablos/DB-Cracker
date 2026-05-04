@@ -1,5 +1,6 @@
 // lib/api/api_services_integration.dart
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../models/mahasiswa.dart';
 import '../models/dosen.dart';
@@ -26,11 +27,9 @@ class ApiServicesIntegration {
   /// API Pencarian Data Pendidikan (dari open API collection)
   Future<List<Map<String, dynamic>>> searchEducationData(String keyword) async {
     try {
-      // List of education APIs to search
+      // Hanya gunakan endpoint yang relevan dengan pendidikan
       final List<String> apiEndpoints = [
-        'https://api.github.com/repos/IlhamriSKY/PDDIKTI-kemdikbud-API/contents/data', // Python 3 API wrapper PDDIKTI
-        'https://animeapi.my.id/api/v1/anime/search?q=$keyword', // Menampilkan data anime (contoh API lain)
-        'https://api.nashta.co.id/education/search?q=$keyword', // Contoh endpoint fiktif
+        'https://api.github.com/repos/IlhamriSKY/PDDIKTI-kemdikbud-API/contents/data',
       ];
       
       List<Map<String, dynamic>> results = [];
@@ -41,7 +40,7 @@ class ApiServicesIntegration {
             Uri.parse(endpoint),
             headers: _headers,
           ).timeout(
-            Duration(seconds: 10),
+            const Duration(seconds: 10),
           );
           
           if (response.statusCode == 200) {
@@ -61,7 +60,6 @@ class ApiServicesIntegration {
                   }
                 }
               } else {
-                // Add the whole data as an item if it doesn't follow expected structure
                 results.add(data);
               }
             } else if (data is List) {
@@ -73,74 +71,13 @@ class ApiServicesIntegration {
             }
           }
         } catch (e) {
-          print('Error searching from $endpoint: $e');
-          // Continue to next API
+          if (kDebugMode) debugPrint('Error searching from $endpoint: $e');
         }
       }
       
       return results;
     } catch (e) {
-      print('Error in education search: $e');
-      return [];
-    }
-  }
-  
-  /// Mencari data dari Dayoff API (hari libur nasional)
-  Future<List<Map<String, dynamic>>> searchNationalHolidays() async {
-    try {
-      final response = await http.get(
-        Uri.parse('https://dayoffapi.vercel.app/api'),
-        headers: _headers,
-      ).timeout(
-        Duration(seconds: 10),
-      );
-      
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        
-        if (data is Map<String, dynamic> && data.containsKey('data') && data['data'] is List) {
-          final List holidaysList = data['data'] as List;
-          
-          return holidaysList.map((item) {
-            if (item is Map<String, dynamic>) {
-              return item;
-            }
-            return <String, dynamic>{};
-          }).toList();
-        }
-      }
-      
-      return [];
-    } catch (e) {
-      print('Error fetching holidays: $e');
-      return [];
-    }
-  }
-  
-  /// Mencari data dari Indonesian Geographical Data API (Wilayah Indonesia)
-  Future<List<Map<String, dynamic>>> searchGeographicalData(String province) async {
-    try {
-      final response = await http.get(
-        Uri.parse('https://ibnux.github.io/data-indonesia/propinsi/$province.json'),
-        headers: _headers,
-      ).timeout(
-        Duration(seconds: 10),
-      );
-      
-      if (response.statusCode == 200) {
-        final List data = jsonDecode(response.body);
-        
-        return data.map((item) {
-          if (item is Map<String, dynamic>) {
-            return item;
-          }
-          return <String, dynamic>{};
-        }).toList();
-      }
-      
-      return [];
-    } catch (e) {
-      print('Error fetching geographical data: $e');
+      if (kDebugMode) debugPrint('Error in education search: $e');
       return [];
     }
   }
@@ -152,7 +89,7 @@ class ApiServicesIntegration {
         Uri.parse('https://id.wikipedia.org/api/rest_v1/page/summary/${Uri.encodeComponent(keyword)}'),
         headers: _headers,
       ).timeout(
-        Duration(seconds: 10),
+        const Duration(seconds: 10),
       );
       
       if (response.statusCode == 200) {
@@ -161,7 +98,7 @@ class ApiServicesIntegration {
       
       return {};
     } catch (e) {
-      print('Error fetching from Wikipedia: $e');
+      if (kDebugMode) debugPrint('Error fetching from Wikipedia: $e');
       return {};
     }
   }
@@ -169,7 +106,6 @@ class ApiServicesIntegration {
   /// Convert data ke model Mahasiswa jika memungkinkan
   List<Mahasiswa> convertToMahasiswa(List<Map<String, dynamic>> data) {
     return data.map((item) {
-      // Try to extract fields that might represent student data
       return Mahasiswa(
         id: item['id'] ?? item['mahasiswa_id'] ?? item['ID'] ?? '',
         nama: item['nama'] ?? item['name'] ?? item['nama_mahasiswa'] ?? '',
