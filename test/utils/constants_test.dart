@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:db_cracker_tamaengs/utils/constants.dart';
 
@@ -20,17 +21,21 @@ void main() {
     });
   });
 
-  group('HackerColors backward compatibility', () {
-    test('primary maps to CtOSColors.primary', () {
-      expect(HackerColors.primary, CtOSColors.primary);
+  group('CtOSColors design system', () {
+    test('primary is cyan', () {
+      expect(CtOSColors.primary, const Color(0xFF00E5FF));
     });
 
-    test('background maps to CtOSColors.background', () {
-      expect(HackerColors.background, CtOSColors.background);
+    test('secondary is darker cyan', () {
+      expect(CtOSColors.secondary, const Color(0xFF0091EA));
     });
 
-    test('text maps to CtOSColors.textPrimary', () {
-      expect(HackerColors.text, CtOSColors.textPrimary);
+    test('textPrimary is white', () {
+      expect(CtOSColors.textPrimary, const Color(0xFFFFFFFF));
+    });
+
+    test('textAccent matches primary', () {
+      expect(CtOSColors.textAccent, CtOSColors.primary);
     });
   });
 
