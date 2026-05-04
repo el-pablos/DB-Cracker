@@ -10,21 +10,48 @@ class PddiktiApi {
   // Base URL API
   final String baseUrl = 'https://api-pddikti.kemdiktisaintek.go.id';
 
-  // Header untuk request - ini sangat penting untuk menghindari 403
+  // Cache public IP biar ga fetch terus
+  String _cachedIp = '103.0.0.1';
+  bool _ipFetched = false;
+
+  /// Fetch public IP dari ipify (sama kayak frontend PDDIKTI)
+  Future<String> _getPublicIp() async {
+    if (_ipFetched) return _cachedIp;
+    try {
+      final response = await http.get(
+        Uri.parse('https://api.ipify.org/?format=json'),
+      ).timeout(const Duration(seconds: 5));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        _cachedIp = data['ip'] ?? '103.0.0.1';
+        _ipFetched = true;
+      }
+    } catch (_) {
+      // Fallback ke default IP
+    }
+    return _cachedIp;
+  }
+
+  // Header untuk request - wajib ada x-api-key dan X-User-IP
   Map<String, String> get _headers => {
         'Accept': 'application/json, text/plain, */*',
+        'Accept-Encoding': 'gzip, deflate, br, zstd',
         'Accept-Language': 'en-US,en;q=0.9,id;q=0.8',
+        'Connection': 'keep-alive',
+        'Content-Type': 'application/json',
+        'DNT': '1',
+        'Host': 'api-pddikti.kemdiktisaintek.go.id',
         'Origin': 'https://pddikti.kemdiktisaintek.go.id',
         'Referer': 'https://pddikti.kemdiktisaintek.go.id/',
-        'sec-ch-ua':
-            '"Chromium";v="116", "Not)A;Brand";v="24", "Google Chrome";v="116"',
+        'sec-ch-ua': '"Microsoft Edge";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
         'sec-ch-ua-mobile': '?0',
         'sec-ch-ua-platform': '"Windows"',
         'sec-fetch-dest': 'empty',
         'sec-fetch-mode': 'cors',
         'sec-fetch-site': 'same-site',
-        'User-Agent':
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0',
+        'x-api-key': 'undefined',
+        'X-User-IP': '103.0.0.1',
       };
 
   // Encode parameter URL
@@ -56,6 +83,11 @@ class PddiktiApi {
   Future<http.Response> _makeApiRequest(Uri url,
       {int timeoutSeconds = 15}) async {
     try {
+      // Fetch public IP dulu buat header X-User-IP
+      final ip = await _getPublicIp();
+      final headers = Map<String, String>.from(_headers);
+      headers['X-User-IP'] = ip;
+
       // Untuk Flutter Web, kita perlu pendekatan khusus
       if (kIsWeb) {
         // Opsi 1: Gunakan direct request (dengan header yang lengkap)
@@ -64,7 +96,7 @@ class PddiktiApi {
           return await http
               .get(
                 url,
-                headers: _headers,
+                headers: headers,
               )
               .timeout(
                 Duration(seconds: timeoutSeconds),
@@ -84,7 +116,7 @@ class PddiktiApi {
         return await http
             .get(
               url,
-              headers: _headers,
+              headers: headers,
             )
             .timeout(
               Duration(seconds: timeoutSeconds),
