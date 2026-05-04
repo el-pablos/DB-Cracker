@@ -20,12 +20,12 @@ class HackerSearchBar extends StatelessWidget {
     
     return Container(
       decoration: BoxDecoration(
-        color: HackerColors.surface,
+        color: CtOSColors.surface,
         borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: HackerColors.accent, width: 1),
+        border: Border.all(color: CtOSColors.secondary, width: 1),
         boxShadow: [
           BoxShadow(
-            color: HackerColors.primary.withOpacity(0.3),
+            color: CtOSColors.primary.withOpacity(0.3),
             spreadRadius: 1,
             blurRadius: 6,
             offset: const Offset(0, 3),
@@ -41,10 +41,10 @@ class HackerSearchBar extends StatelessWidget {
               vertical: 4
             ),
             decoration: BoxDecoration(
-              color: HackerColors.surface.withOpacity(0.8),
+              color: CtOSColors.surface.withOpacity(0.8),
               border: const Border(
                 bottom: BorderSide(
-                  color: HackerColors.accent,
+                  color: CtOSColors.secondary,
                   width: 1,
                 ),
               ),
@@ -53,14 +53,14 @@ class HackerSearchBar extends StatelessWidget {
               children: const [
                 Icon(
                   Icons.search,
-                  color: HackerColors.accent,
+                  color: CtOSColors.secondary,
                   size: 14,
                 ),
                 SizedBox(width: 4),
                 Text(
                   "TARGET LOCATOR",
                   style: TextStyle(
-                    color: HackerColors.accent,
+                    color: CtOSColors.secondary,
                     fontSize: 12,
                     fontFamily: 'Courier',
                     fontWeight: FontWeight.bold,
@@ -76,14 +76,14 @@ class HackerSearchBar extends StatelessWidget {
                   child: TextField(
                     controller: controller,
                     style: const TextStyle(
-                      color: HackerColors.primary,
+                      color: CtOSColors.primary,
                       fontFamily: 'Courier',
                       fontSize: 14,
                     ),
                     decoration: InputDecoration(
                       hintText: hintText,
                       hintStyle: TextStyle(
-                        color: HackerColors.text.withOpacity(0.5),
+                        color: CtOSColors.textPrimary.withOpacity(0.5),
                         fontFamily: 'Courier',
                         fontSize: 12,
                       ),
@@ -99,7 +99,7 @@ class HackerSearchBar extends StatelessWidget {
                         child: Text(
                           ">",
                           style: TextStyle(
-                            color: HackerColors.primary,
+                            color: CtOSColors.primary,
                             fontFamily: 'Courier',
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
@@ -108,7 +108,7 @@ class HackerSearchBar extends StatelessWidget {
                       ),
                       prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
                     ),
-                    cursorColor: HackerColors.primary,
+                    cursorColor: CtOSColors.primary,
                     textInputAction: TextInputAction.search,
                     onSubmitted: (_) => onSearch(),
                   ),
@@ -116,7 +116,7 @@ class HackerSearchBar extends StatelessWidget {
                 Container(
                   height: 48,
                   width: 1,
-                  color: HackerColors.accent.withOpacity(0.5),
+                  color: CtOSColors.secondary.withOpacity(0.5),
                   margin: const EdgeInsets.symmetric(vertical: 4),
                 ),
                 InkWell(
@@ -125,13 +125,13 @@ class HackerSearchBar extends StatelessWidget {
                     padding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 16),
                     height: 56,
                     decoration: const BoxDecoration(
-                      color: HackerColors.surface,
+                      color: CtOSColors.surface,
                     ),
                     child: const Center(
                       child: Text(
                         "HACK",
                         style: TextStyle(
-                          color: HackerColors.primary,
+                          color: CtOSColors.primary,
                           fontWeight: FontWeight.bold,
                           fontFamily: 'Courier',
                           fontSize: 14,

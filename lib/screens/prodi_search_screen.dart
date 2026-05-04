@@ -174,7 +174,7 @@ class _ProdiSearchScreenState extends State<ProdiSearchScreen> with SingleTicker
     final bool isMobile = ScreenUtils.isMobileScreen();
     
     return Scaffold(
-      backgroundColor: HackerColors.background,
+      backgroundColor: CtOSColors.background,
       appBar: AppBar(
         title: Row(
           children: [
@@ -188,8 +188,8 @@ class _ProdiSearchScreenState extends State<ProdiSearchScreen> with SingleTicker
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: _animationController.value > 0.5 
-                        ? HackerColors.primary 
-                        : HackerColors.error,
+                        ? CtOSColors.primary 
+                        : CtOSColors.error,
                   ),
                 );
               },
@@ -199,27 +199,27 @@ class _ProdiSearchScreenState extends State<ProdiSearchScreen> with SingleTicker
               style: TextStyle(
                 fontFamily: 'Courier',
                 fontWeight: FontWeight.bold,
-                color: HackerColors.primary,
+                color: CtOSColors.primary,
                 fontSize: 16.0,
               ),
             ),
           ],
         ),
-        backgroundColor: HackerColors.surface,
+        backgroundColor: CtOSColors.surface,
       ),
       body: SafeArea(
         child: Container(
-          color: HackerColors.background,
+          color: CtOSColors.background,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Container(
-                color: HackerColors.surface.withOpacity(0.7),
+                color: CtOSColors.surface.withOpacity(0.7),
                 padding: const EdgeInsets.all(8.0),
                 child: const FlexibleText(
                   'AKSES DATABASE PROGRAM STUDI',
                   style: TextStyle(
-                    color: HackerColors.highlight,
+                    color: CtOSColors.textAccent,
                     fontFamily: 'Courier',
                     fontSize: 12.0,
                   ),
@@ -263,14 +263,14 @@ class _ProdiSearchScreenState extends State<ProdiSearchScreen> with SingleTicker
                               children: [
                                 const Icon(
                                   Icons.warning_amber_rounded,
-                                  color: HackerColors.error,
+                                  color: CtOSColors.error,
                                   size: 48.0,
                                 ),
                                 const SizedBox(height: 16.0),
                                 FlexibleText(
                                   _errorMessage!,
                                   style: const TextStyle(
-                                    color: HackerColors.error,
+                                    color: CtOSColors.error,
                                     fontSize: 16.0,
                                     fontFamily: 'Courier',
                                   ),
@@ -280,13 +280,13 @@ class _ProdiSearchScreenState extends State<ProdiSearchScreen> with SingleTicker
                                 ElevatedButton(
                                   onPressed: _simulateHacking,
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: HackerColors.surface,
-                                    foregroundColor: HackerColors.primary,
+                                    backgroundColor: CtOSColors.surface,
+                                    foregroundColor: CtOSColors.primary,
                                     padding: const EdgeInsets.symmetric(
                                       horizontal: 16.0, 
                                       vertical: 8.0
                                     ),
-                                    side: const BorderSide(color: HackerColors.primary),
+                                    side: const BorderSide(color: CtOSColors.primary),
                                   ),
                                   child: const FlexibleText(
                                     'COBA LAGI',
@@ -309,7 +309,7 @@ class _ProdiSearchScreenState extends State<ProdiSearchScreen> with SingleTicker
                             children: [
                               Icon(
                                 Icons.school,
-                                color: HackerColors.accent.withOpacity(0.5),
+                                color: CtOSColors.secondary.withOpacity(0.5),
                                 size: 64.0,
                               ),
                               const SizedBox(height: 16.0),
@@ -317,7 +317,7 @@ class _ProdiSearchScreenState extends State<ProdiSearchScreen> with SingleTicker
                                 "MASUKKAN NAMA PROGRAM STUDI UNTUK MENCARI",
                                 style: TextStyle(
                                   fontSize: 16.0,
-                                  color: HackerColors.text,
+                                  color: CtOSColors.textPrimary,
                                   fontFamily: 'Courier',
                                 ),
                                 textAlign: TextAlign.center,
@@ -328,7 +328,7 @@ class _ProdiSearchScreenState extends State<ProdiSearchScreen> with SingleTicker
                                 "SIAP UNTUK MEMULAI PENCARIAN",
                                 style: TextStyle(
                                   fontSize: 12.0,
-                                  color: HackerColors.accent,
+                                  color: CtOSColors.secondary,
                                   fontFamily: 'Courier',
                                 ),
                                 textAlign: TextAlign.center,
@@ -345,14 +345,14 @@ class _ProdiSearchScreenState extends State<ProdiSearchScreen> with SingleTicker
                                 child: Row(
                                   children: [
                                     const Icon(Icons.school, 
-                                        color: HackerColors.primary, 
+                                        color: CtOSColors.primary, 
                                         size: 16.0),
                                     const SizedBox(width: 8.0),
                                     Expanded(
                                       child: FlexibleText(
                                         'DITEMUKAN ${_searchResults.length} PROGRAM STUDI',
                                         style: const TextStyle(
-                                          color: HackerColors.primary,
+                                          color: CtOSColors.primary,
                                           fontFamily: 'Courier',
                                           fontSize: 14.0,
                                         ),
@@ -376,7 +376,7 @@ class _ProdiSearchScreenState extends State<ProdiSearchScreen> with SingleTicker
                         ),
               ),
               Container(
-                color: HackerColors.surface,
+                color: CtOSColors.surface,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16.0, 
                   vertical: 8.0
@@ -391,14 +391,14 @@ class _ProdiSearchScreenState extends State<ProdiSearchScreen> with SingleTicker
                           height: 8.0,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: _statusDotIsGreen ? HackerColors.primary : HackerColors.accent,
+                            color: _statusDotIsGreen ? CtOSColors.primary : CtOSColors.secondary,
                           ),
                         ),
                         const SizedBox(width: 8.0),
                         FlexibleText(
                           DateTime.now().toString().substring(0, 19),
                           style: const TextStyle(
-                            color: HackerColors.text,
+                            color: CtOSColors.textPrimary,
                             fontSize: 10.0,
                             fontFamily: 'Courier',
                           ),
@@ -409,7 +409,7 @@ class _ProdiSearchScreenState extends State<ProdiSearchScreen> with SingleTicker
                     const FlexibleText(
                       'BY: TAMAENGS',
                       style: TextStyle(
-                        color: HackerColors.text,
+                        color: CtOSColors.textPrimary,
                         fontSize: 10.0,
                         fontFamily: 'Courier',
                         fontWeight: FontWeight.bold,

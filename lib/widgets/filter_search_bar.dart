@@ -70,12 +70,12 @@ class _FilterSearchBarState extends State<FilterSearchBar> {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: HackerColors.surface,
+        color: CtOSColors.surface,
         borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: HackerColors.warning, width: 1),
+        border: Border.all(color: CtOSColors.warning, width: 1),
         boxShadow: [
           BoxShadow(
-            color: HackerColors.warning.withOpacity(0.2),
+            color: CtOSColors.warning.withOpacity(0.2),
             spreadRadius: 1,
             blurRadius: 4,
             offset: const Offset(0, 2),
@@ -89,10 +89,10 @@ class _FilterSearchBarState extends State<FilterSearchBar> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: HackerColors.surface.withOpacity(0.8),
+              color: CtOSColors.surface.withOpacity(0.8),
               border: const Border(
                 bottom: BorderSide(
-                  color: HackerColors.warning,
+                  color: CtOSColors.warning,
                   width: 1,
                 ),
               ),
@@ -101,14 +101,14 @@ class _FilterSearchBarState extends State<FilterSearchBar> {
               children: const [
                 Icon(
                   Icons.filter_list,
-                  color: HackerColors.warning,
+                  color: CtOSColors.warning,
                   size: 14,
                 ),
                 SizedBox(width: 4),
                 Text(
                   AppStrings.filterTitle,
                   style: TextStyle(
-                    color: HackerColors.warning,
+                    color: CtOSColors.warning,
                     fontSize: 12,
                     fontFamily: 'Courier',
                     fontWeight: FontWeight.bold,
@@ -126,24 +126,24 @@ class _FilterSearchBarState extends State<FilterSearchBar> {
                 Expanded(
                   child: Container(
                     decoration: BoxDecoration(
-                      color: HackerColors.background,
+                      color: CtOSColors.background,
                       borderRadius: BorderRadius.circular(2),
                       border: Border.all(
-                        color: HackerColors.warning.withOpacity(0.5),
+                        color: CtOSColors.warning.withOpacity(0.5),
                       ),
                     ),
                     child: TextField(
                       controller: widget.controller,
                       focusNode: _focusNode,
                       style: const TextStyle(
-                        color: HackerColors.warning,
+                        color: CtOSColors.warning,
                         fontFamily: 'Courier',
                         fontSize: 12,
                       ),
                       decoration: InputDecoration(
                         hintText: AppStrings.filterHint,
                         hintStyle: TextStyle(
-                          color: HackerColors.text.withOpacity(0.5),
+                          color: CtOSColors.textPrimary.withOpacity(0.5),
                           fontFamily: 'Courier',
                           fontSize: 12,
                         ),
@@ -158,7 +158,7 @@ class _FilterSearchBarState extends State<FilterSearchBar> {
                           padding: EdgeInsets.symmetric(horizontal: 8),
                           child: Icon(
                             Icons.search,
-                            color: HackerColors.warning,
+                            color: CtOSColors.warning,
                             size: 14,
                           ),
                         ),
@@ -166,7 +166,7 @@ class _FilterSearchBarState extends State<FilterSearchBar> {
                           ? IconButton(
                               icon: const Icon(
                                 Icons.clear,
-                                color: HackerColors.warning,
+                                color: CtOSColors.warning,
                                 size: 14,
                               ),
                               onPressed: () {
@@ -197,16 +197,16 @@ class _FilterSearchBarState extends State<FilterSearchBar> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                     decoration: BoxDecoration(
-                      color: HackerColors.background,
+                      color: CtOSColors.background,
                       borderRadius: BorderRadius.circular(2),
                       border: Border.all(
-                        color: HackerColors.warning.withOpacity(0.5),
+                        color: CtOSColors.warning.withOpacity(0.5),
                       ),
                     ),
                     child: const Text(
                       AppStrings.reset,
                       style: TextStyle(
-                        color: HackerColors.warning,
+                        color: CtOSColors.warning,
                         fontFamily: 'Courier',
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
@@ -224,10 +224,10 @@ class _FilterSearchBarState extends State<FilterSearchBar> {
               constraints: const BoxConstraints(maxHeight: 200),
               margin: const EdgeInsets.fromLTRB(12, 0, 12, 8),
               decoration: BoxDecoration(
-                color: HackerColors.surface,
+                color: CtOSColors.surface,
                 borderRadius: BorderRadius.circular(2),
                 border: Border.all(
-                  color: HackerColors.warning.withOpacity(0.5),
+                  color: CtOSColors.warning.withOpacity(0.5),
                 ),
               ),
               child: ListView.builder(
@@ -251,11 +251,11 @@ class _FilterSearchBarState extends State<FilterSearchBar> {
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? HackerColors.warning.withOpacity(0.2)
+                            ? CtOSColors.warning.withOpacity(0.2)
                             : Colors.transparent,
                         border: Border(
                           bottom: BorderSide(
-                            color: HackerColors.warning.withOpacity(0.3),
+                            color: CtOSColors.warning.withOpacity(0.3),
                             width: 0.5,
                           ),
                         ),
@@ -263,7 +263,7 @@ class _FilterSearchBarState extends State<FilterSearchBar> {
                       child: Text(
                         university,
                         style: TextStyle(
-                          color: HackerColors.warning,
+                          color: CtOSColors.warning,
                           fontFamily: 'Courier',
                           fontSize: 12,
                           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
@@ -284,7 +284,7 @@ class _FilterSearchBarState extends State<FilterSearchBar> {
               child: Text(
                 "UNIVERSITAS: ${widget.selectedUniversity}",
                 style: const TextStyle(
-                  color: HackerColors.warning,
+                  color: CtOSColors.warning,
                   fontFamily: 'Courier',
                   fontSize: 10,
                   fontStyle: FontStyle.italic,

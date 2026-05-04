@@ -61,15 +61,15 @@ class ResponsiveCard extends StatelessWidget {
             maxHeight: maxHeight?.h ?? double.infinity,
           ),
           decoration: BoxDecoration(
-            color: color ?? HackerColors.surface,
+            color: color ?? CtOSColors.surface,
             borderRadius: BorderRadius.circular(4),
             border: Border.all(
-              color: borderColor ?? HackerColors.accent,
+              color: borderColor ?? CtOSColors.secondary,
               width: isMobile ? 0.5 : 1.0,
             ),
             boxShadow: hoverable ? [
               BoxShadow(
-                color: HackerColors.primary.withOpacity(0.2),
+                color: CtOSColors.primary.withOpacity(0.2),
                 blurRadius: 4,
                 spreadRadius: 0,
                 offset: Offset(0, 2),

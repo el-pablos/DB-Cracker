@@ -38,12 +38,12 @@ class DosenSearchButton extends StatelessWidget {
           horizontal: 16.0,
         ),
         decoration: BoxDecoration(
-          color: HackerColors.surface,
+          color: CtOSColors.surface,
           borderRadius: BorderRadius.circular(4.0),
-          border: Border.all(color: HackerColors.primary, width: 1.0),
+          border: Border.all(color: CtOSColors.primary, width: 1.0),
           boxShadow: [
             BoxShadow(
-              color: HackerColors.primary.withOpacity(0.2),
+              color: CtOSColors.primary.withOpacity(0.2),
               blurRadius: 6,
               offset: const Offset(0, 2),
             ),
@@ -54,7 +54,7 @@ class DosenSearchButton extends StatelessWidget {
           children: [
             const Icon(
               Icons.person_search,
-              color: HackerColors.primary,
+              color: CtOSColors.primary,
               size: 20.0,
             ),
             const SizedBox(width: 12.0),
@@ -65,7 +65,7 @@ class DosenSearchButton extends StatelessWidget {
                   const FlexibleText(
                     "PENCARIAN DOSEN",
                     style: TextStyle(
-                      color: HackerColors.primary,
+                      color: CtOSColors.primary,
                       fontFamily: 'Courier',
                       fontSize: 14.0,
                       fontWeight: FontWeight.bold,
@@ -76,7 +76,7 @@ class DosenSearchButton extends StatelessWidget {
                     const FlexibleText(
                       "Cari dan akses data dosen seluruh Indonesia",
                       style: TextStyle(
-                        color: HackerColors.text,
+                        color: CtOSColors.textPrimary,
                         fontFamily: 'Courier',
                         fontSize: 12.0,
                       ),
@@ -87,7 +87,7 @@ class DosenSearchButton extends StatelessWidget {
             ),
             const Icon(
               Icons.search,
-              color: HackerColors.primary,
+              color: CtOSColors.primary,
               size: 20.0,
             ),
           ],

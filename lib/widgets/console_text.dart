@@ -74,14 +74,14 @@ class _ConsoleTextState extends State<ConsoleText> with SingleTickerProviderStat
 
   @override
   Widget build(BuildContext context) {
-    Color textColor = HackerColors.text;
+    Color textColor = CtOSColors.textPrimary;
     
     if (widget.isError) {
-      textColor = HackerColors.error;
+      textColor = CtOSColors.error;
     } else if (widget.isSuccess) {
-      textColor = HackerColors.success;
+      textColor = CtOSColors.success;
     } else if (widget.isInput) {
-      textColor = HackerColors.primary;
+      textColor = CtOSColors.primary;
     }
     
     return AnimatedBuilder(
@@ -105,7 +105,7 @@ class _ConsoleTextState extends State<ConsoleText> with SingleTickerProviderStat
                   const Text(
                     ">",
                     style: TextStyle(
-                      color: HackerColors.primary,
+                      color: CtOSColors.primary,
                       fontFamily: 'Courier',
                       fontSize: 14,
                     ),
@@ -129,7 +129,7 @@ class _ConsoleTextState extends State<ConsoleText> with SingleTickerProviderStat
                   const Text(
                     "█",
                     style: TextStyle(
-                      color: HackerColors.primary,
+                      color: CtOSColors.primary,
                       fontFamily: 'Courier',
                       fontSize: 14,
                     ),

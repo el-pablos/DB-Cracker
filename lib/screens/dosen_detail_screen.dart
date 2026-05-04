@@ -156,7 +156,7 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
     }
 
     return Scaffold(
-      backgroundColor: HackerColors.background,
+      backgroundColor: CtOSColors.background,
       appBar: AppBar(
         title: Row(
           children: [
@@ -170,8 +170,8 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: _animationController.value > 0.5
-                        ? HackerColors.primary
-                        : HackerColors.accent,
+                        ? CtOSColors.primary
+                        : CtOSColors.secondary,
                   ),
                 );
               },
@@ -181,24 +181,24 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
               style: TextStyle(
                 fontFamily: 'Courier',
                 fontWeight: FontWeight.bold,
-                color: HackerColors.primary,
+                color: CtOSColors.primary,
                 fontSize: 16,
               ),
             ),
           ],
         ),
-        backgroundColor: HackerColors.surface,
+        backgroundColor: CtOSColors.surface,
         iconTheme: const IconThemeData(
-          color: HackerColors.primary,
+          color: CtOSColors.primary,
         ),
       ),
       body: SafeArea(
         child: Container(
-          color: HackerColors.background,
+          color: CtOSColors.background,
           child: Column(
             children: [
               Container(
-                color: HackerColors.surface.withOpacity(0.7),
+                color: CtOSColors.surface.withOpacity(0.7),
                 padding: const EdgeInsets.all(8),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -209,15 +209,15 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: _random.nextBool()
-                            ? HackerColors.primary
-                            : HackerColors.accent,
+                            ? CtOSColors.primary
+                            : CtOSColors.secondary,
                       ),
                     ),
                     const SizedBox(width: 8),
                     Text(
                       'SUBJEK: ${widget.dosenName}',
                       style: const TextStyle(
-                        color: HackerColors.highlight,
+                        color: CtOSColors.textAccent,
                         fontFamily: 'Courier',
                         fontSize: 12,
                       ),
@@ -270,7 +270,7 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
                               child: Text(
                                 'Data Dosen tidak tersedia',
                                 style: TextStyle(
-                                  color: HackerColors.error,
+                                  color: CtOSColors.error,
                                   fontFamily: 'Courier',
                                   fontSize: 16,
                                 ),
@@ -302,14 +302,14 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
             children: [
               const Icon(
                 Icons.warning_amber_rounded,
-                color: HackerColors.error,
+                color: CtOSColors.error,
                 size: 48,
               ),
               const SizedBox(height: 16),
               const Text(
                 'Gagal memuat data dosen',
                 style: TextStyle(
-                  color: HackerColors.error,
+                  color: CtOSColors.error,
                   fontSize: 16,
                   fontFamily: 'Courier',
                 ),
@@ -319,11 +319,11 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
               ElevatedButton(
                 onPressed: _simulateLoading,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: HackerColors.surface,
-                  foregroundColor: HackerColors.primary,
+                  backgroundColor: CtOSColors.surface,
+                  foregroundColor: CtOSColors.primary,
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  side: const BorderSide(color: HackerColors.primary),
+                  side: const BorderSide(color: CtOSColors.primary),
                 ),
                 child: const Text("COBA LAGI", style: TextStyle(fontSize: 14)),
               ),
@@ -336,7 +336,7 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
 
   Widget _buildFooter() {
     return Container(
-      color: HackerColors.surface,
+      color: CtOSColors.surface,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -349,15 +349,15 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: _random.nextBool()
-                      ? HackerColors.primary
-                      : HackerColors.accent,
+                      ? CtOSColors.primary
+                      : CtOSColors.secondary,
                 ),
               ),
               const SizedBox(width: 8),
               Text(
                 'KUNCI: ${_getRandomHexValue(8)}-${_getRandomHexValue(4)}-${_getRandomHexValue(4)}',
                 style: const TextStyle(
-                    color: HackerColors.text,
+                    color: CtOSColors.textPrimary,
                     fontSize: 10,
                     fontFamily: 'Courier'),
               ),
@@ -366,7 +366,7 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
           const Text(
             'BY: TAMAENGS',
             style: TextStyle(
-                color: HackerColors.text,
+                color: CtOSColors.textPrimary,
                 fontSize: 10,
                 fontFamily: 'Courier',
                 fontWeight: FontWeight.bold),
@@ -402,12 +402,12 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: HackerColors.surface,
-        border: Border.all(color: HackerColors.primary.withOpacity(0.3)),
+        color: CtOSColors.surface,
+        border: Border.all(color: CtOSColors.primary.withOpacity(0.3)),
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: HackerColors.primary.withOpacity(0.1),
+            color: CtOSColors.primary.withOpacity(0.1),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -423,14 +423,14 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
                 width: 80,
                 height: 80,
                 decoration: BoxDecoration(
-                  color: HackerColors.primary.withOpacity(0.2),
+                  color: CtOSColors.primary.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(40),
-                  border: Border.all(color: HackerColors.primary, width: 2),
+                  border: Border.all(color: CtOSColors.primary, width: 2),
                 ),
                 child: Icon(
                   Icons.person,
                   size: 40,
-                  color: HackerColors.primary,
+                  color: CtOSColors.primary,
                 ),
               ),
               const SizedBox(width: 16),
@@ -441,7 +441,7 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
                     Text(
                       dosen.namaDosen,
                       style: const TextStyle(
-                        color: HackerColors.primary,
+                        color: CtOSColors.primary,
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                         fontFamily: 'Courier',
@@ -452,7 +452,7 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
                       Text(
                         'NIDN: ${dosen.nidn}',
                         style: const TextStyle(
-                          color: HackerColors.accent,
+                          color: CtOSColors.secondary,
                           fontSize: 14,
                           fontFamily: 'Courier',
                         ),
@@ -461,7 +461,7 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
                       Text(
                         dosen.jabatanAkademik,
                         style: const TextStyle(
-                          color: HackerColors.highlight,
+                          color: CtOSColors.textAccent,
                           fontSize: 14,
                           fontFamily: 'Courier',
                         ),
@@ -495,14 +495,14 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: HackerColors.primary.withOpacity(0.1),
-        border: Border.all(color: HackerColors.primary.withOpacity(0.3)),
+        color: CtOSColors.primary.withOpacity(0.1),
+        border: Border.all(color: CtOSColors.primary.withOpacity(0.3)),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
         '$label: $value',
         style: const TextStyle(
-          color: HackerColors.primary,
+          color: CtOSColors.primary,
           fontSize: 12,
           fontFamily: 'Courier',
         ),
@@ -521,9 +521,9 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
     return Container(
       height: 50,
       decoration: BoxDecoration(
-        color: HackerColors.surface,
+        color: CtOSColors.surface,
         borderRadius: BorderRadius.circular(25),
-        border: Border.all(color: HackerColors.primary.withOpacity(0.3)),
+        border: Border.all(color: CtOSColors.primary.withOpacity(0.3)),
       ),
       child: Row(
         children: tabs.asMap().entries.map((entry) {
@@ -537,7 +537,7 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
               child: Container(
                 margin: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  color: isActive ? HackerColors.primary : Colors.transparent,
+                  color: isActive ? CtOSColors.primary : Colors.transparent,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Center(
@@ -545,8 +545,8 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
                     tab,
                     style: TextStyle(
                       color: isActive
-                          ? HackerColors.background
-                          : HackerColors.primary,
+                          ? CtOSColors.background
+                          : CtOSColors.primary,
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                       fontFamily: 'Courier',
@@ -718,8 +718,8 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: HackerColors.surface,
-        border: Border.all(color: HackerColors.primary.withOpacity(0.3)),
+        color: CtOSColors.surface,
+        border: Border.all(color: CtOSColors.primary.withOpacity(0.3)),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
@@ -728,7 +728,7 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
           Text(
             title,
             style: const TextStyle(
-              color: HackerColors.primary,
+              color: CtOSColors.primary,
               fontSize: 16,
               fontWeight: FontWeight.bold,
               fontFamily: 'Courier',
@@ -746,8 +746,8 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: HackerColors.surface,
-        border: Border.all(color: HackerColors.primary.withOpacity(0.3)),
+        color: CtOSColors.surface,
+        border: Border.all(color: CtOSColors.primary.withOpacity(0.3)),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
@@ -756,7 +756,7 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
           Text(
             title,
             style: const TextStyle(
-              color: HackerColors.primary,
+              color: CtOSColors.primary,
               fontSize: 16,
               fontWeight: FontWeight.bold,
               fontFamily: 'Courier',
@@ -782,7 +782,7 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
             child: Text(
               '$label:',
               style: const TextStyle(
-                color: HackerColors.accent,
+                color: CtOSColors.secondary,
                 fontSize: 14,
                 fontFamily: 'Courier',
               ),
@@ -792,7 +792,7 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
             child: Text(
               value,
               style: const TextStyle(
-                color: HackerColors.text,
+                color: CtOSColors.textPrimary,
                 fontSize: 14,
                 fontFamily: 'Courier',
               ),
@@ -808,8 +808,8 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: HackerColors.background,
-        border: Border.all(color: HackerColors.accent.withOpacity(0.3)),
+        color: CtOSColors.background,
+        border: Border.all(color: CtOSColors.secondary.withOpacity(0.3)),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Column(
@@ -818,7 +818,7 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
           Text(
             '${studi.jenjang} - ${studi.gelar}',
             style: const TextStyle(
-              color: HackerColors.primary,
+              color: CtOSColors.primary,
               fontSize: 14,
               fontWeight: FontWeight.bold,
               fontFamily: 'Courier',
@@ -828,7 +828,7 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
           Text(
             studi.perguruan,
             style: const TextStyle(
-              color: HackerColors.text,
+              color: CtOSColors.textPrimary,
               fontSize: 13,
               fontFamily: 'Courier',
             ),
@@ -838,7 +838,7 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
             Text(
               'Bidang: ${studi.bidangStudi}',
               style: const TextStyle(
-                color: HackerColors.accent,
+                color: CtOSColors.secondary,
                 fontSize: 12,
                 fontFamily: 'Courier',
               ),
@@ -849,7 +849,7 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
             Text(
               'Lulus: ${studi.tahunLulus}',
               style: const TextStyle(
-                color: HackerColors.highlight,
+                color: CtOSColors.textAccent,
                 fontSize: 12,
                 fontFamily: 'Courier',
               ),
@@ -865,8 +865,8 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: HackerColors.background,
-        border: Border.all(color: HackerColors.accent.withOpacity(0.3)),
+        color: CtOSColors.background,
+        border: Border.all(color: CtOSColors.secondary.withOpacity(0.3)),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Column(
@@ -875,7 +875,7 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
           Text(
             mengajar.namaMatkul,
             style: const TextStyle(
-              color: HackerColors.primary,
+              color: CtOSColors.primary,
               fontSize: 14,
               fontWeight: FontWeight.bold,
               fontFamily: 'Courier',
@@ -885,7 +885,7 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
           Text(
             'Kode: ${mengajar.kodeMatkul}',
             style: const TextStyle(
-              color: HackerColors.accent,
+              color: CtOSColors.secondary,
               fontSize: 12,
               fontFamily: 'Courier',
             ),
@@ -893,7 +893,7 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
           Text(
             'Kelas: ${mengajar.namaKelas}',
             style: const TextStyle(
-              color: HackerColors.text,
+              color: CtOSColors.textPrimary,
               fontSize: 12,
               fontFamily: 'Courier',
             ),
@@ -901,7 +901,7 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
           Text(
             'Semester: ${mengajar.namaSemester}',
             style: const TextStyle(
-              color: HackerColors.highlight,
+              color: CtOSColors.textAccent,
               fontSize: 12,
               fontFamily: 'Courier',
             ),
@@ -916,8 +916,8 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: HackerColors.background,
-        border: Border.all(color: HackerColors.accent.withOpacity(0.3)),
+        color: CtOSColors.background,
+        border: Border.all(color: CtOSColors.secondary.withOpacity(0.3)),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Column(
@@ -926,7 +926,7 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
           Text(
             jabatan.jabatan,
             style: const TextStyle(
-              color: HackerColors.primary,
+              color: CtOSColors.primary,
               fontSize: 14,
               fontWeight: FontWeight.bold,
               fontFamily: 'Courier',
@@ -937,7 +937,7 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
             Text(
               'Tanggal SK: ${jabatan.tanggalSk}',
               style: const TextStyle(
-                color: HackerColors.text,
+                color: CtOSColors.textPrimary,
                 fontSize: 12,
                 fontFamily: 'Courier',
               ),
@@ -946,7 +946,7 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
             Text(
               'Nomor SK: ${jabatan.nomorSk}',
               style: const TextStyle(
-                color: HackerColors.accent,
+                color: CtOSColors.secondary,
                 fontSize: 12,
                 fontFamily: 'Courier',
               ),
@@ -955,7 +955,7 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
             Text(
               'TMT: ${jabatan.tmtJabatan}',
               style: const TextStyle(
-                color: HackerColors.highlight,
+                color: CtOSColors.textAccent,
                 fontSize: 12,
                 fontFamily: 'Courier',
               ),
@@ -970,8 +970,8 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: HackerColors.background,
-        border: Border.all(color: HackerColors.accent.withOpacity(0.3)),
+        color: CtOSColors.background,
+        border: Border.all(color: CtOSColors.secondary.withOpacity(0.3)),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Column(
@@ -980,7 +980,7 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
           Text(
             penugasan.namaPt,
             style: const TextStyle(
-              color: HackerColors.primary,
+              color: CtOSColors.primary,
               fontSize: 14,
               fontWeight: FontWeight.bold,
               fontFamily: 'Courier',
@@ -990,7 +990,7 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
           Text(
             'Prodi: ${penugasan.namaProdi}',
             style: const TextStyle(
-              color: HackerColors.text,
+              color: CtOSColors.textPrimary,
               fontSize: 12,
               fontFamily: 'Courier',
             ),
@@ -998,7 +998,7 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
           Text(
             'Status: ${penugasan.statusPenugasan}',
             style: const TextStyle(
-              color: HackerColors.accent,
+              color: CtOSColors.secondary,
               fontSize: 12,
               fontFamily: 'Courier',
             ),
@@ -1006,7 +1006,7 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
           Text(
             'Periode: ${penugasan.tahunMulai}${penugasan.tahunSelesai.isNotEmpty ? ' - ${penugasan.tahunSelesai}' : ' - Sekarang'}',
             style: const TextStyle(
-              color: HackerColors.highlight,
+              color: CtOSColors.textAccent,
               fontSize: 12,
               fontFamily: 'Courier',
             ),
@@ -1021,8 +1021,8 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: HackerColors.background,
-        border: Border.all(color: HackerColors.accent.withOpacity(0.3)),
+        color: CtOSColors.background,
+        border: Border.all(color: CtOSColors.secondary.withOpacity(0.3)),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Column(
@@ -1031,7 +1031,7 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
           Text(
             portfolio.judulKegiatan,
             style: const TextStyle(
-              color: HackerColors.primary,
+              color: CtOSColors.primary,
               fontSize: 14,
               fontWeight: FontWeight.bold,
               fontFamily: 'Courier',
@@ -1042,7 +1042,7 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
             Text(
               'Jenis: ${portfolio.jenisKegiatan}',
               style: const TextStyle(
-                color: HackerColors.accent,
+                color: CtOSColors.secondary,
                 fontSize: 12,
                 fontFamily: 'Courier',
               ),
@@ -1051,7 +1051,7 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
             Text(
               'Tahun: ${portfolio.tahunKegiatan}',
               style: const TextStyle(
-                color: HackerColors.highlight,
+                color: CtOSColors.textAccent,
                 fontSize: 12,
                 fontFamily: 'Courier',
               ),
@@ -1061,7 +1061,7 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
             Text(
               portfolio.detailKegiatan,
               style: const TextStyle(
-                color: HackerColors.text,
+                color: CtOSColors.textPrimary,
                 fontSize: 12,
                 fontFamily: 'Courier',
               ),
@@ -1077,22 +1077,22 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
       width: double.infinity,
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
-        color: HackerColors.surface,
-        border: Border.all(color: HackerColors.primary.withOpacity(0.3)),
+        color: CtOSColors.surface,
+        border: Border.all(color: CtOSColors.primary.withOpacity(0.3)),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
         children: [
           Icon(
             Icons.info_outline,
-            color: HackerColors.accent,
+            color: CtOSColors.secondary,
             size: 48,
           ),
           const SizedBox(height: 16),
           Text(
             message,
             style: const TextStyle(
-              color: HackerColors.accent,
+              color: CtOSColors.secondary,
               fontSize: 14,
               fontFamily: 'Courier',
             ),

@@ -162,7 +162,7 @@ class _DetailScreenState extends State<DetailScreen>
     final bool isMobile = size.width < 600;
 
     return Scaffold(
-      backgroundColor: HackerColors.background,
+      backgroundColor: CtOSColors.background,
       appBar: AppBar(
         title: Row(
           children: [
@@ -176,8 +176,8 @@ class _DetailScreenState extends State<DetailScreen>
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: _animationController.value > 0.5
-                        ? HackerColors.primary
-                        : HackerColors.accent,
+                        ? CtOSColors.primary
+                        : CtOSColors.secondary,
                   ),
                 );
               },
@@ -187,22 +187,22 @@ class _DetailScreenState extends State<DetailScreen>
               style: TextStyle(
                 fontFamily: 'Courier',
                 fontWeight: FontWeight.bold,
-                color: HackerColors.primary,
+                color: CtOSColors.primary,
                 fontSize: 16,
               ),
             ),
           ],
         ),
-        backgroundColor: HackerColors.surface,
+        backgroundColor: CtOSColors.surface,
         iconTheme: const IconThemeData(
-          color: HackerColors.primary,
+          color: CtOSColors.primary,
         ),
         actions: [
           // Toggle untuk menampilkan info eksternal
           IconButton(
             icon: Icon(
               _showExternalInfo ? Icons.visibility : Icons.visibility_off,
-              color: HackerColors.primary,
+              color: CtOSColors.primary,
               size: 20,
             ),
             onPressed: () {
@@ -214,11 +214,11 @@ class _DetailScreenState extends State<DetailScreen>
         ],
       ),
       body: Container(
-        color: HackerColors.background,
+        color: CtOSColors.background,
         child: Column(
           children: [
             Container(
-              color: HackerColors.surface.withOpacity(0.7),
+              color: CtOSColors.surface.withOpacity(0.7),
               padding: const EdgeInsets.all(8),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -229,15 +229,15 @@ class _DetailScreenState extends State<DetailScreen>
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: _statusDotIsGreen
-                          ? HackerColors.primary
-                          : HackerColors.accent,
+                          ? CtOSColors.primary
+                          : CtOSColors.secondary,
                     ),
                   ),
                   const SizedBox(width: 8),
                   Text(
                     'RAHASIA - LEVEL AKSES 3 - SUBJEK: ${widget.subjectName}',
                     style: const TextStyle(
-                      color: HackerColors.highlight,
+                      color: CtOSColors.textAccent,
                       fontFamily: 'Courier',
                       fontSize: 12,
                     ),
@@ -292,14 +292,14 @@ class _DetailScreenState extends State<DetailScreen>
                                   children: [
                                     const Icon(
                                       Icons.warning_amber_rounded,
-                                      color: HackerColors.error,
+                                      color: CtOSColors.error,
                                       size: 48,
                                     ),
                                     const SizedBox(height: 16),
                                     Text(
                                       '${AppStrings.errorLoadingData} ${snapshot.error}',
                                       style: const TextStyle(
-                                        color: HackerColors.error,
+                                        color: CtOSColors.error,
                                         fontSize: 16,
                                         fontFamily: 'Courier',
                                       ),
@@ -310,12 +310,12 @@ class _DetailScreenState extends State<DetailScreen>
                                     ElevatedButton(
                                       onPressed: _simulateDecryption,
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor: HackerColors.surface,
-                                        foregroundColor: HackerColors.primary,
+                                        backgroundColor: CtOSColors.surface,
+                                        foregroundColor: CtOSColors.primary,
                                         padding: const EdgeInsets.symmetric(
                                             horizontal: 16, vertical: 8),
                                         side: const BorderSide(
-                                            color: HackerColors.primary),
+                                            color: CtOSColors.primary),
                                       ),
                                       child: const Text(
                                         AppStrings.retry,
@@ -334,7 +334,7 @@ class _DetailScreenState extends State<DetailScreen>
                             child: Text(
                               AppStrings.noDataAvailable,
                               style: TextStyle(
-                                color: HackerColors.error,
+                                color: CtOSColors.error,
                                 fontFamily: 'Courier',
                                 fontSize: 16,
                               ),
@@ -348,7 +348,7 @@ class _DetailScreenState extends State<DetailScreen>
                     ),
             ),
             Container(
-              color: HackerColors.surface,
+              color: CtOSColors.surface,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -361,15 +361,15 @@ class _DetailScreenState extends State<DetailScreen>
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: _statusDotIsGreen
-                              ? HackerColors.primary
-                              : HackerColors.accent,
+                              ? CtOSColors.primary
+                              : CtOSColors.secondary,
                         ),
                       ),
                       const SizedBox(width: 8),
                       Text(
                         'KUNCI: ${_getRandomHexValue(8)}-${_getRandomHexValue(4)}-${_getRandomHexValue(4)}',
                         style: const TextStyle(
-                          color: HackerColors.text,
+                          color: CtOSColors.textPrimary,
                           fontSize: 10,
                           fontFamily: 'Courier',
                         ),
@@ -380,7 +380,7 @@ class _DetailScreenState extends State<DetailScreen>
                   const Text(
                     'BY: TAMAENGS',
                     style: TextStyle(
-                      color: HackerColors.text,
+                      color: CtOSColors.textPrimary,
                       fontSize: 10,
                       fontFamily: 'Courier',
                       fontWeight: FontWeight.bold,
@@ -421,12 +421,12 @@ class _DetailScreenState extends State<DetailScreen>
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: HackerColors.surface,
-        border: Border.all(color: HackerColors.primary.withValues(alpha: 0.3)),
+        color: CtOSColors.surface,
+        border: Border.all(color: CtOSColors.primary.withValues(alpha: 0.3)),
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: HackerColors.primary.withValues(alpha: 0.1),
+            color: CtOSColors.primary.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -442,14 +442,14 @@ class _DetailScreenState extends State<DetailScreen>
                 width: 80,
                 height: 80,
                 decoration: BoxDecoration(
-                  color: HackerColors.primary.withValues(alpha: 0.2),
+                  color: CtOSColors.primary.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(40),
-                  border: Border.all(color: HackerColors.primary, width: 2),
+                  border: Border.all(color: CtOSColors.primary, width: 2),
                 ),
                 child: Icon(
                   Icons.school,
                   size: 40,
-                  color: HackerColors.primary,
+                  color: CtOSColors.primary,
                 ),
               ),
               const SizedBox(width: 16),
@@ -460,7 +460,7 @@ class _DetailScreenState extends State<DetailScreen>
                     Text(
                       mahasiswa.nama,
                       style: const TextStyle(
-                        color: HackerColors.primary,
+                        color: CtOSColors.primary,
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                         fontFamily: 'Courier',
@@ -471,7 +471,7 @@ class _DetailScreenState extends State<DetailScreen>
                       Text(
                         'NIM: ${mahasiswa.nim}',
                         style: const TextStyle(
-                          color: HackerColors.accent,
+                          color: CtOSColors.secondary,
                           fontSize: 14,
                           fontFamily: 'Courier',
                         ),
@@ -480,7 +480,7 @@ class _DetailScreenState extends State<DetailScreen>
                       Text(
                         mahasiswa.statusSaatIni,
                         style: const TextStyle(
-                          color: HackerColors.highlight,
+                          color: CtOSColors.textAccent,
                           fontSize: 14,
                           fontFamily: 'Courier',
                         ),
@@ -514,14 +514,14 @@ class _DetailScreenState extends State<DetailScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: HackerColors.primary.withValues(alpha: 0.1),
-        border: Border.all(color: HackerColors.primary.withValues(alpha: 0.3)),
+        color: CtOSColors.primary.withValues(alpha: 0.1),
+        border: Border.all(color: CtOSColors.primary.withValues(alpha: 0.3)),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
         '$label: $value',
         style: const TextStyle(
-          color: HackerColors.primary,
+          color: CtOSColors.primary,
           fontSize: 12,
           fontFamily: 'Courier',
         ),
@@ -540,9 +540,9 @@ class _DetailScreenState extends State<DetailScreen>
     return Container(
       height: 50,
       decoration: BoxDecoration(
-        color: HackerColors.surface,
+        color: CtOSColors.surface,
         borderRadius: BorderRadius.circular(25),
-        border: Border.all(color: HackerColors.primary.withValues(alpha: 0.3)),
+        border: Border.all(color: CtOSColors.primary.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: tabs.asMap().entries.map((entry) {
@@ -556,7 +556,7 @@ class _DetailScreenState extends State<DetailScreen>
               child: Container(
                 margin: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  color: isActive ? HackerColors.primary : Colors.transparent,
+                  color: isActive ? CtOSColors.primary : Colors.transparent,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Center(
@@ -564,8 +564,8 @@ class _DetailScreenState extends State<DetailScreen>
                     tab,
                     style: TextStyle(
                       color: isActive
-                          ? HackerColors.background
-                          : HackerColors.primary,
+                          ? CtOSColors.background
+                          : CtOSColors.primary,
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                       fontFamily: 'Courier',
@@ -698,8 +698,8 @@ class _DetailScreenState extends State<DetailScreen>
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: HackerColors.surface,
-        border: Border.all(color: HackerColors.primary.withValues(alpha: 0.3)),
+        color: CtOSColors.surface,
+        border: Border.all(color: CtOSColors.primary.withValues(alpha: 0.3)),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
@@ -708,7 +708,7 @@ class _DetailScreenState extends State<DetailScreen>
           Text(
             title,
             style: const TextStyle(
-              color: HackerColors.primary,
+              color: CtOSColors.primary,
               fontSize: 16,
               fontWeight: FontWeight.bold,
               fontFamily: 'Courier',
@@ -726,8 +726,8 @@ class _DetailScreenState extends State<DetailScreen>
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: HackerColors.surface,
-        border: Border.all(color: HackerColors.primary.withValues(alpha: 0.3)),
+        color: CtOSColors.surface,
+        border: Border.all(color: CtOSColors.primary.withValues(alpha: 0.3)),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
@@ -736,7 +736,7 @@ class _DetailScreenState extends State<DetailScreen>
           Text(
             title,
             style: const TextStyle(
-              color: HackerColors.primary,
+              color: CtOSColors.primary,
               fontSize: 16,
               fontWeight: FontWeight.bold,
               fontFamily: 'Courier',
@@ -762,7 +762,7 @@ class _DetailScreenState extends State<DetailScreen>
             child: Text(
               '$label:',
               style: const TextStyle(
-                color: HackerColors.accent,
+                color: CtOSColors.secondary,
                 fontSize: 14,
                 fontFamily: 'Courier',
               ),
@@ -772,7 +772,7 @@ class _DetailScreenState extends State<DetailScreen>
             child: Text(
               value,
               style: const TextStyle(
-                color: HackerColors.text,
+                color: CtOSColors.textPrimary,
                 fontSize: 14,
                 fontFamily: 'Courier',
               ),
@@ -788,8 +788,8 @@ class _DetailScreenState extends State<DetailScreen>
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: HackerColors.background,
-        border: Border.all(color: HackerColors.accent.withValues(alpha: 0.3)),
+        color: CtOSColors.background,
+        border: Border.all(color: CtOSColors.secondary.withValues(alpha: 0.3)),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Column(
@@ -798,7 +798,7 @@ class _DetailScreenState extends State<DetailScreen>
           Text(
             kelas.namaMatkul,
             style: const TextStyle(
-              color: HackerColors.primary,
+              color: CtOSColors.primary,
               fontSize: 14,
               fontWeight: FontWeight.bold,
               fontFamily: 'Courier',
@@ -808,7 +808,7 @@ class _DetailScreenState extends State<DetailScreen>
           Text(
             'Kode: ${kelas.kodeMatkul}',
             style: const TextStyle(
-              color: HackerColors.accent,
+              color: CtOSColors.secondary,
               fontSize: 12,
               fontFamily: 'Courier',
             ),
@@ -816,7 +816,7 @@ class _DetailScreenState extends State<DetailScreen>
           Text(
             'Dosen: ${kelas.namaDosen}',
             style: const TextStyle(
-              color: HackerColors.text,
+              color: CtOSColors.textPrimary,
               fontSize: 12,
               fontFamily: 'Courier',
             ),
@@ -824,7 +824,7 @@ class _DetailScreenState extends State<DetailScreen>
           Text(
             'Kelas: ${kelas.namaKelas}',
             style: const TextStyle(
-              color: HackerColors.highlight,
+              color: CtOSColors.textAccent,
               fontSize: 12,
               fontFamily: 'Courier',
             ),
@@ -832,7 +832,7 @@ class _DetailScreenState extends State<DetailScreen>
           Text(
             'Semester: ${kelas.namaSemester}',
             style: const TextStyle(
-              color: HackerColors.highlight,
+              color: CtOSColors.textAccent,
               fontSize: 12,
               fontFamily: 'Courier',
             ),
@@ -847,8 +847,8 @@ class _DetailScreenState extends State<DetailScreen>
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: HackerColors.background,
-        border: Border.all(color: HackerColors.accent.withValues(alpha: 0.3)),
+        color: CtOSColors.background,
+        border: Border.all(color: CtOSColors.secondary.withValues(alpha: 0.3)),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Column(
@@ -861,7 +861,7 @@ class _DetailScreenState extends State<DetailScreen>
                 child: Text(
                   nilai.namaMatkul,
                   style: const TextStyle(
-                    color: HackerColors.primary,
+                    color: CtOSColors.primary,
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
                     fontFamily: 'Courier',
@@ -892,7 +892,7 @@ class _DetailScreenState extends State<DetailScreen>
           Text(
             'Kode: ${nilai.kodeMatkul}',
             style: const TextStyle(
-              color: HackerColors.accent,
+              color: CtOSColors.secondary,
               fontSize: 12,
               fontFamily: 'Courier',
             ),
@@ -902,7 +902,7 @@ class _DetailScreenState extends State<DetailScreen>
               Text(
                 'SKS: ${nilai.sks}',
                 style: const TextStyle(
-                  color: HackerColors.text,
+                  color: CtOSColors.textPrimary,
                   fontSize: 12,
                   fontFamily: 'Courier',
                 ),
@@ -911,7 +911,7 @@ class _DetailScreenState extends State<DetailScreen>
               Text(
                 'Nilai: ${nilai.nilaiAngka}',
                 style: const TextStyle(
-                  color: HackerColors.highlight,
+                  color: CtOSColors.textAccent,
                   fontSize: 12,
                   fontFamily: 'Courier',
                 ),
@@ -921,7 +921,7 @@ class _DetailScreenState extends State<DetailScreen>
           Text(
             'Semester: ${nilai.namaSemester}',
             style: const TextStyle(
-              color: HackerColors.highlight,
+              color: CtOSColors.textAccent,
               fontSize: 12,
               fontFamily: 'Courier',
             ),
@@ -936,8 +936,8 @@ class _DetailScreenState extends State<DetailScreen>
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: HackerColors.background,
-        border: Border.all(color: HackerColors.accent.withValues(alpha: 0.3)),
+        color: CtOSColors.background,
+        border: Border.all(color: CtOSColors.secondary.withValues(alpha: 0.3)),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Column(
@@ -946,7 +946,7 @@ class _DetailScreenState extends State<DetailScreen>
           Text(
             semester.namaSemester,
             style: const TextStyle(
-              color: HackerColors.primary,
+              color: CtOSColors.primary,
               fontSize: 14,
               fontWeight: FontWeight.bold,
               fontFamily: 'Courier',
@@ -977,7 +977,7 @@ class _DetailScreenState extends State<DetailScreen>
           Text(
             'Status: ${semester.statusSemester}',
             style: const TextStyle(
-              color: HackerColors.highlight,
+              color: CtOSColors.textAccent,
               fontSize: 12,
               fontFamily: 'Courier',
             ),
@@ -993,8 +993,8 @@ class _DetailScreenState extends State<DetailScreen>
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: HackerColors.background,
-        border: Border.all(color: HackerColors.accent.withValues(alpha: 0.3)),
+        color: CtOSColors.background,
+        border: Border.all(color: CtOSColors.secondary.withValues(alpha: 0.3)),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Column(
@@ -1003,7 +1003,7 @@ class _DetailScreenState extends State<DetailScreen>
           Text(
             sertifikat.toString(),
             style: const TextStyle(
-              color: HackerColors.primary,
+              color: CtOSColors.primary,
               fontSize: 14,
               fontWeight: FontWeight.bold,
               fontFamily: 'Courier',
@@ -1019,8 +1019,8 @@ class _DetailScreenState extends State<DetailScreen>
       padding: const EdgeInsets.all(8),
       margin: const EdgeInsets.only(right: 4),
       decoration: BoxDecoration(
-        color: HackerColors.surface,
-        border: Border.all(color: HackerColors.primary.withValues(alpha: 0.3)),
+        color: CtOSColors.surface,
+        border: Border.all(color: CtOSColors.primary.withValues(alpha: 0.3)),
         borderRadius: BorderRadius.circular(4),
       ),
       child: Column(
@@ -1028,7 +1028,7 @@ class _DetailScreenState extends State<DetailScreen>
           Text(
             label,
             style: const TextStyle(
-              color: HackerColors.accent,
+              color: CtOSColors.secondary,
               fontSize: 10,
               fontFamily: 'Courier',
             ),
@@ -1037,7 +1037,7 @@ class _DetailScreenState extends State<DetailScreen>
           Text(
             value.isEmpty ? '-' : value,
             style: const TextStyle(
-              color: HackerColors.primary,
+              color: CtOSColors.primary,
               fontSize: 14,
               fontWeight: FontWeight.bold,
               fontFamily: 'Courier',
@@ -1053,22 +1053,22 @@ class _DetailScreenState extends State<DetailScreen>
       width: double.infinity,
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
-        color: HackerColors.surface,
-        border: Border.all(color: HackerColors.primary.withValues(alpha: 0.3)),
+        color: CtOSColors.surface,
+        border: Border.all(color: CtOSColors.primary.withValues(alpha: 0.3)),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
         children: [
           Icon(
             Icons.info_outline,
-            color: HackerColors.accent,
+            color: CtOSColors.secondary,
             size: 48,
           ),
           const SizedBox(height: 16),
           Text(
             message,
             style: const TextStyle(
-              color: HackerColors.accent,
+              color: CtOSColors.secondary,
               fontSize: 14,
               fontFamily: 'Courier',
             ),
@@ -1082,18 +1082,18 @@ class _DetailScreenState extends State<DetailScreen>
   Color _getNilaiColor(String nilaiHuruf) {
     switch (nilaiHuruf.toUpperCase()) {
       case 'A':
-        return HackerColors.primary;
+        return CtOSColors.primary;
       case 'B':
-        return HackerColors.highlight;
+        return CtOSColors.textAccent;
       case 'C':
-        return HackerColors.accent;
+        return CtOSColors.secondary;
       case 'D':
-        return HackerColors.error;
+        return CtOSColors.error;
       case 'E':
       case 'F':
-        return HackerColors.error;
+        return CtOSColors.error;
       default:
-        return HackerColors.text;
+        return CtOSColors.textPrimary;
     }
   }
 
@@ -1104,9 +1104,9 @@ class _DetailScreenState extends State<DetailScreen>
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: HackerColors.surface,
+        color: CtOSColors.surface,
         borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: HackerColors.accent, width: 1),
+        border: Border.all(color: CtOSColors.secondary, width: 1),
       ),
       padding: const EdgeInsets.all(12),
       child: Column(
@@ -1116,7 +1116,7 @@ class _DetailScreenState extends State<DetailScreen>
             children: [
               Icon(
                 icon,
-                color: HackerColors.primary,
+                color: CtOSColors.primary,
                 size: 18,
               ),
               const SizedBox(width: 8),
@@ -1124,7 +1124,7 @@ class _DetailScreenState extends State<DetailScreen>
                 child: Text(
                   title,
                   style: const TextStyle(
-                    color: HackerColors.primary,
+                    color: CtOSColors.primary,
                     fontFamily: 'Courier',
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -1136,7 +1136,7 @@ class _DetailScreenState extends State<DetailScreen>
             ],
           ),
           const Divider(
-            color: HackerColors.accent,
+            color: CtOSColors.secondary,
             height: 24,
           ),
           Expanded(
@@ -1161,9 +1161,9 @@ class _DetailScreenState extends State<DetailScreen>
     return Container(
       height: 150, // Tetapkan tinggi yang jelas
       decoration: BoxDecoration(
-        color: HackerColors.surface,
+        color: CtOSColors.surface,
         borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: HackerColors.accent, width: 1),
+        border: Border.all(color: CtOSColors.secondary, width: 1),
       ),
       padding: const EdgeInsets.all(12),
       child: Column(
@@ -1173,7 +1173,7 @@ class _DetailScreenState extends State<DetailScreen>
             children: [
               const Icon(
                 Icons.language,
-                color: HackerColors.primary,
+                color: CtOSColors.primary,
                 size: 18,
               ),
               const SizedBox(width: 8),
@@ -1181,7 +1181,7 @@ class _DetailScreenState extends State<DetailScreen>
                 child: Text(
                   "DATA EKSTERNAL: $title",
                   style: const TextStyle(
-                    color: HackerColors.primary,
+                    color: CtOSColors.primary,
                     fontFamily: 'Courier',
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -1193,7 +1193,7 @@ class _DetailScreenState extends State<DetailScreen>
             ],
           ),
           const Divider(
-            color: HackerColors.accent,
+            color: CtOSColors.secondary,
             height: 24,
           ),
           Expanded(
@@ -1203,7 +1203,7 @@ class _DetailScreenState extends State<DetailScreen>
                 Text(
                   extract,
                   style: const TextStyle(
-                    color: HackerColors.text,
+                    color: CtOSColors.textPrimary,
                     fontFamily: 'Courier',
                     fontSize: 12,
                   ),
@@ -1212,7 +1212,7 @@ class _DetailScreenState extends State<DetailScreen>
                 Text(
                   "SUMBER: $source",
                   style: const TextStyle(
-                    color: HackerColors.accent,
+                    color: CtOSColors.secondary,
                     fontFamily: 'Courier',
                     fontSize: 10,
                     fontStyle: FontStyle.italic,
@@ -1235,9 +1235,9 @@ class _DetailScreenState extends State<DetailScreen>
     return Container(
       height: terminalHeight,
       decoration: BoxDecoration(
-        color: HackerColors.surface,
+        color: CtOSColors.surface,
         borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: HackerColors.accent),
+        border: Border.all(color: CtOSColors.secondary),
       ),
       padding: const EdgeInsets.all(8),
       child: Column(
@@ -1246,13 +1246,13 @@ class _DetailScreenState extends State<DetailScreen>
           Container(
             padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 8),
             decoration: BoxDecoration(
-              color: HackerColors.background,
+              color: CtOSColors.background,
               borderRadius: BorderRadius.circular(2),
             ),
             child: const Text(
               "ANALISIS KEAMANAN",
               style: TextStyle(
-                color: HackerColors.warning,
+                color: CtOSColors.warning,
                 fontFamily: 'Courier',
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
@@ -1307,17 +1307,17 @@ class _DetailScreenState extends State<DetailScreen>
   Color _getSecurityColor(int index) {
     switch (index) {
       case 0:
-        return HackerColors.primary;
+        return CtOSColors.primary;
       case 1:
-        return HackerColors.accent;
+        return CtOSColors.secondary;
       case 2:
-        return HackerColors.text;
+        return CtOSColors.textPrimary;
       case 3:
-        return HackerColors.warning;
+        return CtOSColors.warning;
       case 4:
-        return HackerColors.primary;
+        return CtOSColors.primary;
       default:
-        return HackerColors.text;
+        return CtOSColors.textPrimary;
     }
   }
 
@@ -1330,7 +1330,7 @@ class _DetailScreenState extends State<DetailScreen>
           Text(
             label,
             style: TextStyle(
-              color: HackerColors.text.withOpacity(0.7),
+              color: CtOSColors.textPrimary.withOpacity(0.7),
               fontFamily: 'Courier',
               fontSize: 10,
             ),
@@ -1339,17 +1339,17 @@ class _DetailScreenState extends State<DetailScreen>
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
             decoration: BoxDecoration(
-              color: HackerColors.background,
+              color: CtOSColors.background,
               borderRadius: BorderRadius.circular(2),
               border: Border.all(
-                color: HackerColors.accent.withOpacity(0.5),
+                color: CtOSColors.secondary.withOpacity(0.5),
                 width: 1,
               ),
             ),
             child: Text(
               value.isNotEmpty ? value : "-DISENSOR-",
               style: const TextStyle(
-                color: HackerColors.primary,
+                color: CtOSColors.primary,
                 fontFamily: 'Courier',
                 fontSize: 14,
                 fontWeight: FontWeight.w500,

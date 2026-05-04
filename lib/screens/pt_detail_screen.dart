@@ -132,7 +132,7 @@ class _PTDetailScreenState extends State<PTDetailScreen> with SingleTickerProvid
     final bool isMobile = ScreenUtils.isMobileScreen();
     
     return Scaffold(
-      backgroundColor: HackerColors.background,
+      backgroundColor: CtOSColors.background,
       appBar: AppBar(
         title: Row(
           children: [
@@ -146,8 +146,8 @@ class _PTDetailScreenState extends State<PTDetailScreen> with SingleTickerProvid
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: _animationController.value > 0.5 
-                        ? HackerColors.primary 
-                        : HackerColors.accent,
+                        ? CtOSColors.primary 
+                        : CtOSColors.secondary,
                   ),
                 );
               },
@@ -157,24 +157,24 @@ class _PTDetailScreenState extends State<PTDetailScreen> with SingleTickerProvid
               style: TextStyle(
                 fontFamily: 'Courier',
                 fontWeight: FontWeight.bold,
-                color: HackerColors.primary,
+                color: CtOSColors.primary,
                 fontSize: 16,
               ),
             ),
           ],
         ),
-        backgroundColor: HackerColors.surface,
+        backgroundColor: CtOSColors.surface,
         iconTheme: const IconThemeData(
-          color: HackerColors.primary,
+          color: CtOSColors.primary,
         ),
       ),
       body: SafeArea(
         child: Container(
-          color: HackerColors.background,
+          color: CtOSColors.background,
           child: Column(
             children: [
               Container(
-                color: HackerColors.surface.withOpacity(0.7),
+                color: CtOSColors.surface.withOpacity(0.7),
                 padding: const EdgeInsets.all(8),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -185,8 +185,8 @@ class _PTDetailScreenState extends State<PTDetailScreen> with SingleTickerProvid
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: _statusDotIsGreen 
-                            ? HackerColors.primary 
-                            : HackerColors.accent,
+                            ? CtOSColors.primary 
+                            : CtOSColors.secondary,
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -194,7 +194,7 @@ class _PTDetailScreenState extends State<PTDetailScreen> with SingleTickerProvid
                       child: FlexibleText(
                         'INFO SISTEM: ${widget.ptName}',
                         style: const TextStyle(
-                          color: HackerColors.highlight,
+                          color: CtOSColors.textAccent,
                           fontFamily: 'Courier',
                           fontSize: 12,
                         ),
@@ -239,14 +239,14 @@ class _PTDetailScreenState extends State<PTDetailScreen> with SingleTickerProvid
                                   children: [
                                     const Icon(
                                       Icons.warning_amber_rounded,
-                                      color: HackerColors.error,
+                                      color: CtOSColors.error,
                                       size: 48,
                                     ),
                                     const SizedBox(height: 16),
                                     FlexibleText(
                                       'Error: ${snapshot.error}',
                                       style: const TextStyle(
-                                        color: HackerColors.error,
+                                        color: CtOSColors.error,
                                         fontSize: 16,
                                         fontFamily: 'Courier',
                                       ),
@@ -257,13 +257,13 @@ class _PTDetailScreenState extends State<PTDetailScreen> with SingleTickerProvid
                                     ElevatedButton(
                                       onPressed: _simulateLoading,
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor: HackerColors.surface,
-                                        foregroundColor: HackerColors.primary,
+                                        backgroundColor: CtOSColors.surface,
+                                        foregroundColor: CtOSColors.primary,
                                         padding: const EdgeInsets.symmetric(
                                           horizontal: 16, 
                                           vertical: 8
                                         ),
-                                        side: const BorderSide(color: HackerColors.primary),
+                                        side: const BorderSide(color: CtOSColors.primary),
                                       ),
                                       child: const FlexibleText(
                                         "COBA LAGI",
@@ -282,7 +282,7 @@ class _PTDetailScreenState extends State<PTDetailScreen> with SingleTickerProvid
                             child: const FlexibleText(
                               'Data PT tidak tersedia',
                               style: TextStyle(
-                                color: HackerColors.error,
+                                color: CtOSColors.error,
                                 fontFamily: 'Courier',
                                 fontSize: 16,
                               ),
@@ -296,7 +296,7 @@ class _PTDetailScreenState extends State<PTDetailScreen> with SingleTickerProvid
                     ),
               ),
               Container(
-                color: HackerColors.surface,
+                color: CtOSColors.surface,
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -309,15 +309,15 @@ class _PTDetailScreenState extends State<PTDetailScreen> with SingleTickerProvid
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             color: _statusDotIsGreen 
-                                ? HackerColors.primary 
-                                : HackerColors.accent,
+                                ? CtOSColors.primary 
+                                : CtOSColors.secondary,
                           ),
                         ),
                         const SizedBox(width: 8),
                         FlexibleText(
                           'KODE: ${_getRandomHexValue(8)}-${_getRandomHexValue(4)}',
                           style: const TextStyle(
-                            color: HackerColors.text,
+                            color: CtOSColors.textPrimary,
                             fontSize: 10,
                             fontFamily: 'Courier',
                           ),
@@ -328,7 +328,7 @@ class _PTDetailScreenState extends State<PTDetailScreen> with SingleTickerProvid
                     const FlexibleText(
                       'BY: TAMAENGS',
                       style: TextStyle(
-                        color: HackerColors.text,
+                        color: CtOSColors.textPrimary,
                         fontSize: 10,
                         fontFamily: 'Courier',
                         fontWeight: FontWeight.bold,
@@ -436,8 +436,8 @@ class _PTDetailScreenState extends State<PTDetailScreen> with SingleTickerProvid
     required List<Widget> content,
   }) {
     return ResponsiveCard(
-      color: HackerColors.surface,
-      borderColor: HackerColors.accent,
+      color: CtOSColors.surface,
+      borderColor: CtOSColors.secondary,
       padding: const EdgeInsets.all(12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -446,7 +446,7 @@ class _PTDetailScreenState extends State<PTDetailScreen> with SingleTickerProvid
             children: [
               Icon(
                 icon,
-                color: HackerColors.primary,
+                color: CtOSColors.primary,
                 size: 18,
               ),
               const SizedBox(width: 8),
@@ -454,7 +454,7 @@ class _PTDetailScreenState extends State<PTDetailScreen> with SingleTickerProvid
                 child: FlexibleText(
                   title,
                   style: const TextStyle(
-                    color: HackerColors.primary,
+                    color: CtOSColors.primary,
                     fontFamily: 'Courier',
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -465,7 +465,7 @@ class _PTDetailScreenState extends State<PTDetailScreen> with SingleTickerProvid
             ],
           ),
           const Divider(
-            color: HackerColors.accent,
+            color: CtOSColors.secondary,
             height: 24,
           ),
           Expanded(
@@ -487,9 +487,9 @@ class _PTDetailScreenState extends State<PTDetailScreen> with SingleTickerProvid
     return Container(
       height: terminalHeight,
       decoration: BoxDecoration(
-        color: HackerColors.surface,
+        color: CtOSColors.surface,
         borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: HackerColors.accent),
+        border: Border.all(color: CtOSColors.secondary),
       ),
       padding: const EdgeInsets.all(8),
       child: Column(
@@ -498,13 +498,13 @@ class _PTDetailScreenState extends State<PTDetailScreen> with SingleTickerProvid
           Container(
             padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 8),
             decoration: BoxDecoration(
-              color: HackerColors.background,
+              color: CtOSColors.background,
               borderRadius: BorderRadius.circular(2),
             ),
             child: const FlexibleText(
               "DATA INSTITUSI",
               style: TextStyle(
-                color: HackerColors.warning,
+                color: CtOSColors.warning,
                 fontFamily: 'Courier',
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
@@ -555,17 +555,17 @@ class _PTDetailScreenState extends State<PTDetailScreen> with SingleTickerProvid
   Color _getInfoColor(int index) {
     switch (index) {
       case 0:
-        return HackerColors.primary;
+        return CtOSColors.primary;
       case 1:
-        return HackerColors.accent;
+        return CtOSColors.secondary;
       case 2:
-        return HackerColors.text;
+        return CtOSColors.textPrimary;
       case 3:
-        return HackerColors.warning;
+        return CtOSColors.warning;
       case 4:
-        return HackerColors.primary;
+        return CtOSColors.primary;
       default:
-        return HackerColors.text;
+        return CtOSColors.textPrimary;
     }
   }
 
@@ -578,7 +578,7 @@ class _PTDetailScreenState extends State<PTDetailScreen> with SingleTickerProvid
           FlexibleText(
             label,
             style: TextStyle(
-              color: HackerColors.text.withOpacity(0.7),
+              color: CtOSColors.textPrimary.withOpacity(0.7),
               fontFamily: 'Courier',
               fontSize: 10,
             ),
@@ -587,17 +587,17 @@ class _PTDetailScreenState extends State<PTDetailScreen> with SingleTickerProvid
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
             decoration: BoxDecoration(
-              color: HackerColors.background,
+              color: CtOSColors.background,
               borderRadius: BorderRadius.circular(2),
               border: Border.all(
-                color: HackerColors.accent.withOpacity(0.5),
+                color: CtOSColors.secondary.withOpacity(0.5),
                 width: 1,
               ),
             ),
             child: FlexibleText(
               value.isNotEmpty ? value : "-DISENSOR-",
               style: const TextStyle(
-                color: HackerColors.primary,
+                color: CtOSColors.primary,
                 fontFamily: 'Courier',
                 fontSize: 14,
                 fontWeight: FontWeight.w500,

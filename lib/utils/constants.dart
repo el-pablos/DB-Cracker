@@ -96,20 +96,6 @@ class CtOSColors {
   static const Color shadow = Color(0x80000000); // Shadow
 }
 
-// Backward compatibility
-class HackerColors {
-  static const Color primary = CtOSColors.primary;
-  static const Color accent = CtOSColors.secondary;
-  static const Color background = CtOSColors.background;
-  static const Color surface = CtOSColors.surface;
-  static const Color text = CtOSColors.textPrimary;
-  static const Color error = CtOSColors.error;
-  static const Color warning = CtOSColors.warning;
-  static const Color success = CtOSColors.success;
-  static const Color infoBox = CtOSColors.surfaceVariant;
-  static const Color highlight = CtOSColors.textAccent;
-}
-
 // Durasi animasi
 class AnimationDurations {
   static const Duration fast = Duration(milliseconds: 150);

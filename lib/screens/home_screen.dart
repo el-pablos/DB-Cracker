@@ -338,7 +338,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               fontSize: 14,
             ),
           ),
-          backgroundColor: HackerColors.surface,
+          backgroundColor: CtOSColors.surface,
           duration: Duration(seconds: 2),
         ),
       );
@@ -373,7 +373,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     }
 
     return Scaffold(
-      backgroundColor: HackerColors.background,
+      backgroundColor: CtOSColors.background,
       appBar: AppBar(
         title: Row(
           children: [
@@ -387,8 +387,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: _animationController.value > 0.5 
-                        ? HackerColors.primary 
-                        : HackerColors.error,
+                        ? CtOSColors.primary 
+                        : CtOSColors.error,
                   ),
                 );
               },
@@ -398,19 +398,19 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               style: TextStyle(
                 fontFamily: 'Courier',
                 fontWeight: FontWeight.bold,
-                color: HackerColors.primary,
+                color: CtOSColors.primary,
                 fontSize: 16,
               ),
             ),
           ],
         ),
-        backgroundColor: HackerColors.surface,
+        backgroundColor: CtOSColors.surface,
         actions: [
           // Toggle switch untuk mengaktifkan/menonaktifkan multi-source
           Switch(
             value: _useMultiSource,
-            activeColor: HackerColors.primary,
-            inactiveThumbColor: HackerColors.accent,
+            activeColor: CtOSColors.primary,
+            inactiveThumbColor: CtOSColors.secondary,
             onChanged: (bool value) {
               setState(() {
                 _useMultiSource = value;
@@ -426,7 +426,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                       fontSize: 14,
                     ),
                   ),
-                  backgroundColor: HackerColors.surface,
+                  backgroundColor: CtOSColors.surface,
                   duration: Duration(seconds: 2),
                 ),
               );
@@ -437,7 +437,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             child: Text(
               _useMultiSource ? "MULTI-DB" : "PDDIKTI",
               style: const TextStyle(
-                color: HackerColors.accent,
+                color: CtOSColors.secondary,
                 fontFamily: 'Courier',
                 fontSize: 12,
               ),
@@ -447,17 +447,17 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       ),
       body: SafeArea(
         child: Container(
-          color: HackerColors.background,
+          color: CtOSColors.background,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Container(
-                color: HackerColors.surface.withOpacity(0.7),
+                color: CtOSColors.surface.withOpacity(0.7),
                 padding: const EdgeInsets.all(8),
                 child: const Text(
                   'KONEKSI AMAN TERSEDIA',
                   style: TextStyle(
-                    color: HackerColors.highlight,
+                    color: CtOSColors.textAccent,
                     fontFamily: 'Courier',
                     fontSize: 12,
                   ),
@@ -521,14 +521,14 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                               children: [
                                 const Icon(
                                   Icons.warning_amber_rounded,
-                                  color: HackerColors.error,
+                                  color: CtOSColors.error,
                                   size: 48,
                                 ),
                                 const SizedBox(height: 16),
                                 Text(
                                   _errorMessage!,
                                   style: const TextStyle(
-                                    color: HackerColors.error,
+                                    color: CtOSColors.error,
                                     fontSize: 16,
                                     fontFamily: 'Courier',
                                   ),
@@ -538,13 +538,13 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                 ElevatedButton(
                                   onPressed: _simulateHacking,
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: HackerColors.surface,
-                                    foregroundColor: HackerColors.primary,
+                                    backgroundColor: CtOSColors.surface,
+                                    foregroundColor: CtOSColors.primary,
                                     padding: const EdgeInsets.symmetric(
                                       horizontal: 16, 
                                       vertical: 8
                                     ),
-                                    side: const BorderSide(color: HackerColors.primary),
+                                    side: const BorderSide(color: CtOSColors.primary),
                                   ),
                                   child: const Text(
                                     'COBA LAGI',
@@ -567,7 +567,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                             children: [
                               Icon(
                                 Icons.search,
-                                color: HackerColors.accent.withOpacity(0.5),
+                                color: CtOSColors.secondary.withOpacity(0.5),
                                 size: 64,
                               ),
                               const SizedBox(height: 16),
@@ -575,7 +575,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                 AppStrings.emptySearchPrompt,
                                 style: TextStyle(
                                   fontSize: 16,
-                                  color: HackerColors.text,
+                                  color: CtOSColors.textPrimary,
                                   fontFamily: 'Courier',
                                 ),
                                 textAlign: TextAlign.center,
@@ -593,7 +593,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                 "SIAP UNTUK MEMULAI PERETASAN",
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: HackerColors.accent,
+                                  color: CtOSColors.secondary,
                                   fontFamily: 'Courier',
                                 ),
                                 textAlign: TextAlign.center,
@@ -616,8 +616,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                             ? Icons.filter_list
                                             : Icons.person_search,
                                         color: _selectedUniversity != null
-                                            ? HackerColors.warning
-                                            : HackerColors.primary,
+                                            ? CtOSColors.warning
+                                            : CtOSColors.primary,
                                         size: 16),
                                     const SizedBox(width: 8),
                                     Expanded(
@@ -627,8 +627,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                           : 'DITEMUKAN ${_searchResults.length} SUBJEK YANG COCOK',
                                         style: TextStyle(
                                           color: _selectedUniversity != null
-                                              ? HackerColors.warning
-                                              : HackerColors.primary,
+                                              ? CtOSColors.warning
+                                              : CtOSColors.primary,
                                           fontFamily: 'Courier',
                                           fontSize: 14,
                                         ),
@@ -646,14 +646,14 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                       children: [
                                         const Icon(
                                           Icons.filter_alt_off,
-                                          color: HackerColors.warning,
+                                          color: CtOSColors.warning,
                                           size: 40,
                                         ),
                                         const SizedBox(height: 16),
                                         const Text(
                                           AppStrings.noFilterResultsFound,
                                           style: TextStyle(
-                                            color: HackerColors.warning,
+                                            color: CtOSColors.warning,
                                             fontSize: 16,
                                             fontFamily: 'Courier',
                                           ),
@@ -663,13 +663,13 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                         ElevatedButton(
                                           onPressed: _clearFilter,
                                           style: ElevatedButton.styleFrom(
-                                            backgroundColor: HackerColors.surface,
-                                            foregroundColor: HackerColors.warning,
+                                            backgroundColor: CtOSColors.surface,
+                                            foregroundColor: CtOSColors.warning,
                                             padding: const EdgeInsets.symmetric(
                                               horizontal: 16, 
                                               vertical: 8
                                             ),
-                                            side: const BorderSide(color: HackerColors.warning),
+                                            side: const BorderSide(color: CtOSColors.warning),
                                           ),
                                           child: const Text(
                                             AppStrings.clearFilter,
@@ -702,7 +702,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         ),
               ),
               Container(
-                color: HackerColors.surface,
+                color: CtOSColors.surface,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16, 
                   vertical: 8
@@ -717,14 +717,14 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                           height: 8,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: _statusDotIsGreen ? HackerColors.primary : HackerColors.accent,
+                            color: _statusDotIsGreen ? CtOSColors.primary : CtOSColors.secondary,
                           ),
                         ),
                         const SizedBox(width: 8),
                         Text(
                           DateTime.now().toString().substring(0, 19),
                           style: const TextStyle(
-                            color: HackerColors.text,
+                            color: CtOSColors.textPrimary,
                             fontSize: 10,
                             fontFamily: 'Courier',
                           ),
@@ -735,7 +735,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     const Text(
                       'BY: TAMAENGS',
                       style: TextStyle(
-                        color: HackerColors.text,
+                        color: CtOSColors.textPrimary,
                         fontSize: 10,
                         fontFamily: 'Courier',
                         fontWeight: FontWeight.bold,

@@ -38,12 +38,12 @@ class ProdiNavigationButton extends StatelessWidget {
         ),
         padding: EdgeInsets.all(isCompact ? 8.0 : 12.0),
         decoration: BoxDecoration(
-          color: HackerColors.surface,
+          color: CtOSColors.surface,
           borderRadius: BorderRadius.circular(4.0),
-          border: Border.all(color: HackerColors.accent, width: 1.0),
+          border: Border.all(color: CtOSColors.secondary, width: 1.0),
           boxShadow: [
             BoxShadow(
-              color: HackerColors.primary.withOpacity(0.1),
+              color: CtOSColors.primary.withOpacity(0.1),
               blurRadius: 4,
               offset: Offset(0, 2),
             ),
@@ -53,7 +53,7 @@ class ProdiNavigationButton extends StatelessWidget {
           children: [
             Icon(
               Icons.school,
-              color: HackerColors.primary,
+              color: CtOSColors.primary,
               size: isCompact ? 16.0 : 20.0,
             ),
             SizedBox(width: 8.0),
@@ -64,7 +64,7 @@ class ProdiNavigationButton extends StatelessWidget {
                   FlexibleText(
                     prodi.nama,
                     style: TextStyle(
-                      color: HackerColors.primary,
+                      color: CtOSColors.primary,
                       fontFamily: 'Courier',
                       fontSize: isCompact ? 12.0 : 14.0,
                       fontWeight: FontWeight.bold,
@@ -76,7 +76,7 @@ class ProdiNavigationButton extends StatelessWidget {
                     FlexibleText(
                       '${prodi.jenjang} | ${prodi.pt}',
                       style: TextStyle(
-                        color: HackerColors.text.withOpacity(0.8),
+                        color: CtOSColors.textPrimary.withOpacity(0.8),
                         fontFamily: 'Courier',
                         fontSize: 12.0,
                       ),
@@ -88,7 +88,7 @@ class ProdiNavigationButton extends StatelessWidget {
             ),
             Icon(
               Icons.arrow_forward_ios,
-              color: HackerColors.accent,
+              color: CtOSColors.secondary,
               size: isCompact ? 14.0 : 16.0,
             ),
           ],

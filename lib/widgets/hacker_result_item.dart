@@ -22,15 +22,15 @@ class HackerResultItem extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12.0),
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
-        color: HackerColors.surface,
+        color: CtOSColors.surface,
         borderRadius: BorderRadius.circular(8.0),
         border: Border.all(
-          color: isEven ? HackerColors.primary : HackerColors.accent,
+          color: isEven ? CtOSColors.primary : CtOSColors.secondary,
           width: 1.0,
         ),
         boxShadow: [
           BoxShadow(
-            color: (isEven ? HackerColors.primary : HackerColors.accent)
+            color: (isEven ? CtOSColors.primary : CtOSColors.secondary)
                 .withValues(alpha: 0.1),
             blurRadius: 4.0,
             offset: const Offset(0, 2),
@@ -47,10 +47,10 @@ class HackerResultItem extends StatelessWidget {
               width: 60.0,
               height: 60.0,
               decoration: BoxDecoration(
-                color: HackerColors.background,
+                color: CtOSColors.background,
                 borderRadius: BorderRadius.circular(8.0),
                 border: Border.all(
-                  color: isEven ? HackerColors.primary : HackerColors.accent,
+                  color: isEven ? CtOSColors.primary : CtOSColors.secondary,
                   width: 2.0,
                 ),
               ),
@@ -62,7 +62,7 @@ class HackerResultItem extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 24.0,
                     fontWeight: FontWeight.bold,
-                    color: isEven ? HackerColors.primary : HackerColors.accent,
+                    color: isEven ? CtOSColors.primary : CtOSColors.secondary,
                     fontFamily: 'Courier',
                   ),
                 ),
@@ -81,7 +81,7 @@ class HackerResultItem extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 16.0,
                       fontWeight: FontWeight.bold,
-                      color: HackerColors.text,
+                      color: CtOSColors.textPrimary,
                       fontFamily: 'Courier',
                     ),
                     maxLines: 2,
@@ -96,7 +96,7 @@ class HackerResultItem extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 12.0,
                         color:
-                            isEven ? HackerColors.primary : HackerColors.accent,
+                            isEven ? CtOSColors.primary : CtOSColors.secondary,
                         fontWeight: FontWeight.w600,
                         fontFamily: 'Courier',
                       ),
@@ -108,7 +108,7 @@ class HackerResultItem extends StatelessWidget {
                     mahasiswa.namaProdi,
                     style: const TextStyle(
                       fontSize: 13.0,
-                      color: HackerColors.highlight,
+                      color: CtOSColors.textAccent,
                       fontFamily: 'Courier',
                     ),
                     maxLines: 2,
@@ -122,13 +122,13 @@ class HackerResultItem extends StatelessWidget {
                         horizontal: 8.0, vertical: 4.0),
                     decoration: BoxDecoration(
                       color:
-                          (isEven ? HackerColors.primary : HackerColors.accent)
+                          (isEven ? CtOSColors.primary : CtOSColors.secondary)
                               .withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(4.0),
                       border: Border.all(
                         color: (isEven
-                                ? HackerColors.primary
-                                : HackerColors.accent)
+                                ? CtOSColors.primary
+                                : CtOSColors.secondary)
                             .withValues(alpha: 0.3),
                       ),
                     ),
@@ -137,7 +137,7 @@ class HackerResultItem extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 11.0,
                         color:
-                            isEven ? HackerColors.primary : HackerColors.accent,
+                            isEven ? CtOSColors.primary : CtOSColors.secondary,
                         fontWeight: FontWeight.w600,
                         fontFamily: 'Courier',
                       ),
@@ -152,7 +152,7 @@ class HackerResultItem extends StatelessWidget {
             // Arrow Icon
             Icon(
               Icons.arrow_forward_ios,
-              color: HackerColors.highlight,
+              color: CtOSColors.textAccent,
               size: 16.0,
             ),
           ],

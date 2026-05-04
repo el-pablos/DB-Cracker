@@ -44,45 +44,45 @@ class MyApp extends StatelessWidget {
             error: CtOSColors.error,
           ),
           textTheme: const TextTheme(
-            bodyLarge: TextStyle(color: HackerColors.text),
-            bodyMedium: TextStyle(color: HackerColors.text),
-            displayLarge: TextStyle(color: HackerColors.primary),
-            displayMedium: TextStyle(color: HackerColors.primary),
-            displaySmall: TextStyle(color: HackerColors.primary),
+            bodyLarge: TextStyle(color: CtOSColors.textPrimary),
+            bodyMedium: TextStyle(color: CtOSColors.textPrimary),
+            displayLarge: TextStyle(color: CtOSColors.primary),
+            displayMedium: TextStyle(color: CtOSColors.primary),
+            displaySmall: TextStyle(color: CtOSColors.primary),
           ),
           fontFamily: 'Courier',
           // Perbaiki cardTheme dengan menghapus properti cardTheme
-          cardColor: HackerColors.surface,
+          cardColor: CtOSColors.surface,
           // Ini yang menyebabkan error - menghapus cardTheme
           // Menggunakan cara yang lebih aman dengan fitur Material 3
           // (Versi Flutter yang lebih baru memiliki struktur ThemeData yang berbeda)
           // Dengan menghapus properti cardTheme dan menggunakan Material 3, Card akan mengambil
           // properti dari colorScheme yang sudah didefinisikan
           appBarTheme: const AppBarTheme(
-            backgroundColor: HackerColors.surface,
-            foregroundColor: HackerColors.primary,
+            backgroundColor: CtOSColors.surface,
+            foregroundColor: CtOSColors.primary,
           ),
           inputDecorationTheme: InputDecorationTheme(
             filled: true,
-            fillColor: HackerColors.surface,
+            fillColor: CtOSColors.surface,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: HackerColors.accent),
+              borderSide: const BorderSide(color: CtOSColors.secondary),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: HackerColors.accent),
+              borderSide: const BorderSide(color: CtOSColors.secondary),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide:
-                  const BorderSide(color: HackerColors.primary, width: 2),
+                  const BorderSide(color: CtOSColors.primary, width: 2),
             ),
           ),
           elevatedButtonTheme: ElevatedButtonThemeData(
             style: ElevatedButton.styleFrom(
-              foregroundColor: HackerColors.text,
-              backgroundColor: HackerColors.primary,
+              foregroundColor: CtOSColors.textPrimary,
+              backgroundColor: CtOSColors.primary,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),

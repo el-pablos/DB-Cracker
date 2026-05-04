@@ -20,10 +20,10 @@ class FilterStatus extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: HackerColors.background,
+        color: CtOSColors.background,
         borderRadius: BorderRadius.circular(4),
         border: Border.all(
-          color: HackerColors.warning.withOpacity(0.7),
+          color: CtOSColors.warning.withOpacity(0.7),
           width: 1,
         ),
       ),
@@ -31,7 +31,7 @@ class FilterStatus extends StatelessWidget {
         children: [
           const Icon(
             Icons.filter_alt,
-            color: HackerColors.warning,
+            color: CtOSColors.warning,
             size: 14,
           ),
           const SizedBox(width: 8),
@@ -43,7 +43,7 @@ class FilterStatus extends StatelessWidget {
                 Text(
                   'FILTER AKTIF: $university',
                   style: const TextStyle(
-                    color: HackerColors.warning,
+                    color: CtOSColors.warning,
                     fontFamily: 'Courier',
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
@@ -54,7 +54,7 @@ class FilterStatus extends StatelessWidget {
                 Text(
                   'HASIL: $count MAHASISWA',
                   style: const TextStyle(
-                    color: HackerColors.text,
+                    color: CtOSColors.textPrimary,
                     fontFamily: 'Courier',
                     fontSize: 10,
                   ),
@@ -67,12 +67,12 @@ class FilterStatus extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
-                color: HackerColors.surface,
+                color: CtOSColors.surface,
                 borderRadius: BorderRadius.circular(2),
               ),
               child: const Icon(
                 Icons.close,
-                color: HackerColors.warning,
+                color: CtOSColors.warning,
                 size: 14,
               ),
             ),

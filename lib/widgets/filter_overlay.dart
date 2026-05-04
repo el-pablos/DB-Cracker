@@ -80,18 +80,18 @@ class _FilterOverlayState extends State<FilterOverlay> with SingleTickerProvider
     final dots = '.' * _currentDots;
     
     return Container(
-      color: HackerColors.background.withOpacity(0.85),
+      color: CtOSColors.background.withOpacity(0.85),
       child: Center(
         child: Container(
           width: 200,
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: HackerColors.surface,
+            color: CtOSColors.surface,
             borderRadius: BorderRadius.circular(4),
-            border: Border.all(color: HackerColors.warning),
+            border: Border.all(color: CtOSColors.warning),
             boxShadow: [
               BoxShadow(
-                color: HackerColors.warning.withOpacity(0.2),
+                color: CtOSColors.warning.withOpacity(0.2),
                 blurRadius: 10,
                 spreadRadius: 2,
               ),
@@ -107,12 +107,12 @@ class _FilterOverlayState extends State<FilterOverlay> with SingleTickerProvider
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: HackerColors.warning,
+                    color: CtOSColors.warning,
                     width: 2,
                   ),
                 ),
                 child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(HackerColors.warning),
+                  valueColor: AlwaysStoppedAnimation<Color>(CtOSColors.warning),
                   strokeWidth: 3,
                 ),
               ),
@@ -120,7 +120,7 @@ class _FilterOverlayState extends State<FilterOverlay> with SingleTickerProvider
               Text(
                 "${widget.message}$dots",
                 style: const TextStyle(
-                  color: HackerColors.warning,
+                  color: CtOSColors.warning,
                   fontSize: 14,
                   fontFamily: 'Courier',
                   fontWeight: FontWeight.bold,
@@ -133,9 +133,9 @@ class _FilterOverlayState extends State<FilterOverlay> with SingleTickerProvider
                 height: 40,
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  color: HackerColors.background,
+                  color: CtOSColors.background,
                   borderRadius: BorderRadius.circular(2),
-                  border: Border.all(color: HackerColors.warning.withOpacity(0.5)),
+                  border: Border.all(color: CtOSColors.warning.withOpacity(0.5)),
                 ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -143,7 +143,7 @@ class _FilterOverlayState extends State<FilterOverlay> with SingleTickerProvider
                   children: _hexLines.map((line) => Text(
                     line,
                     style: TextStyle(
-                      color: HackerColors.warning.withOpacity(0.7),
+                      color: CtOSColors.warning.withOpacity(0.7),
                       fontSize: 8,
                       fontFamily: 'Courier',
                       height: 1.2,

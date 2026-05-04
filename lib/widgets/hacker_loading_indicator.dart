@@ -93,12 +93,12 @@ class _HackerLoadingIndicatorState extends State<HackerLoadingIndicator> with Si
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: HackerColors.surface,
+              color: CtOSColors.surface,
               borderRadius: BorderRadius.circular(4),
-              border: Border.all(color: HackerColors.accent),
+              border: Border.all(color: CtOSColors.secondary),
               boxShadow: [
                 BoxShadow(
-                  color: HackerColors.primary.withOpacity(0.2),
+                  color: CtOSColors.primary.withOpacity(0.2),
                   blurRadius: 10,
                   spreadRadius: 2,
                 ),
@@ -115,12 +115,12 @@ class _HackerLoadingIndicatorState extends State<HackerLoadingIndicator> with Si
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: HackerColors.primary,
+                      color: CtOSColors.primary,
                       width: 2,
                     ),
                   ),
                   child: const CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(HackerColors.primary),
+                    valueColor: AlwaysStoppedAnimation<Color>(CtOSColors.primary),
                     strokeWidth: 3,
                   ),
                 ),
@@ -128,7 +128,7 @@ class _HackerLoadingIndicatorState extends State<HackerLoadingIndicator> with Si
                 Text(
                   "${widget.message}$dots",
                   style: const TextStyle(
-                    color: HackerColors.primary,
+                    color: CtOSColors.primary,
                     fontSize: 16,
                     fontFamily: 'Courier',
                     fontWeight: FontWeight.bold,
@@ -140,9 +140,9 @@ class _HackerLoadingIndicatorState extends State<HackerLoadingIndicator> with Si
                   height: 120,
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: HackerColors.background,
+                    color: CtOSColors.background,
                     borderRadius: BorderRadius.circular(4),
-                    border: Border.all(color: HackerColors.accent.withOpacity(0.5)),
+                    border: Border.all(color: CtOSColors.secondary.withOpacity(0.5)),
                   ),
                   child: ListView.builder(
                     padding: EdgeInsets.zero,
@@ -152,7 +152,7 @@ class _HackerLoadingIndicatorState extends State<HackerLoadingIndicator> with Si
                       return Text(
                         _hexLines[index],
                         style: TextStyle(
-                          color: HackerColors.accent.withOpacity(opacity),
+                          color: CtOSColors.secondary.withOpacity(opacity),
                           fontSize: 10,
                           fontFamily: 'Courier',
                           height: 1.2,

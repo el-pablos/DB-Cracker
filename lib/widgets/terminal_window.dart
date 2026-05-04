@@ -25,15 +25,15 @@ class TerminalWindow extends StatelessWidget {
     
     return Container(
       decoration: BoxDecoration(
-        color: HackerColors.background,
+        color: CtOSColors.background,
         border: Border.all(
-          color: HackerColors.accent,
+          color: CtOSColors.secondary,
           width: 1,
         ),
         borderRadius: BorderRadius.circular(4),
         boxShadow: [
           BoxShadow(
-            color: HackerColors.primary.withOpacity(0.1),
+            color: CtOSColors.primary.withOpacity(0.1),
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),
@@ -46,10 +46,10 @@ class TerminalWindow extends StatelessWidget {
           Container(
             height: headerHeight,
             decoration: const BoxDecoration(
-              color: HackerColors.surface,
+              color: CtOSColors.surface,
               border: Border(
                 bottom: BorderSide(
-                  color: HackerColors.accent,
+                  color: CtOSColors.secondary,
                   width: 1,
                 ),
               ),
@@ -57,18 +57,18 @@ class TerminalWindow extends StatelessWidget {
             child: Row(
               children: [
                 const SizedBox(width: buttonSpacing * 2),
-                _buildWindowButton(HackerColors.error, buttonSize),
+                _buildWindowButton(CtOSColors.error, buttonSize),
                 const SizedBox(width: buttonSpacing),
-                _buildWindowButton(HackerColors.warning, buttonSize),
+                _buildWindowButton(CtOSColors.warning, buttonSize),
                 const SizedBox(width: buttonSpacing),
-                _buildWindowButton(HackerColors.success, buttonSize),
+                _buildWindowButton(CtOSColors.success, buttonSize),
                 const SizedBox(width: buttonSpacing * 2),
                 Expanded(
                   child: Center(
                     child: Text(
                       title,
                       style: const TextStyle(
-                        color: HackerColors.accent,
+                        color: CtOSColors.secondary,
                         fontFamily: 'Courier',
                         fontSize: 14.0,
                         fontWeight: FontWeight.bold,
