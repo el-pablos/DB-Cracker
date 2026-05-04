@@ -1,7 +1,7 @@
 name: db_cracker_tamaengs
 description: "ctOS Faculty Database Scanner — Flutter app untuk pencarian data pendidikan Indonesia via PDDIKTI API."
 publish_to: 'none'
-version: 2.0.0+1
+version: 2.1.0+1
 
 environment:
   sdk: ">=3.7.0 <4.0.0"
