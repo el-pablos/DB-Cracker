@@ -159,7 +159,7 @@ class MahasiswaDetail {
             _ensureString(json['jenis_kelamin'] ?? json['gender'] ?? ''),
         jenjang:
             _ensureString(json['jenjang'] ?? json['jenjang_pendidikan'] ?? ''),
-        statusSatIni: _ensureString(json['status_saat_ini'] ??
+        statusSaatIni: _ensureString(json['status_saat_ini'] ??
             json['status'] ??
             json['status_mahasiswa'] ??
             ''),
