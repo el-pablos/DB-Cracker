@@ -47,6 +47,7 @@ app.*.map.json
 # Environment & Secrets — HARDCODED: JANGAN PERNAH COMMIT SECRETS
 .env
 .env.*
+!.env.example
 .env.local
 .env.production
 *.key
@@ -94,3 +95,25 @@ build/
 *.apk
 *.aab
 *.ipa
+
+# Local database cache
+*.sqlite
+*.sqlite3
+*.db
+*.hive
+*.isar
+
+# Android signing
+android/key.properties
+android/app/*.jks
+android/app/*.keystore
+local.properties
+
+# Packages
+.packages
+.pub-cache/
+
+# Gateway local
+gateway/node_modules/
+gateway/.env
+gateway/redis-data/
