@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/prodi.dart';
 import '../utils/constants.dart';
-import '../utils/screen_utils.dart';
 import 'flexible_text.dart';
 
 /// Widget tombol untuk navigasi ke layar detail program studi
@@ -17,9 +16,6 @@ class ProdiNavigationButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Adaptasi berdasarkan ukuran layar
-    final bool isMobile = ScreenUtils.isMobileScreen();
-    
     return InkWell(
       onTap: () {
         // Gunakan named routes untuk navigasi
@@ -43,7 +39,7 @@ class ProdiNavigationButton extends StatelessWidget {
           border: Border.all(color: CtOSColors.secondary, width: 1.0),
           boxShadow: [
             BoxShadow(
-              color: CtOSColors.primary.withOpacity(0.1),
+              color: CtOSColors.primary.withValues(alpha: 0.1),
               blurRadius: 4,
               offset: Offset(0, 2),
             ),
@@ -76,7 +72,7 @@ class ProdiNavigationButton extends StatelessWidget {
                     FlexibleText(
                       '${prodi.jenjang} | ${prodi.pt}',
                       style: TextStyle(
-                        color: CtOSColors.textPrimary.withOpacity(0.8),
+                        color: CtOSColors.textPrimary.withValues(alpha: 0.8),
                         fontFamily: 'Courier',
                         fontSize: 12.0,
                       ),

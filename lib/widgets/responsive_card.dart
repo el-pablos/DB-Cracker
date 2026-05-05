@@ -69,7 +69,7 @@ class ResponsiveCard extends StatelessWidget {
             ),
             boxShadow: hoverable ? [
               BoxShadow(
-                color: CtOSColors.primary.withOpacity(0.2),
+                color: CtOSColors.primary.withValues(alpha: 0.2),
                 blurRadius: 4,
                 spreadRadius: 0,
                 offset: Offset(0, 2),

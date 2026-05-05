@@ -129,9 +129,6 @@ class _ProdiDetailScreenState extends State<ProdiDetailScreen> with SingleTicker
       ScreenUtils.init(context);
     }
     
-    // Adaptasi berdasarkan ukuran layar
-    final bool isMobile = ScreenUtils.isMobileScreen();
-    
     return Scaffold(
       backgroundColor: CtOSColors.background,
       appBar: AppBar(
@@ -159,7 +156,8 @@ class _ProdiDetailScreenState extends State<ProdiDetailScreen> with SingleTicker
                 fontFamily: 'Courier',
                 fontWeight: FontWeight.bold,
                 color: CtOSColors.primary,
-                fontSize: 16,
+                fontSize: 14,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
@@ -175,7 +173,7 @@ class _ProdiDetailScreenState extends State<ProdiDetailScreen> with SingleTicker
           child: Column(
             children: [
               Container(
-                color: CtOSColors.surface.withOpacity(0.7),
+                color: CtOSColors.surface.withValues(alpha: 0.7),
                 padding: const EdgeInsets.all(8),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -558,7 +556,7 @@ class _ProdiDetailScreenState extends State<ProdiDetailScreen> with SingleTicker
                     color: CtOSColors.background,
                     borderRadius: BorderRadius.circular(4),
                     border: Border.all(
-                      color: CtOSColors.secondary.withOpacity(0.5),
+                      color: CtOSColors.secondary.withValues(alpha: 0.5),
                     ),
                   ),
                   child: FlexibleText(
@@ -590,7 +588,7 @@ class _ProdiDetailScreenState extends State<ProdiDetailScreen> with SingleTicker
                     color: CtOSColors.background,
                     borderRadius: BorderRadius.circular(4),
                     border: Border.all(
-                      color: CtOSColors.secondary.withOpacity(0.5),
+                      color: CtOSColors.secondary.withValues(alpha: 0.5),
                     ),
                   ),
                   child: FlexibleText(
@@ -667,7 +665,7 @@ class _ProdiDetailScreenState extends State<ProdiDetailScreen> with SingleTicker
                     color: CtOSColors.background,
                     borderRadius: BorderRadius.circular(4),
                     border: Border.all(
-                      color: CtOSColors.secondary.withOpacity(0.5),
+                      color: CtOSColors.secondary.withValues(alpha: 0.5),
                     ),
                   ),
                   child: FlexibleText(
@@ -699,7 +697,7 @@ class _ProdiDetailScreenState extends State<ProdiDetailScreen> with SingleTicker
                     color: CtOSColors.background,
                     borderRadius: BorderRadius.circular(4),
                     border: Border.all(
-                      color: CtOSColors.secondary.withOpacity(0.5),
+                      color: CtOSColors.secondary.withValues(alpha: 0.5),
                     ),
                   ),
                   child: FlexibleText(
@@ -830,7 +828,7 @@ class _ProdiDetailScreenState extends State<ProdiDetailScreen> with SingleTicker
           FlexibleText(
             label,
             style: TextStyle(
-              color: CtOSColors.textPrimary.withOpacity(0.7),
+              color: CtOSColors.textPrimary.withValues(alpha: 0.7),
               fontFamily: 'Courier',
               fontSize: 10,
             ),
@@ -842,7 +840,7 @@ class _ProdiDetailScreenState extends State<ProdiDetailScreen> with SingleTicker
               color: CtOSColors.background,
               borderRadius: BorderRadius.circular(2),
               border: Border.all(
-                color: CtOSColors.secondary.withOpacity(0.5),
+                color: CtOSColors.secondary.withValues(alpha: 0.5),
                 width: 1,
               ),
             ),

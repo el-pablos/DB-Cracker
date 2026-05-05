@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math' show min;
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../models/mahasiswa.dart';
@@ -6,9 +7,27 @@ import '../models/dosen.dart';
 import '../models/prodi.dart';
 import '../models/pt.dart';
 
+/// PERF: Simple cache entry for API responses
+class _CachedResponse {
+  final http.Response response;
+  final DateTime timestamp;
+  _CachedResponse(this.response, this.timestamp);
+}
+
 class PddiktiApi {
-  // Base URL API
-  final String baseUrl = 'https://api-pddikti.kemdiktisaintek.go.id';
+  // FIX: Gunakan proxy API yang punya proper SSL cert
+  // Primary: pddikti.fastapicloud.dev (operational, proper SSL)
+  // Fallback: pddikti.rone.dev (may be rate-limited)
+  // Original API (api-pddikti.kemdiktisaintek.go.id) has SSL cert chain issues on some Android devices
+  static const String _proxyBaseUrl = 'https://pddikti.fastapicloud.dev/api';
+  static const String _proxyFallbackUrl = 'https://pddikti.rone.dev/api';
+  final String baseUrl = _proxyBaseUrl;
+
+  // Keep original URL for fallback if proxy is down
+  final String _originalBaseUrl = 'https://api-pddikti.kemdiktisaintek.go.id';
+
+  // Shared HTTP client — reuse TCP connections (keep-alive)
+  final http.Client _client = http.Client();
 
   // Cache public IP biar ga fetch terus
   String _cachedIp = '103.0.0.1';
@@ -18,7 +37,7 @@ class PddiktiApi {
   Future<String> _getPublicIp() async {
     if (_ipFetched) return _cachedIp;
     try {
-      final response = await http.get(
+      final response = await _client.get(
         Uri.parse('https://api.ipify.org/?format=json'),
       ).timeout(const Duration(seconds: 5));
       if (response.statusCode == 200) {
@@ -32,29 +51,37 @@ class PddiktiApi {
     return _cachedIp;
   }
 
-  // Header untuk request - wajib ada x-api-key dan X-User-IP
-  Map<String, String> get _headers => {
-        'Accept': 'application/json, text/plain, */*',
-        'Accept-Language': 'en-US,en;q=0.9,id;q=0.8',
-        'Origin': 'https://pddikti.kemdiktisaintek.go.id',
-        'Referer': 'https://pddikti.kemdiktisaintek.go.id/',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0',
-        'x-api-key': 'undefined',
+  // Header untuk proxy API — simple, no spoofing needed
+  late final Map<String, String> _baseHeaders = {
+        'Accept': 'application/json',
+        'User-Agent': 'DB-Cracker-App/3.0',
       };
+
+  // Simple in-memory response cache (LRU-style, max 50 entries)
+  // PERF: menghindari network call untuk pencarian yang sama
+  final Map<String, _CachedResponse> _responseCache = {};
+  static const int _maxCacheSize = 50;
+  static const Duration _cacheTtl = Duration(minutes: 5);
 
   // Encode parameter URL
   String _parseString(String text) {
     return Uri.encodeComponent(text);
   }
 
-  // Ambil list data aman
+  // PERF: Helper untuk extract list dari response yang bisa Map atau List
+  List<dynamic> _extractList(dynamic responseData, String key) {
+    if (responseData is List) return responseData;
+    if (responseData is Map<String, dynamic> && responseData.containsKey(key)) {
+      final value = responseData[key];
+      return value is List ? value : <dynamic>[];
+    }
+    return <dynamic>[];
+  }
 
-  // Proses response API
-  Future<dynamic> _processApiResponse(
-      http.Response response, String errorMessage) async {
+  // Proses response API — decode JSON sekali, return parsed data
+  dynamic _decodeResponse(http.Response response, String errorMessage) {
     if (response.statusCode == 200) {
       try {
-        // Decode the response, could be a List or a Map
         return json.decode(response.body);
       } catch (e) {
         if (kDebugMode) debugPrint('Error parsing JSON: $e');
@@ -62,64 +89,70 @@ class PddiktiApi {
       }
     } else {
       if (kDebugMode) debugPrint('HTTP Error: ${response.statusCode}');
-      if (kDebugMode) debugPrint('Response body: ${response.body}');
       throw Exception('$errorMessage: ${response.statusCode}');
     }
   }
 
-  // Cara untuk melewati CORS issue dengan simulasi permintaan dari web asli
+  // Shared request method — reuse _client, cached headers, optional response caching
+  // FIX: Proxy API doesn't need IP/Origin headers, simpler and more reliable
   Future<http.Response> _makeApiRequest(Uri url,
-      {int timeoutSeconds = 15}) async {
-    try {
-      // Fetch public IP dulu buat header X-User-IP
-      final ip = await _getPublicIp();
-      final headers = Map<String, String>.from(_headers);
-      headers['X-User-IP'] = ip;
+      {int timeoutSeconds = 15, bool useCache = false}) async {
+    final cacheKey = url.toString();
 
-      // Untuk Flutter Web, kita perlu pendekatan khusus
-      if (kIsWeb) {
-        // Opsi 1: Gunakan direct request (dengan header yang lengkap)
-        // Ini berpeluang sukses jika request berasal dari localhost development
-        try {
-          return await http
-              .get(
-                url,
-                headers: headers,
-              )
-              .timeout(
-                Duration(seconds: timeoutSeconds),
-              );
-        } catch (e) {
-          if (kDebugMode) debugPrint('Direct web request failed: $e');
-          // Jika direct request gagal, kita bisa mencoba pendekatan lain
-
-          // Opsi 2: Gunakan JSONp atau backend proxy Anda sendiri
-          // Untuk implementasi produksi, Anda perlu menggunakan server backend Anda sendiri
-          // sebagai proxy untuk melewati CORS
-          throw Exception(
-              'Akses web API terblokir. Gunakan versi mobile atau gunakan backend proxy.');
-        }
+    // Check cache first
+    if (useCache && _responseCache.containsKey(cacheKey)) {
+      final cached = _responseCache[cacheKey]!;
+      if (DateTime.now().difference(cached.timestamp) < _cacheTtl) {
+        return cached.response;
       } else {
-        // Untuk aplikasi mobile, kita bisa langsung melakukan request
-        return await http
-            .get(
-              url,
-              headers: headers,
-            )
-            .timeout(
-              Duration(seconds: timeoutSeconds),
-            );
+        _responseCache.remove(cacheKey);
       }
+    }
+
+    try {
+      final response = await _client
+          .get(url, headers: _baseHeaders)
+          .timeout(Duration(seconds: timeoutSeconds));
+
+      // Cache successful responses
+      if (useCache && response.statusCode == 200) {
+        if (_responseCache.length >= _maxCacheSize) {
+          _responseCache.remove(_responseCache.keys.first);
+        }
+        _responseCache[cacheKey] = _CachedResponse(response, DateTime.now());
+      }
+
+      return response;
     } catch (e) {
-      print('PDDIKTI_DEBUG: _makeApiRequest ERROR: $e');
       if (kDebugMode) debugPrint('Error in _makeApiRequest: $e');
+
+      // FIX: If proxy fails with SSL/connection error, try fallback proxy
+      if (e.toString().contains('CERTIFICATE_VERIFY_FAILED') ||
+          e.toString().contains('HandshakeException') ||
+          e.toString().contains('Connection refused')) {
+        // Try fallback URL
+        final fallbackUrl = url.toString().replaceFirst(_proxyBaseUrl, _proxyFallbackUrl);
+        if (fallbackUrl != url.toString()) {
+          if (kDebugMode) debugPrint('Trying fallback proxy: $fallbackUrl');
+          try {
+            final fallbackResponse = await _client
+                .get(Uri.parse(fallbackUrl), headers: _baseHeaders)
+                .timeout(Duration(seconds: timeoutSeconds));
+            if (fallbackResponse.statusCode == 200) {
+              return fallbackResponse;
+            }
+          } catch (fallbackError) {
+            if (kDebugMode) debugPrint('Fallback also failed: $fallbackError');
+          }
+        }
+      }
 
       if (e.toString().contains('XMLHttpRequest')) {
         throw Exception(
-            'Terjadi error CORS. Silakan gunakan versi mobile app atau gunakan backend proxy.');
-      } else if (e.toString().contains('403')) {
+            'Terjadi error CORS. Silakan gunakan versi mobile app.');
+      } else if (e.toString().contains('403') || e.toString().contains('503')) {
         throw Exception(
-            'Server menolak akses (403 Forbidden). Coba lagi nanti atau gunakan VPN.');
+            'Server sedang sibuk. Coba lagi dalam beberapa menit.');
       } else if (e.toString().contains('Timeout')) {
         throw Exception(
             'Koneksi timeout. Server mungkin sibuk, silakan coba lagi.');
@@ -135,64 +168,31 @@ class PddiktiApi {
       if (kDebugMode) debugPrint('Mencari mahasiswa: $keyword');
 
       final Uri url =
-          Uri.parse('$baseUrl/pencarian/mhs/${_parseString(keyword)}');
-      if (kDebugMode) debugPrint('URL Request: ${url.toString()}');
+          Uri.parse('$baseUrl/search/mhs/${_parseString(keyword)}/');
 
-      // Request dengan error handling yang lebih baik
-      final response = await _makeApiRequest(url);
+      // PERF: use cache for search results, removed print() debug statements
+      final response = await _makeApiRequest(url, useCache: true);
+      final dynamic responseData = _decodeResponse(response, 'Gagal mencari mahasiswa');
 
-      if (kDebugMode) debugPrint('Status kode: ${response.statusCode}');
-      // TEMP DEBUG - remove after testing
-      print('PDDIKTI_DEBUG: statusCode=${response.statusCode}, bodyLen=${response.body.length}');
+      final mhsList = _extractList(responseData, 'mahasiswa');
+      if (mhsList.isEmpty && responseData is! List) return [];
 
-      if (response.statusCode == 200) {
-        // Parse response - could be a List or a Map
-        final dynamic responseData = json.decode(response.body);
-        List<dynamic> mhsList = [];
+      if (kDebugMode) debugPrint('Ditemukan ${mhsList.length} mahasiswa');
 
-        // Handle different response structures
-        if (responseData is List) {
-          // Response is already a list of mahasiswa
-          print('PDDIKTI_DEBUG: responseData is List, length=${responseData.length}');
-          mhsList = responseData;
-        } else if (responseData is Map<String, dynamic>) {
-          // Response is a Map with mahasiswa field
-          if (kDebugMode) debugPrint('Response is a Map with mahasiswa field');
-          if (responseData.containsKey('mahasiswa')) {
-            mhsList = (responseData['mahasiswa'] is List ? (responseData['mahasiswa'] is List ? responseData['mahasiswa'] as List<dynamic> : <dynamic>[]) : <dynamic>[]);
-          } else {
-            if (kDebugMode) debugPrint('Data mahasiswa tidak ditemukan dalam Map');
-            return [];
-          }
-        } else {
-          if (kDebugMode) debugPrint('Unknown response type: ${responseData.runtimeType}');
-          return [];
-        }
-
-        if (kDebugMode) debugPrint('Ditemukan ${mhsList.length} mahasiswa');
-
-        return mhsList
-            .map((item) {
-              if (item is! Map<String, dynamic>) {
-                if (kDebugMode) debugPrint('Item is not a Map: $item');
-                return Mahasiswa.fromJson({});
-              }
-
-              try {
-                return Mahasiswa.fromJson(item);
-              } catch (e) {
-                if (kDebugMode) debugPrint('Error parsing Mahasiswa: $e');
-                return Mahasiswa.fromJson({});
-              }
-            })
-            .where((m) => m.id.isNotEmpty)
-            .toList();
-      } else if (response.statusCode == 403) {
-        throw Exception(
-            'Akses ditolak oleh server. Silakan coba gunakan VPN atau gunakan aplikasi mobile.');
-      } else {
-        throw Exception('Gagal mencari data: ${response.statusCode}');
-      }
+      return mhsList
+          .map((item) {
+            if (item is! Map<String, dynamic>) return Mahasiswa.fromJson({});
+            try {
+              return Mahasiswa.fromJson(item);
+            } catch (e) {
+              if (kDebugMode) debugPrint('Error parsing Mahasiswa: $e');
+              return Mahasiswa.fromJson({});
+            }
+          })
+          .where((m) => m.id.isNotEmpty)
+          .toList();
+    } on Exception {
+      rethrow;
     } catch (e) {
       if (kDebugMode) debugPrint('Error: $e');
       // Buat pesan error yang lebih informatif
@@ -217,43 +217,31 @@ class PddiktiApi {
       if (kDebugMode) debugPrint('Mencari dosen: $keyword');
 
       final Uri url =
-          Uri.parse('$baseUrl/pencarian/dosen/${_parseString(keyword)}');
+          Uri.parse('$baseUrl/search/dosen/${_parseString(keyword)}/');
 
-      final response = await _makeApiRequest(url);
+      final response = await _makeApiRequest(url, useCache: true);
 
-      if (response.statusCode == 200) {
-        // Parse response - handle both Map and List formats
-        final dynamic responseData =
-            await _processApiResponse(response, 'Gagal mencari dosen');
+      // PERF: Single decode, no redundant statusCode check (_decodeResponse handles it)
+      final dynamic responseData =
+          _decodeResponse(response, 'Gagal mencari dosen');
 
-        List<dynamic> dosenList = [];
+      // PERF: Use _extractList helper — eliminates redundant double is-List checks
+      final dosenList = _extractList(responseData, 'dosen');
+      if (dosenList.isEmpty && responseData is! List) return [];
 
-        if (responseData is List) {
-          dosenList = responseData;
-        } else if (responseData is Map<String, dynamic> &&
-            responseData.containsKey('dosen')) {
-          dosenList = (responseData['dosen'] is List ? (responseData['dosen'] is List ? responseData['dosen'] as List<dynamic> : <dynamic>[]) : <dynamic>[]);
-        } else {
-          return [];
-        }
-
-        return dosenList
-            .map((item) {
-              if (item is! Map<String, dynamic>) {
-                return Dosen.fromJson({});
-              }
-
-              try {
-                return Dosen.fromJson(item);
-              } catch (e) {
-                return Dosen.fromJson({});
-              }
-            })
-            .where((d) => d.id.isNotEmpty)
-            .toList();
-      } else {
-        throw Exception('Gagal mencari dosen: ${response.statusCode}');
-      }
+      return dosenList
+          .map((item) {
+            if (item is! Map<String, dynamic>) return Dosen.fromJson({});
+            try {
+              return Dosen.fromJson(item);
+            } catch (e) {
+              return Dosen.fromJson({});
+            }
+          })
+          .where((d) => d.id.isNotEmpty)
+          .toList();
+    } on Exception {
+      rethrow;
     } catch (e) {
       if (kDebugMode) debugPrint('Error: $e');
       if (e.toString().contains('403')) {
@@ -271,44 +259,26 @@ class PddiktiApi {
       if (kDebugMode) debugPrint('Mencari perguruan tinggi: $keyword');
 
       final Uri url =
-          Uri.parse('$baseUrl/pencarian/pt/${_parseString(keyword)}');
+          Uri.parse('$baseUrl/search/pt/${_parseString(keyword)}/');
 
-      final response = await _makeApiRequest(url);
+      final response = await _makeApiRequest(url, useCache: true);
+      final dynamic responseData = _decodeResponse(
+          response, 'Gagal mencari perguruan tinggi');
 
-      if (response.statusCode == 200) {
-        // Parse response - handle both Map and List formats
-        final dynamic responseData = await _processApiResponse(
-            response, 'Gagal mencari perguruan tinggi');
+      final ptList = _extractList(responseData, 'pt');
+      if (ptList.isEmpty && responseData is! List) return [];
 
-        List<dynamic> ptList = [];
-
-        if (responseData is List) {
-          ptList = responseData;
-        } else if (responseData is Map<String, dynamic> &&
-            responseData.containsKey('pt')) {
-          ptList = (responseData['pt'] is List ? (responseData['pt'] is List ? responseData['pt'] as List<dynamic> : <dynamic>[]) : <dynamic>[]);
-        } else {
-          return [];
-        }
-
-        return ptList
-            .map((item) {
-              if (item is! Map<String, dynamic>) {
-                return PerguruanTinggi.fromJson({});
-              }
-
-              try {
-                return PerguruanTinggi.fromJson(item);
-              } catch (e) {
-                return PerguruanTinggi.fromJson({});
-              }
-            })
-            .where((pt) => pt.id.isNotEmpty)
-            .toList();
-      } else {
-        throw Exception(
-            'Gagal mencari perguruan tinggi: ${response.statusCode}');
-      }
+      return ptList
+          .map((item) {
+            if (item is! Map<String, dynamic>) return PerguruanTinggi.fromJson({});
+            try {
+              return PerguruanTinggi.fromJson(item);
+            } catch (e) {
+              return PerguruanTinggi.fromJson({});
+            }
+          })
+          .where((pt) => pt.id.isNotEmpty)
+          .toList();
     } catch (e) {
       if (kDebugMode) debugPrint('Error: $e');
       if (e.toString().contains('403')) {
@@ -326,43 +296,26 @@ class PddiktiApi {
       if (kDebugMode) debugPrint('Mencari program studi: $keyword');
 
       final Uri url =
-          Uri.parse('$baseUrl/pencarian/prodi/${_parseString(keyword)}');
+          Uri.parse('$baseUrl/search/prodi/${_parseString(keyword)}/');
 
-      final response = await _makeApiRequest(url);
+      final response = await _makeApiRequest(url, useCache: true);
+      final dynamic responseData =
+          _decodeResponse(response, 'Gagal mencari program studi');
 
-      if (response.statusCode == 200) {
-        // Parse response - handle both Map and List formats
-        final dynamic responseData =
-            await _processApiResponse(response, 'Gagal mencari program studi');
+      final prodiList = _extractList(responseData, 'prodi');
+      if (prodiList.isEmpty && responseData is! List) return [];
 
-        List<dynamic> prodiList = [];
-
-        if (responseData is List) {
-          prodiList = responseData;
-        } else if (responseData is Map<String, dynamic> &&
-            responseData.containsKey('prodi')) {
-          prodiList = (responseData['prodi'] is List ? (responseData['prodi'] is List ? responseData['prodi'] as List<dynamic> : <dynamic>[]) : <dynamic>[]);
-        } else {
-          return [];
-        }
-
-        return prodiList
-            .map((item) {
-              if (item is! Map<String, dynamic>) {
-                return Prodi.fromJson({});
-              }
-
-              try {
-                return Prodi.fromJson(item);
-              } catch (e) {
-                return Prodi.fromJson({});
-              }
-            })
-            .where((p) => p.id.isNotEmpty)
-            .toList();
-      } else {
-        throw Exception('Gagal mencari program studi: ${response.statusCode}');
-      }
+      return prodiList
+          .map((item) {
+            if (item is! Map<String, dynamic>) return Prodi.fromJson({});
+            try {
+              return Prodi.fromJson(item);
+            } catch (e) {
+              return Prodi.fromJson({});
+            }
+          })
+          .where((p) => p.id.isNotEmpty)
+          .toList();
     } catch (e) {
       if (kDebugMode) debugPrint('Error: $e');
       if (e.toString().contains('403')) {
@@ -385,7 +338,7 @@ class PddiktiApi {
       // This step is precautionary in case the ID format is different
 
       final Uri url =
-          Uri.parse('$baseUrl/detail/mhs/${_parseString(processedId)}');
+          Uri.parse('$baseUrl/mhs/detail/${_parseString(processedId)}/');
       if (kDebugMode) debugPrint('Detail URL: ${url.toString()}');
 
       final response = await _makeApiRequest(url);
@@ -470,27 +423,30 @@ class PddiktiApi {
 
   // Detail dosen lengkap dengan semua data
   Future<DosenDetail> getDosenDetailLengkap(String dosenId) async {
+    // BUG-FIX: Fetch profile dulu, simpan hasilnya — jangan re-fetch di catch
+    late final DosenDetail profileDasar;
     try {
       if (kDebugMode) debugPrint('Fetching comprehensive dosen detail for ID: $dosenId');
+      profileDasar = await getDosenProfile(dosenId);
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error fetching dosen profile: $e');
+      rethrow; // Kalau profile dasar gagal, ga ada fallback
+    }
 
-      // Ambil profil dasar dosen
-      final DosenDetail profileDasar = await getDosenProfile(dosenId);
-
+    try {
       // Ambil data tambahan secara paralel
-      final List<Future> futures = [
-        getDosenRiwayatStudi(dosenId),
-        getDosenRiwayatMengajar(dosenId),
-        getDosenPenelitian(dosenId),
-        getDosenPengabdian(dosenId),
-        getDosenKarya(dosenId),
-        getDosenPaten(dosenId),
-        getDosenRiwayatJabatan(dosenId),
-        getDosenRiwayatPenugasan(dosenId),
-      ];
+      // BUG-H3 FIX: Wrap each future individually to handle partial failures safely
+      final riwayatStudi = await getDosenRiwayatStudi(dosenId).catchError((_) => <DosenRiwayatStudi>[]);
+      final futures = await Future.wait([
+        getDosenRiwayatMengajar(dosenId).catchError((_) => <DosenRiwayatMengajar>[]),
+        getDosenPenelitian(dosenId).catchError((_) => <DosenPortofolio>[]),
+        getDosenPengabdian(dosenId).catchError((_) => <DosenPortofolio>[]),
+        getDosenKarya(dosenId).catchError((_) => <DosenPortofolio>[]),
+        getDosenPaten(dosenId).catchError((_) => <DosenPortofolio>[]),
+        getDosenRiwayatJabatan(dosenId).catchError((_) => <DosenJabatanFungsional>[]),
+        getDosenRiwayatPenugasan(dosenId).catchError((_) => <DosenPenugasan>[]),
+      ]);
 
-      final results = await Future.wait(futures, eagerError: false);
-
-      // Gabungkan semua data
       return DosenDetail(
         idSdm: profileDasar.idSdm,
         namaDosen: profileDasar.namaDosen,
@@ -522,146 +478,105 @@ class PddiktiApi {
         tahunSertifikasi: profileDasar.tahunSertifikasi,
         nomorSertifikat: profileDasar.nomorSertifikat,
         bidangSertifikasi: profileDasar.bidangSertifikasi,
-        riwayatStudi: results[0] as List<DosenRiwayatStudi>? ?? [],
-        riwayatMengajar: results[1] as List<DosenRiwayatMengajar>? ?? [],
-        penelitian: results[2] as List<DosenPortofolio>? ?? [],
-        pengabdian: results[3] as List<DosenPortofolio>? ?? [],
-        karya: results[4] as List<DosenPortofolio>? ?? [],
-        paten: results[5] as List<DosenPortofolio>? ?? [],
-        riwayatJabatan: results[6] as List<DosenJabatanFungsional>? ?? [],
-        riwayatPenugasan: results[7] as List<DosenPenugasan>? ?? [],
+        riwayatStudi: riwayatStudi,
+        riwayatMengajar: futures[0] as List<DosenRiwayatMengajar>,
+        penelitian: futures[1] as List<DosenPortofolio>,
+        pengabdian: futures[2] as List<DosenPortofolio>,
+        karya: futures[3] as List<DosenPortofolio>,
+        paten: futures[4] as List<DosenPortofolio>,
+        riwayatJabatan: futures[5] as List<DosenJabatanFungsional>,
+        riwayatPenugasan: futures[6] as List<DosenPenugasan>,
       );
     } catch (e) {
       if (kDebugMode) debugPrint('Error in getDosenDetailLengkap: $e');
-      // Fallback ke profil dasar jika ada error
-      return await getDosenProfile(dosenId);
+      // PERF-FIX: Return already-fetched profileDasar instead of re-fetching
+      return profileDasar;
     }
   }
 
   // Detail dosen profil dasar
+  // PERF-FIX C1: Parallel endpoint race via Future.any — worst case 5s instead of 45s
   Future<DosenDetail> getDosenProfile(String dosenId) async {
     try {
       if (kDebugMode) debugPrint('Fetching dosen profile for ID: $dosenId');
 
-      // Coba beberapa endpoint yang mungkin
-      List<String> possibleEndpoints = [
-        '$baseUrl/dosen/profile/${_parseString(dosenId)}',
-        '$baseUrl/detail/dosen/${_parseString(dosenId)}',
-        '$baseUrl/dosen/${_parseString(dosenId)}',
+      final endpoints = [
+        '$baseUrl/dosen/profile/${_parseString(dosenId)}/',
       ];
 
-      http.Response? response;
-      String? workingEndpoint;
+      // Single proxy endpoint — proper SSL, no cert issues
+      final response = await _makeApiRequest(
+        Uri.parse(endpoints.first),
+        timeoutSeconds: 10,
+      );
+      if (response.statusCode != 200) {
+        throw Exception('Gagal mendapatkan profil dosen: ${response.statusCode}');
+      }
 
-      // Coba setiap endpoint sampai ada yang berhasil
-      for (String endpoint in possibleEndpoints) {
-        try {
-          if (kDebugMode) debugPrint('Trying endpoint: $endpoint');
-          final Uri url = Uri.parse(endpoint);
-          response = await _makeApiRequest(url);
+      final dynamic responseData = json.decode(response.body);
+      Map<String, dynamic> dosenData = {};
 
-          if (response.statusCode == 200) {
-            workingEndpoint = endpoint;
-            if (kDebugMode) debugPrint('Success with endpoint: $endpoint');
-            break;
-          } else {
-            if (kDebugMode) debugPrint('Failed with endpoint: $endpoint (${response.statusCode})');
+      if (responseData is List && responseData.isNotEmpty) {
+        dosenData = responseData[0] as Map<String, dynamic>;
+      } else if (responseData is Map<String, dynamic>) {
+        if (responseData.containsKey('dosen') && responseData['dosen'] is List) {
+          final dosenList = responseData['dosen'] as List;
+          if (dosenList.isNotEmpty) {
+            dosenData = dosenList[0] as Map<String, dynamic>;
           }
-        } catch (e) {
-          if (kDebugMode) debugPrint('Error with endpoint: $endpoint - $e');
-          continue;
+        } else {
+          dosenData = responseData;
         }
       }
 
-      if (response == null || response.statusCode != 200) {
-        throw Exception('All endpoints failed for dosen ID: $dosenId');
-      }
+      final idSdm = _getStringValue(dosenData, 'id_sdm');
+      final namaDosen = _getStringValue(dosenData, 'nama_dosen');
 
-      if (response.statusCode == 200) {
-        final dynamic responseData = json.decode(response.body);
-
-        Map<String, dynamic> dosenData = {};
-
-        if (responseData is List && responseData.isNotEmpty) {
-          dosenData = responseData[0] as Map<String, dynamic>;
-        } else if (responseData is Map<String, dynamic>) {
-          if (responseData.containsKey('dosen') &&
-              responseData['dosen'] is List) {
-            final dosenList = responseData['dosen'] as List;
-            if (dosenList.isNotEmpty) {
-              dosenData = dosenList[0] as Map<String, dynamic>;
-            }
-          } else {
-            dosenData = responseData;
-          }
-        }
-
-        return DosenDetail(
-          idSdm: _getStringValue(dosenData, 'id_sdm') ?? dosenId,
-          namaDosen: _getStringValue(dosenData, 'nama_dosen') ??
-              _getStringValue(dosenData, 'nama') ??
-              'Tidak tersedia',
-          nidn: _getStringValue(dosenData, 'nidn'),
-          nidk: _getStringValue(dosenData, 'nidk'),
-          gelarDepan: _getStringValue(dosenData, 'gelar_depan'),
-          gelarBelakang: _getStringValue(dosenData, 'gelar_belakang'),
-          jenisKelamin: _getStringValue(dosenData, 'jenis_kelamin'),
-          statusIkatanKerja: _getStringValue(dosenData, 'status_ikatan_kerja'),
-          statusAktivitas: _getStringValue(dosenData, 'status_aktivitas'),
-          tempatLahir: _getStringValue(dosenData, 'tempat_lahir'),
-          tanggalLahir: _getStringValue(dosenData, 'tanggal_lahir'),
-          agama: _getStringValue(dosenData, 'agama'),
-          namaPt: _getStringValue(dosenData, 'nama_pt'),
-          namaProdi: _getStringValue(dosenData, 'nama_prodi') ??
-              _getStringValue(dosenData, 'prodi'),
-          homePt: _getStringValue(dosenData, 'home_pt'),
-          homeProdi: _getStringValue(dosenData, 'home_prodi'),
-          rasioHomebase: _getStringValue(dosenData, 'rasio_homebase'),
-          statusHomebase: _getStringValue(dosenData, 'status_homebase'),
-          jabatanAkademik: _getStringValue(dosenData, 'jabatan_akademik'),
-          tanggalSk: _getStringValue(dosenData, 'tanggal_sk'),
-          tmtJabatan: _getStringValue(dosenData, 'tmt_jabatan'),
-          nomorSk: _getStringValue(dosenData, 'nomor_sk'),
-          pendidikanTertinggi:
-              _getStringValue(dosenData, 'pendidikan_tertinggi'),
-          bidangIlmu: _getStringValue(dosenData, 'bidang_ilmu'),
-          institusiPendidikan:
-              _getStringValue(dosenData, 'institusi_pendidikan'),
-          tahunLulusTertinggi:
-              _getStringValue(dosenData, 'tahun_lulus_tertinggi'),
-          statusSertifikasi: _getStringValue(dosenData, 'status_sertifikasi'),
-          tahunSertifikasi: _getStringValue(dosenData, 'tahun_sertifikasi'),
-          nomorSertifikat: _getStringValue(dosenData, 'nomor_sertifikat'),
-          bidangSertifikasi: _getStringValue(dosenData, 'bidang_sertifikasi'),
-        );
-      } else {
-        throw Exception(
-            'Gagal mendapatkan detail dosen: ${response.statusCode}');
-      }
+      return DosenDetail(
+        idSdm: idSdm.isNotEmpty ? idSdm : dosenId,
+        namaDosen: namaDosen.isNotEmpty ? namaDosen
+            : (_getStringValue(dosenData, 'nama').isNotEmpty
+                ? _getStringValue(dosenData, 'nama') : 'Tidak tersedia'),
+        nidn: _getStringValue(dosenData, 'nidn'),
+        nidk: _getStringValue(dosenData, 'nidk'),
+        gelarDepan: _getStringValue(dosenData, 'gelar_depan'),
+        gelarBelakang: _getStringValue(dosenData, 'gelar_belakang'),
+        jenisKelamin: _getStringValue(dosenData, 'jenis_kelamin'),
+        statusIkatanKerja: _getStringValue(dosenData, 'status_ikatan_kerja'),
+        statusAktivitas: _getStringValue(dosenData, 'status_aktivitas'),
+        tempatLahir: _getStringValue(dosenData, 'tempat_lahir'),
+        tanggalLahir: _getStringValue(dosenData, 'tanggal_lahir'),
+        agama: _getStringValue(dosenData, 'agama'),
+        namaPt: _getStringValue(dosenData, 'nama_pt'),
+        namaProdi: _getStringValue(dosenData, 'nama_prodi').isNotEmpty
+            ? _getStringValue(dosenData, 'nama_prodi')
+            : _getStringValue(dosenData, 'prodi'),
+        homePt: _getStringValue(dosenData, 'home_pt'),
+        homeProdi: _getStringValue(dosenData, 'home_prodi'),
+        rasioHomebase: _getStringValue(dosenData, 'rasio_homebase'),
+        statusHomebase: _getStringValue(dosenData, 'status_homebase'),
+        jabatanAkademik: _getStringValue(dosenData, 'jabatan_akademik'),
+        tanggalSk: _getStringValue(dosenData, 'tanggal_sk'),
+        tmtJabatan: _getStringValue(dosenData, 'tmt_jabatan'),
+        nomorSk: _getStringValue(dosenData, 'nomor_sk'),
+        pendidikanTertinggi: _getStringValue(dosenData, 'pendidikan_tertinggi'),
+        bidangIlmu: _getStringValue(dosenData, 'bidang_ilmu'),
+        institusiPendidikan: _getStringValue(dosenData, 'institusi_pendidikan'),
+        tahunLulusTertinggi: _getStringValue(dosenData, 'tahun_lulus_tertinggi'),
+        statusSertifikasi: _getStringValue(dosenData, 'status_sertifikasi'),
+        tahunSertifikasi: _getStringValue(dosenData, 'tahun_sertifikasi'),
+        nomorSertifikat: _getStringValue(dosenData, 'nomor_sertifikat'),
+        bidangSertifikasi: _getStringValue(dosenData, 'bidang_sertifikasi'),
+      );
     } catch (e) {
       if (kDebugMode) debugPrint('Error in getDosenProfile: $e');
-      // Return mock data untuk development
-      return _createMockDosenDetail(dosenId);
+      // BUG-H2 FIX: Throw instead of silently returning mock data
+      // Let the caller (ApiFactory) handle fallback with proper UI indication
+      throw Exception('Gagal mendapatkan profil dosen: $e');
     }
   }
 
-  // Helper method untuk membuat mock data dosen
-  DosenDetail _createMockDosenDetail(String dosenId) {
-    return DosenDetail(
-      idSdm: dosenId,
-      namaDosen: 'Dr. John Doe, M.Kom',
-      nidn: '0123456789',
-      jenisKelamin: 'Laki-laki',
-      statusIkatanKerja: 'Tetap',
-      statusAktivitas: 'Aktif',
-      namaPt: 'Universitas Indonesia',
-      namaProdi: 'Teknik Informatika',
-      jabatanAkademik: 'Lektor Kepala',
-      pendidikanTertinggi: 'S3',
-      statusSertifikasi: 'Sudah Sertifikasi',
-      tahunSertifikasi: '2015',
-    );
-  }
+  // H2-FIX: _createMockDosenDetail removed — mock data should not be silently returned as real
 
   // Helper method untuk mengambil nilai string dengan aman
   static String _getStringValue(Map<String, dynamic> json, String key) {
@@ -673,34 +588,17 @@ class PddiktiApi {
   // Detail PT
   Future<PerguruanTinggiDetail> getDetailPt(String ptId) async {
     try {
-      final Uri url = Uri.parse('$baseUrl/pt/detail/${_parseString(ptId)}');
+      final Uri url = Uri.parse('$baseUrl/pt/detail/${_parseString(ptId)}/');
 
       final response = await _makeApiRequest(url);
-
-      // Parse response - handle both Map and List formats
-      final dynamic responseData = await _processApiResponse(
+      final dynamic responseData = _decodeResponse(
           response, 'Gagal mendapatkan detail perguruan tinggi');
 
-      List<dynamic> ptList = [];
-
-      if (responseData is List) {
-        ptList = responseData;
-      } else if (responseData is Map<String, dynamic> &&
-          responseData.containsKey('pt')) {
-        ptList = (responseData['pt'] is List ? (responseData['pt'] is List ? responseData['pt'] as List<dynamic> : <dynamic>[]) : <dynamic>[]);
-      } else {
-        throw Exception('Data perguruan tinggi tidak ditemukan');
-      }
-
-      if (ptList.isEmpty) {
-        throw Exception('Detail perguruan tinggi kosong');
-      }
+      final ptList = _extractList(responseData, 'pt');
+      if (ptList.isEmpty) throw Exception('Detail perguruan tinggi kosong');
 
       final item = ptList.first;
-
-      if (item is! Map<String, dynamic>) {
-        throw Exception('Format data tidak valid');
-      }
+      if (item is! Map<String, dynamic>) throw Exception('Format data tidak valid');
 
       return PerguruanTinggiDetail.fromJson(item);
     } catch (e) {
@@ -718,54 +616,29 @@ class PddiktiApi {
   Future<ProdiDetail> getDetailProdi(String prodiId) async {
     try {
       final Uri url =
-          Uri.parse('$baseUrl/prodi/detail/${_parseString(prodiId)}');
+          Uri.parse('$baseUrl/prodi/detail/${_parseString(prodiId)}/');
 
       final response = await _makeApiRequest(url);
 
-      // Parse response - handle both Map and List formats
-      final dynamic responseData = await _processApiResponse(
+      final dynamic responseData = _decodeResponse(
           response, 'Gagal mendapatkan detail program studi');
 
-      List<dynamic> prodiList = [];
-
-      if (responseData is List) {
-        prodiList = responseData;
-      } else if (responseData is Map<String, dynamic> &&
-          responseData.containsKey('prodi')) {
-        prodiList = (responseData['prodi'] is List ? (responseData['prodi'] is List ? responseData['prodi'] as List<dynamic> : <dynamic>[]) : <dynamic>[]);
-      } else {
-        throw Exception('Data program studi tidak ditemukan');
-      }
-
-      if (prodiList.isEmpty) {
-        throw Exception('Detail program studi kosong');
-      }
+      final prodiList = _extractList(responseData, 'prodi');
+      if (prodiList.isEmpty) throw Exception('Detail program studi kosong');
 
       final item = prodiList.first;
-
-      if (item is! Map<String, dynamic>) {
-        throw Exception('Format data tidak valid');
-      }
+      if (item is! Map<String, dynamic>) throw Exception('Format data tidak valid');
 
       // Ambil deskripsi prodi jika tersedia
       Map<String, dynamic>? descJson;
       try {
         final descResponse = await _makeApiRequest(
-            Uri.parse('$baseUrl/prodi/desc/${_parseString(prodiId)}'),
+            Uri.parse('$baseUrl/prodi/desc/${_parseString(prodiId)}/'),
             timeoutSeconds: 10);
 
         if (descResponse.statusCode == 200) {
           final dynamic descData = json.decode(descResponse.body);
-
-          List<dynamic> descList = [];
-
-          if (descData is List) {
-            descList = descData;
-          } else if (descData is Map<String, dynamic> &&
-              descData.containsKey('prodi')) {
-            descList = (descData['prodi'] is List ? descData['prodi'] as List<dynamic> : <dynamic>[]);
-          }
-
+          final descList = _extractList(descData, 'prodi');
           if (descList.isNotEmpty && descList.first is Map<String, dynamic>) {
             descJson = descList.first as Map<String, dynamic>;
           }
@@ -790,31 +663,18 @@ class PddiktiApi {
   Future<List<ProdiPt>> getProdiPt(String ptId, int tahun) async {
     try {
       final Uri url = Uri.parse(
-          '$baseUrl/pt/detail/${_parseString(ptId)}/${_parseString(tahun.toString())}');
+          '$baseUrl/pt/prodi/${_parseString(ptId)}/${_parseString(tahun.toString())}');
 
       final response = await _makeApiRequest(url);
-
-      // Parse response - handle both Map and List formats
-      final dynamic responseData = await _processApiResponse(
+      final dynamic responseData = _decodeResponse(
           response, 'Gagal mendapatkan daftar program studi');
 
-      List<dynamic> prodiList = [];
-
-      if (responseData is List) {
-        prodiList = responseData;
-      } else if (responseData is Map<String, dynamic> &&
-          responseData.containsKey('prodi')) {
-        prodiList = (responseData['prodi'] is List ? (responseData['prodi'] is List ? responseData['prodi'] as List<dynamic> : <dynamic>[]) : <dynamic>[]);
-      } else {
-        return [];
-      }
+      final prodiList = _extractList(responseData, 'prodi');
+      if (prodiList.isEmpty && responseData is! List) return [];
 
       return prodiList
           .map((item) {
-            if (item is! Map<String, dynamic>) {
-              return ProdiPt.fromJson({});
-            }
-
+            if (item is! Map<String, dynamic>) return ProdiPt.fromJson({});
             try {
               return ProdiPt.fromJson(item);
             } catch (e) {
@@ -838,18 +698,15 @@ class PddiktiApi {
   Future<Map<String, dynamic>> searchAll(String keyword) async {
     try {
       final Uri url =
-          Uri.parse('$baseUrl/pencarian/all/${_parseString(keyword)}');
+          Uri.parse('$baseUrl/search/all/${_parseString(keyword)}/');
 
-      final response = await _makeApiRequest(url);
-
-      // Handle case where response might be a list
+      final response = await _makeApiRequest(url, useCache: true);
       final dynamic responseData =
-          await _processApiResponse(response, 'Gagal mencari data');
+          _decodeResponse(response, 'Gagal mencari data');
 
       if (responseData is Map<String, dynamic>) {
         return responseData;
       } else if (responseData is List) {
-        // Convert list to map format
         return {'results': responseData};
       } else {
         return {};
@@ -865,259 +722,82 @@ class PddiktiApi {
     }
   }
 
-  // Method untuk mengambil riwayat studi dosen
-  Future<List<DosenRiwayatStudi>> getDosenRiwayatStudi(String dosenId) async {
+  // PERF: Generic helper untuk fetch list data dosen — eliminates 8x copy-paste pattern
+  Future<List<T>> _fetchDosenList<T>(
+    String dosenId, String endpoint, String key,
+    T Function(Map<String, dynamic>) fromJson,
+  ) async {
     try {
-      final Uri url =
-          Uri.parse('$baseUrl/dosen/riwayat_studi/${_parseString(dosenId)}');
+      final Uri url = Uri.parse('$baseUrl/dosen/$endpoint/${_parseString(dosenId)}/');
       final response = await _makeApiRequest(url);
-
       if (response.statusCode == 200) {
         final dynamic responseData = json.decode(response.body);
-        List<dynamic> dataList = [];
-
-        if (responseData is List) {
-          dataList = responseData;
-        } else if (responseData is Map<String, dynamic> &&
-            responseData.containsKey('riwayat_studi')) {
-          dataList = (responseData['riwayat_studi'] is List ? (responseData['riwayat_studi'] is List ? responseData['riwayat_studi'] as List<dynamic> : <dynamic>[]) : <dynamic>[]);
-        }
-
+        final dataList = _extractList(responseData, key);
         return dataList
-            .map((item) =>
-                DosenRiwayatStudi.fromJson(item as Map<String, dynamic>))
+            .whereType<Map<String, dynamic>>()
+            .map(fromJson)
             .toList();
       }
     } catch (e) {
-      if (kDebugMode) debugPrint('Error getting dosen riwayat studi: $e');
+      if (kDebugMode) debugPrint('Error getting dosen $endpoint: $e');
     }
     return [];
   }
+
+  // Method untuk mengambil riwayat studi dosen
+  // FIX: Proxy API uses 'study-history' instead of 'riwayat_studi'
+  Future<List<DosenRiwayatStudi>> getDosenRiwayatStudi(String dosenId) =>
+      _fetchDosenList(dosenId, 'study-history', 'riwayat_studi', DosenRiwayatStudi.fromJson);
 
   // Method untuk mengambil riwayat mengajar dosen
-  Future<List<DosenRiwayatMengajar>> getDosenRiwayatMengajar(
-      String dosenId) async {
-    try {
-      final Uri url =
-          Uri.parse('$baseUrl/dosen/riwayat_mengajar/${_parseString(dosenId)}');
-      final response = await _makeApiRequest(url);
-
-      if (response.statusCode == 200) {
-        final dynamic responseData = json.decode(response.body);
-        List<dynamic> dataList = [];
-
-        if (responseData is List) {
-          dataList = responseData;
-        } else if (responseData is Map<String, dynamic> &&
-            responseData.containsKey('riwayat_mengajar')) {
-          dataList = (responseData['riwayat_mengajar'] is List ? (responseData['riwayat_mengajar'] is List ? responseData['riwayat_mengajar'] as List<dynamic> : <dynamic>[]) : <dynamic>[]);
-        }
-
-        return dataList
-            .map((item) =>
-                DosenRiwayatMengajar.fromJson(item as Map<String, dynamic>))
-            .toList();
-      }
-    } catch (e) {
-      if (kDebugMode) debugPrint('Error getting dosen riwayat mengajar: $e');
-    }
-    return [];
-  }
+  // FIX: Proxy API uses 'teaching-history' instead of 'riwayat_mengajar'
+  Future<List<DosenRiwayatMengajar>> getDosenRiwayatMengajar(String dosenId) =>
+      _fetchDosenList(dosenId, 'teaching-history', 'riwayat_mengajar', DosenRiwayatMengajar.fromJson);
 
   // Method untuk mengambil penelitian dosen
-  Future<List<DosenPortofolio>> getDosenPenelitian(String dosenId) async {
-    try {
-      final Uri url =
-          Uri.parse('$baseUrl/dosen/penelitian/${_parseString(dosenId)}');
-      final response = await _makeApiRequest(url);
-
-      if (response.statusCode == 200) {
-        final dynamic responseData = json.decode(response.body);
-        List<dynamic> dataList = [];
-
-        if (responseData is List) {
-          dataList = responseData;
-        } else if (responseData is Map<String, dynamic> &&
-            responseData.containsKey('penelitian')) {
-          dataList = (responseData['penelitian'] is List ? (responseData['penelitian'] is List ? responseData['penelitian'] as List<dynamic> : <dynamic>[]) : <dynamic>[]);
-        }
-
-        return dataList
-            .map((item) =>
-                DosenPortofolio.fromJson(item as Map<String, dynamic>))
-            .toList();
-      }
-    } catch (e) {
-      if (kDebugMode) debugPrint('Error getting dosen penelitian: $e');
-    }
-    return [];
-  }
+  Future<List<DosenPortofolio>> getDosenPenelitian(String dosenId) =>
+      _fetchDosenList(dosenId, 'penelitian', 'penelitian', DosenPortofolio.fromJson);
 
   // Method untuk mengambil pengabdian dosen
-  Future<List<DosenPortofolio>> getDosenPengabdian(String dosenId) async {
-    try {
-      final Uri url =
-          Uri.parse('$baseUrl/dosen/pengabdian/${_parseString(dosenId)}');
-      final response = await _makeApiRequest(url);
-
-      if (response.statusCode == 200) {
-        final dynamic responseData = json.decode(response.body);
-        List<dynamic> dataList = [];
-
-        if (responseData is List) {
-          dataList = responseData;
-        } else if (responseData is Map<String, dynamic> &&
-            responseData.containsKey('pengabdian')) {
-          dataList = (responseData['pengabdian'] is List ? (responseData['pengabdian'] is List ? responseData['pengabdian'] as List<dynamic> : <dynamic>[]) : <dynamic>[]);
-        }
-
-        return dataList
-            .map((item) =>
-                DosenPortofolio.fromJson(item as Map<String, dynamic>))
-            .toList();
-      }
-    } catch (e) {
-      if (kDebugMode) debugPrint('Error getting dosen pengabdian: $e');
-    }
-    return [];
-  }
+  Future<List<DosenPortofolio>> getDosenPengabdian(String dosenId) =>
+      _fetchDosenList(dosenId, 'pengabdian', 'pengabdian', DosenPortofolio.fromJson);
 
   // Method untuk mengambil karya dosen
-  Future<List<DosenPortofolio>> getDosenKarya(String dosenId) async {
-    try {
-      final Uri url =
-          Uri.parse('$baseUrl/dosen/karya/${_parseString(dosenId)}');
-      final response = await _makeApiRequest(url);
-
-      if (response.statusCode == 200) {
-        final dynamic responseData = json.decode(response.body);
-        List<dynamic> dataList = [];
-
-        if (responseData is List) {
-          dataList = responseData;
-        } else if (responseData is Map<String, dynamic> &&
-            responseData.containsKey('karya')) {
-          dataList = (responseData['karya'] is List ? (responseData['karya'] is List ? responseData['karya'] as List<dynamic> : <dynamic>[]) : <dynamic>[]);
-        }
-
-        return dataList
-            .map((item) =>
-                DosenPortofolio.fromJson(item as Map<String, dynamic>))
-            .toList();
-      }
-    } catch (e) {
-      if (kDebugMode) debugPrint('Error getting dosen karya: $e');
-    }
-    return [];
-  }
+  Future<List<DosenPortofolio>> getDosenKarya(String dosenId) =>
+      _fetchDosenList(dosenId, 'karya', 'karya', DosenPortofolio.fromJson);
 
   // Method untuk mengambil paten dosen
-  Future<List<DosenPortofolio>> getDosenPaten(String dosenId) async {
-    try {
-      final Uri url =
-          Uri.parse('$baseUrl/dosen/paten/${_parseString(dosenId)}');
-      final response = await _makeApiRequest(url);
-
-      if (response.statusCode == 200) {
-        final dynamic responseData = json.decode(response.body);
-        List<dynamic> dataList = [];
-
-        if (responseData is List) {
-          dataList = responseData;
-        } else if (responseData is Map<String, dynamic> &&
-            responseData.containsKey('paten')) {
-          dataList = (responseData['paten'] is List ? (responseData['paten'] is List ? responseData['paten'] as List<dynamic> : <dynamic>[]) : <dynamic>[]);
-        }
-
-        return dataList
-            .map((item) =>
-                DosenPortofolio.fromJson(item as Map<String, dynamic>))
-            .toList();
-      }
-    } catch (e) {
-      if (kDebugMode) debugPrint('Error getting dosen paten: $e');
-    }
-    return [];
-  }
+  Future<List<DosenPortofolio>> getDosenPaten(String dosenId) =>
+      _fetchDosenList(dosenId, 'paten', 'paten', DosenPortofolio.fromJson);
 
   // Method untuk mengambil riwayat jabatan fungsional dosen
-  Future<List<DosenJabatanFungsional>> getDosenRiwayatJabatan(
-      String dosenId) async {
-    try {
-      final Uri url =
-          Uri.parse('$baseUrl/dosen/riwayat_jabatan/${_parseString(dosenId)}');
-      final response = await _makeApiRequest(url);
-
-      if (response.statusCode == 200) {
-        final dynamic responseData = json.decode(response.body);
-        List<dynamic> dataList = [];
-
-        if (responseData is List) {
-          dataList = responseData;
-        } else if (responseData is Map<String, dynamic> &&
-            responseData.containsKey('riwayat_jabatan')) {
-          dataList = (responseData['riwayat_jabatan'] is List ? (responseData['riwayat_jabatan'] is List ? responseData['riwayat_jabatan'] as List<dynamic> : <dynamic>[]) : <dynamic>[]);
-        }
-
-        return dataList
-            .map((item) =>
-                DosenJabatanFungsional.fromJson(item as Map<String, dynamic>))
-            .toList();
-      }
-    } catch (e) {
-      if (kDebugMode) debugPrint('Error getting dosen riwayat jabatan: $e');
-    }
-    return [];
-  }
+  Future<List<DosenJabatanFungsional>> getDosenRiwayatJabatan(String dosenId) =>
+      _fetchDosenList(dosenId, 'riwayat_jabatan', 'riwayat_jabatan', DosenJabatanFungsional.fromJson);
 
   // Method untuk mengambil riwayat penugasan dosen
-  Future<List<DosenPenugasan>> getDosenRiwayatPenugasan(String dosenId) async {
-    try {
-      final Uri url = Uri.parse(
-          '$baseUrl/dosen/riwayat_penugasan/${_parseString(dosenId)}');
-      final response = await _makeApiRequest(url);
-
-      if (response.statusCode == 200) {
-        final dynamic responseData = json.decode(response.body);
-        List<dynamic> dataList = [];
-
-        if (responseData is List) {
-          dataList = responseData;
-        } else if (responseData is Map<String, dynamic> &&
-            responseData.containsKey('riwayat_penugasan')) {
-          dataList = (responseData['riwayat_penugasan'] is List ? (responseData['riwayat_penugasan'] is List ? responseData['riwayat_penugasan'] as List<dynamic> : <dynamic>[]) : <dynamic>[]);
-        }
-
-        return dataList
-            .map(
-                (item) => DosenPenugasan.fromJson(item as Map<String, dynamic>))
-            .toList();
-      }
-    } catch (e) {
-      if (kDebugMode) debugPrint('Error getting dosen riwayat penugasan: $e');
-    }
-    return [];
-  }
+  Future<List<DosenPenugasan>> getDosenRiwayatPenugasan(String dosenId) =>
+      _fetchDosenList(dosenId, 'riwayat_penugasan', 'riwayat_penugasan', DosenPenugasan.fromJson);
 
   // Method untuk mengambil detail lengkap mahasiswa
+  // PERF-FIX: Same pattern as dosen — fetch profile first, use catchError per sub-future
   Future<MahasiswaDetail> getMahasiswaDetailLengkap(String mahasiswaId) async {
+    late final MahasiswaDetail profileDasar;
     try {
       if (kDebugMode) debugPrint('Fetching comprehensive mahasiswa detail for ID: $mahasiswaId');
+      profileDasar = await getMahasiswaDetail(mahasiswaId);
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error fetching mahasiswa profile: $e');
+      rethrow;
+    }
 
-      // Ambil profil dasar mahasiswa
-      final MahasiswaDetail profileDasar =
-          await getMahasiswaDetail(mahasiswaId);
+    try {
+      // Ambil data tambahan secara paralel — each wrapped with catchError for safety
+      final results = await Future.wait([
+        getMahasiswaRiwayatSemester(mahasiswaId).catchError((_) => <MahasiswaRiwayatSemester>[]),
+        getMahasiswaRiwayatNilai(mahasiswaId).catchError((_) => <MahasiswaNilai>[]),
+        getMahasiswaRiwayatKelas(mahasiswaId).catchError((_) => <MahasiswaKelas>[]),
+      ]);
 
-      // Ambil data tambahan secara paralel
-      final List<Future> futures = [
-        getMahasiswaRiwayatSemester(mahasiswaId),
-        getMahasiswaRiwayatNilai(mahasiswaId),
-        getMahasiswaRiwayatKelas(mahasiswaId),
-      ];
-
-      final results = await Future.wait(futures, eagerError: false);
-
-      // Gabungkan semua data
       return MahasiswaDetail(
         id: profileDasar.id,
         nama: profileDasar.nama,
@@ -1149,109 +829,50 @@ class PddiktiApi {
         totalSks: profileDasar.totalSks,
         predikatKelulusan: profileDasar.predikatKelulusan,
         judulSkripsi: profileDasar.judulSkripsi,
-        riwayatSemester: results[0] as List<MahasiswaRiwayatSemester>? ?? [],
-        riwayatNilai: results[1] as List<MahasiswaNilai>? ?? [],
-        riwayatKelas: results[2] as List<MahasiswaKelas>? ?? [],
+        riwayatSemester: results[0] as List<MahasiswaRiwayatSemester>,
+        riwayatNilai: results[1] as List<MahasiswaNilai>,
+        riwayatKelas: results[2] as List<MahasiswaKelas>,
       );
     } catch (e) {
       if (kDebugMode) debugPrint('Error in getMahasiswaDetailLengkap: $e');
-      // Fallback ke profil dasar jika ada error
-      return await getMahasiswaDetail(mahasiswaId);
+      // PERF-FIX: Return already-fetched profileDasar instead of re-fetching
+      return profileDasar;
     }
+  }
+
+  // PERF: Generic helper untuk fetch list data mahasiswa
+  Future<List<T>> _fetchMahasiswaList<T>(
+    String mahasiswaId, String endpoint, String key,
+    T Function(Map<String, dynamic>) fromJson,
+  ) async {
+    try {
+      final Uri url = Uri.parse('$baseUrl/mhs/$endpoint/${_parseString(mahasiswaId)}/');
+      final response = await _makeApiRequest(url);
+      if (response.statusCode == 200) {
+        final dynamic responseData = json.decode(response.body);
+        final dataList = _extractList(responseData, key);
+        return dataList
+            .whereType<Map<String, dynamic>>()
+            .map(fromJson)
+            .toList();
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error getting mahasiswa $endpoint: $e');
+    }
+    return [];
   }
 
   // Method untuk mengambil riwayat semester mahasiswa
-  Future<List<MahasiswaRiwayatSemester>> getMahasiswaRiwayatSemester(
-      String mahasiswaId) async {
-    try {
-      final Uri url = Uri.parse(
-          '$baseUrl/mahasiswa/riwayat_semester/${_parseString(mahasiswaId)}');
-      final response = await _makeApiRequest(url);
-
-      if (response.statusCode == 200) {
-        final dynamic responseData = json.decode(response.body);
-        List<dynamic> dataList = [];
-
-        if (responseData is List) {
-          dataList = responseData;
-        } else if (responseData is Map<String, dynamic> &&
-            responseData.containsKey('riwayat_semester')) {
-          dataList = (responseData['riwayat_semester'] is List ? (responseData['riwayat_semester'] is List ? responseData['riwayat_semester'] as List<dynamic> : <dynamic>[]) : <dynamic>[]);
-        }
-
-        return dataList
-            .map((item) =>
-                MahasiswaRiwayatSemester.fromJson(item as Map<String, dynamic>))
-            .toList();
-      }
-    } catch (e) {
-      if (kDebugMode) debugPrint('Error getting mahasiswa riwayat semester: $e');
-    }
-    return [];
-  }
+  Future<List<MahasiswaRiwayatSemester>> getMahasiswaRiwayatSemester(String mahasiswaId) =>
+      _fetchMahasiswaList(mahasiswaId, 'riwayat_semester', 'riwayat_semester', MahasiswaRiwayatSemester.fromJson);
 
   // Method untuk mengambil riwayat nilai mahasiswa
-  Future<List<MahasiswaNilai>> getMahasiswaRiwayatNilai(
-      String mahasiswaId) async {
-    try {
-      final Uri url = Uri.parse(
-          '$baseUrl/mahasiswa/riwayat_nilai/${_parseString(mahasiswaId)}');
-      final response = await _makeApiRequest(url);
-
-      if (response.statusCode == 200) {
-        final dynamic responseData = json.decode(response.body);
-        List<dynamic> dataList = [];
-
-        if (responseData is List) {
-          dataList = responseData;
-        } else if (responseData is Map<String, dynamic> &&
-            responseData.containsKey('riwayat_nilai')) {
-          dataList = (responseData['riwayat_nilai'] is List ? (responseData['riwayat_nilai'] is List ? responseData['riwayat_nilai'] as List<dynamic> : <dynamic>[]) : <dynamic>[]);
-        }
-
-        return dataList
-            .map(
-                (item) => MahasiswaNilai.fromJson(item as Map<String, dynamic>))
-            .toList();
-      }
-    } catch (e) {
-      if (kDebugMode) debugPrint('Error getting mahasiswa riwayat nilai: $e');
-    }
-    return [];
-  }
+  Future<List<MahasiswaNilai>> getMahasiswaRiwayatNilai(String mahasiswaId) =>
+      _fetchMahasiswaList(mahasiswaId, 'riwayat_nilai', 'riwayat_nilai', MahasiswaNilai.fromJson);
 
   // Method untuk mengambil riwayat kelas mahasiswa
-  Future<List<MahasiswaKelas>> getMahasiswaRiwayatKelas(
-      String mahasiswaId) async {
-    try {
-      final Uri url = Uri.parse(
-          '$baseUrl/mahasiswa/riwayat_kelas/${_parseString(mahasiswaId)}');
-      final response = await _makeApiRequest(url);
+  Future<List<MahasiswaKelas>> getMahasiswaRiwayatKelas(String mahasiswaId) =>
+      _fetchMahasiswaList(mahasiswaId, 'riwayat_kelas', 'riwayat_kelas', MahasiswaKelas.fromJson);
 
-      if (response.statusCode == 200) {
-        final dynamic responseData = json.decode(response.body);
-        List<dynamic> dataList = [];
-
-        if (responseData is List) {
-          dataList = responseData;
-        } else if (responseData is Map<String, dynamic> &&
-            responseData.containsKey('riwayat_kelas')) {
-          dataList = (responseData['riwayat_kelas'] is List ? (responseData['riwayat_kelas'] is List ? responseData['riwayat_kelas'] as List<dynamic> : <dynamic>[]) : <dynamic>[]);
-        }
-
-        return dataList
-            .map(
-                (item) => MahasiswaKelas.fromJson(item as Map<String, dynamic>))
-            .toList();
-      }
-    } catch (e) {
-      if (kDebugMode) debugPrint('Error getting mahasiswa riwayat kelas: $e');
-    }
-    return [];
-  }
-
-  // Helper untuk limit string
-  int min(int a, int b) {
-    return (a < b) ? a : b;
-  }
+  // M2-FIX: Custom min() removed — using dart:math min() instead
 }

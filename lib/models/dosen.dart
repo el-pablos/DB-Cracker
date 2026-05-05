@@ -1,3 +1,4 @@
+import 'dart:math' show min;
 import 'package:flutter/foundation.dart';
 class Dosen {
   final String id;
@@ -58,10 +59,7 @@ class Dosen {
     return value.toString();
   }
 
-  // Helper function to limit string length
-  static int min(int a, int b) {
-    return (a < b) ? a : b;
-  }
+  // M2-FIX: Custom min() removed — using dart:math min()
 }
 
 class DosenDetail {

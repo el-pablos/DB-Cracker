@@ -75,7 +75,7 @@ class _FilterSearchBarState extends State<FilterSearchBar> {
         border: Border.all(color: CtOSColors.warning, width: 1),
         boxShadow: [
           BoxShadow(
-            color: CtOSColors.warning.withOpacity(0.2),
+            color: CtOSColors.warning.withValues(alpha: 0.2),
             spreadRadius: 1,
             blurRadius: 4,
             offset: const Offset(0, 2),
@@ -89,7 +89,7 @@ class _FilterSearchBarState extends State<FilterSearchBar> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: CtOSColors.surface.withOpacity(0.8),
+              color: CtOSColors.surface.withValues(alpha: 0.8),
               border: const Border(
                 bottom: BorderSide(
                   color: CtOSColors.warning,
@@ -129,7 +129,7 @@ class _FilterSearchBarState extends State<FilterSearchBar> {
                       color: CtOSColors.background,
                       borderRadius: BorderRadius.circular(2),
                       border: Border.all(
-                        color: CtOSColors.warning.withOpacity(0.5),
+                        color: CtOSColors.warning.withValues(alpha: 0.5),
                       ),
                     ),
                     child: TextField(
@@ -143,7 +143,7 @@ class _FilterSearchBarState extends State<FilterSearchBar> {
                       decoration: InputDecoration(
                         hintText: AppStrings.filterHint,
                         hintStyle: TextStyle(
-                          color: CtOSColors.textPrimary.withOpacity(0.5),
+                          color: CtOSColors.textPrimary.withValues(alpha: 0.5),
                           fontFamily: 'Courier',
                           fontSize: 12,
                         ),
@@ -200,7 +200,7 @@ class _FilterSearchBarState extends State<FilterSearchBar> {
                       color: CtOSColors.background,
                       borderRadius: BorderRadius.circular(2),
                       border: Border.all(
-                        color: CtOSColors.warning.withOpacity(0.5),
+                        color: CtOSColors.warning.withValues(alpha: 0.5),
                       ),
                     ),
                     child: const Text(
@@ -227,7 +227,7 @@ class _FilterSearchBarState extends State<FilterSearchBar> {
                 color: CtOSColors.surface,
                 borderRadius: BorderRadius.circular(2),
                 border: Border.all(
-                  color: CtOSColors.warning.withOpacity(0.5),
+                  color: CtOSColors.warning.withValues(alpha: 0.5),
                 ),
               ),
               child: ListView.builder(
@@ -251,11 +251,11 @@ class _FilterSearchBarState extends State<FilterSearchBar> {
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? CtOSColors.warning.withOpacity(0.2)
+                            ? CtOSColors.warning.withValues(alpha: 0.2)
                             : Colors.transparent,
                         border: Border(
                           bottom: BorderSide(
-                            color: CtOSColors.warning.withOpacity(0.3),
+                            color: CtOSColors.warning.withValues(alpha: 0.3),
                             width: 0.5,
                           ),
                         ),

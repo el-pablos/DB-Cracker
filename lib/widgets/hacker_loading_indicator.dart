@@ -98,7 +98,7 @@ class _HackerLoadingIndicatorState extends State<HackerLoadingIndicator> with Si
               border: Border.all(color: CtOSColors.secondary),
               boxShadow: [
                 BoxShadow(
-                  color: CtOSColors.primary.withOpacity(0.2),
+                  color: CtOSColors.primary.withValues(alpha: 0.2),
                   blurRadius: 10,
                   spreadRadius: 2,
                 ),
@@ -142,7 +142,7 @@ class _HackerLoadingIndicatorState extends State<HackerLoadingIndicator> with Si
                   decoration: BoxDecoration(
                     color: CtOSColors.background,
                     borderRadius: BorderRadius.circular(4),
-                    border: Border.all(color: CtOSColors.secondary.withOpacity(0.5)),
+                    border: Border.all(color: CtOSColors.secondary.withValues(alpha: 0.5)),
                   ),
                   child: ListView.builder(
                     padding: EdgeInsets.zero,
@@ -152,7 +152,7 @@ class _HackerLoadingIndicatorState extends State<HackerLoadingIndicator> with Si
                       return Text(
                         _hexLines[index],
                         style: TextStyle(
-                          color: CtOSColors.secondary.withOpacity(opacity),
+                          color: CtOSColors.secondary.withValues(alpha: opacity),
                           fontSize: 10,
                           fontFamily: 'Courier',
                           height: 1.2,

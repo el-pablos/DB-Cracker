@@ -3,13 +3,13 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import '../api/multi_api_factory.dart';
-import '../api/api_services_integration.dart';
+// PERF-FIX: ApiServicesIntegration import removed — Wikipedia fetch disabled
 import '../models/mahasiswa.dart';
 import '../widgets/hacker_loading_indicator.dart';
 import '../widgets/console_text.dart';
 import '../widgets/terminal_window.dart';
 import '../utils/constants.dart';
-import '../utils/screen_utils.dart';
+// unused import removed: screen_utils.dart
 
 class DetailScreen extends StatefulWidget {
   final String mahasiswaId;
@@ -26,7 +26,7 @@ class DetailScreen extends StatefulWidget {
 }
 
 class _DetailScreenState extends State<DetailScreen>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   late Future<MahasiswaDetail> _mahasiswaFuture;
   bool _isDecrypting = true;
   List<String> _consoleMessages = [];
@@ -42,13 +42,12 @@ class _DetailScreenState extends State<DetailScreen>
   // Tambahkan instance MultiApiFactory
   late MultiApiFactory _multiApiFactory;
 
-  // Flag untuk menampilkan informasi eksternal
-  bool _showExternalInfo = false;
-  Map<String, dynamic> _externalData = {};
+  // External data system removed — Wikipedia fetch was dead code
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _statusDotIsGreen = Random().nextBool();
     _animationController = AnimationController(
       vsync: this,
@@ -62,8 +61,8 @@ class _DetailScreenState extends State<DetailScreen>
     // Mulai sequence dekripsi
     _simulateDecryption();
 
-    // Coba dapatkan data tambahan
-    _fetchExternalData();
+    // PERF-FIX: Wikipedia fetch removed — never returns useful data for student names
+    // and _buildExternalDataTerminal() was never called anyway (dead code)
   }
 
   void _simulateDecryption() {
@@ -118,30 +117,21 @@ class _DetailScreenState extends State<DetailScreen>
     });
   }
 
-  // Metode untuk mengambil data tambahan dari API eksternal
-  Future<void> _fetchExternalData() async {
-    try {
-      // Delay untuk simulasi pencarian
-      await Future.delayed(Duration(seconds: 2));
+  // PERF-FIX: _fetchExternalData removed — Wikipedia search by student name
+  // never returns useful data, and _buildExternalDataTerminal was dead code
 
-      // Coba cari di Wikipedia
-      final apiServices = ApiServicesIntegration();
-      final wikipediaData =
-          await apiServices.searchWikipedia(widget.subjectName);
-
-      if (wikipediaData.isNotEmpty) {
-        setState(() {
-          _externalData = wikipediaData;
-          _showExternalInfo = true;
-        });
-      }
-    } catch (e) {
-      if (kDebugMode) debugPrint('Error fetching external data: $e');
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+      _animationController.stop();
+    } else if (state == AppLifecycleState.resumed) {
+      _animationController.repeat(reverse: true);
     }
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _decryptTimer?.cancel();
     _animationController.dispose();
     for (final timer in _activeTimers) { timer.cancel(); }
@@ -159,9 +149,6 @@ class _DetailScreenState extends State<DetailScreen>
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    final bool isMobile = size.width < 600;
-
     return Scaffold(
       backgroundColor: CtOSColors.background,
       appBar: AppBar(
@@ -183,13 +170,16 @@ class _DetailScreenState extends State<DetailScreen>
                 );
               },
             ),
-            const Text(
-              AppStrings.detailTitle,
-              style: TextStyle(
-                fontFamily: 'Courier',
-                fontWeight: FontWeight.bold,
-                color: CtOSColors.primary,
-                fontSize: 16,
+            Flexible(
+              child: Text(
+                AppStrings.detailTitle,
+                style: const TextStyle(
+                  fontFamily: 'Courier',
+                  fontWeight: FontWeight.bold,
+                  color: CtOSColors.primary,
+                  fontSize: 14,
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
@@ -198,21 +188,7 @@ class _DetailScreenState extends State<DetailScreen>
         iconTheme: const IconThemeData(
           color: CtOSColors.primary,
         ),
-        actions: [
-          // Toggle untuk menampilkan info eksternal
-          IconButton(
-            icon: Icon(
-              _showExternalInfo ? Icons.visibility : Icons.visibility_off,
-              color: CtOSColors.primary,
-              size: 20,
-            ),
-            onPressed: () {
-              setState(() {
-                _showExternalInfo = !_showExternalInfo;
-              });
-            },
-          ),
-        ],
+        // External data toggle removed — feature was dead code
       ),
       body: SafeArea(
         child: Container(
@@ -220,7 +196,7 @@ class _DetailScreenState extends State<DetailScreen>
         child: Column(
           children: [
             Container(
-              color: CtOSColors.surface.withOpacity(0.7),
+              color: CtOSColors.surface.withValues(alpha: 0.7),
               padding: const EdgeInsets.all(8),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -647,7 +623,7 @@ class _DetailScreenState extends State<DetailScreen>
           const SizedBox(height: 16),
         ],
         if (mahasiswa.riwayatKelas.isEmpty)
-          _buildEmptyState('Belum ada data riwayat kelas'),
+          _buildEmptyState('Data riwayat kelas tidak tersedia dari sumber API saat ini'),
       ],
     );
   }
@@ -671,7 +647,7 @@ class _DetailScreenState extends State<DetailScreen>
                   .toList()),
         ],
         if (mahasiswa.riwayatNilai.isEmpty && mahasiswa.riwayatSemester.isEmpty)
-          _buildEmptyState('Belum ada data transkrip'),
+          _buildEmptyState('Data transkrip tidak tersedia dari sumber API saat ini'),
       ],
     );
   }
@@ -690,7 +666,7 @@ class _DetailScreenState extends State<DetailScreen>
         ]),
         const SizedBox(height: 16),
         if (mahasiswa.tanggalLulus.isEmpty)
-          _buildEmptyState('Belum ada data kelulusan'),
+          _buildEmptyState('Data kelulusan tidak tersedia dari sumber API saat ini'),
       ],
     );
   }
@@ -990,32 +966,7 @@ class _DetailScreenState extends State<DetailScreen>
     );
   }
 
-  Widget _buildSertifikatItem(dynamic sertifikat) {
-    // Placeholder untuk sertifikat - sesuaikan dengan struktur data yang ada
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: CtOSColors.background,
-        border: Border.all(color: CtOSColors.secondary.withValues(alpha: 0.3)),
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            sertifikat.toString(),
-            style: const TextStyle(
-              color: CtOSColors.primary,
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'Courier',
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // U2-FIX: _buildSertifikatItem removed — dead code, never called
 
   Widget _buildStatItem(String label, String value) {
     return Container(
@@ -1100,269 +1051,11 @@ class _DetailScreenState extends State<DetailScreen>
     }
   }
 
-  Widget _buildDataTerminal({
-    required String title,
-    required IconData icon,
-    required List<Widget> content,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: CtOSColors.surface,
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: CtOSColors.secondary, width: 1),
-      ),
-      padding: const EdgeInsets.all(12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                icon,
-                color: CtOSColors.primary,
-                size: 18,
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  title,
-                  style: const TextStyle(
-                    color: CtOSColors.primary,
-                    fontFamily: 'Courier',
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-          const Divider(
-            color: CtOSColors.secondary,
-            height: 24,
-          ),
-          Expanded(
-            child: ListView(
-              physics: const BouncingScrollPhysics(),
-              children: content,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Terminal untuk menampilkan data eksternal seperti Wikipedia
-  Widget _buildExternalDataTerminal() {
-    // Mengekstrak informasi dari Wikipedia
-    final String title = _externalData['title'] ?? 'DATA EKSTERNAL';
-    final String extract =
-        _externalData['extract'] ?? 'Tidak ada data yang tersedia.';
-    final String source = _externalData['source'] ?? 'SUMBER TIDAK DIKETAHUI';
-
-    return Container(
-      height: 150, // Tetapkan tinggi yang jelas
-      decoration: BoxDecoration(
-        color: CtOSColors.surface,
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: CtOSColors.secondary, width: 1),
-      ),
-      padding: const EdgeInsets.all(12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(
-                Icons.language,
-                color: CtOSColors.primary,
-                size: 18,
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  "DATA EKSTERNAL: $title",
-                  style: const TextStyle(
-                    color: CtOSColors.primary,
-                    fontFamily: 'Courier',
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-          const Divider(
-            color: CtOSColors.secondary,
-            height: 24,
-          ),
-          Expanded(
-            child: ListView(
-              physics: const BouncingScrollPhysics(),
-              children: [
-                Text(
-                  extract,
-                  style: const TextStyle(
-                    color: CtOSColors.textPrimary,
-                    fontFamily: 'Courier',
-                    fontSize: 12,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  "SUMBER: $source",
-                  style: const TextStyle(
-                    color: CtOSColors.secondary,
-                    fontFamily: 'Courier',
-                    fontSize: 10,
-                    fontStyle: FontStyle.italic,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSecurityTerminal(MahasiswaDetail mahasiswa) {
-    // Adaptasi berdasarkan ukuran layar
-    final size = MediaQuery.of(context).size;
-    final bool isMobile = size.width < 600;
-    final double terminalHeight = isMobile ? 100 : 120;
-
-    return Container(
-      height: terminalHeight,
-      decoration: BoxDecoration(
-        color: CtOSColors.surface,
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: CtOSColors.secondary),
-      ),
-      padding: const EdgeInsets.all(8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 8),
-            decoration: BoxDecoration(
-              color: CtOSColors.background,
-              borderRadius: BorderRadius.circular(2),
-            ),
-            child: const Text(
-              "ANALISIS KEAMANAN",
-              style: TextStyle(
-                color: CtOSColors.warning,
-                fontFamily: 'Courier',
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Expanded(
-            child: ListView.builder(
-              itemCount: 5,
-              itemBuilder: (context, index) {
-                return Text(
-                  _generateRandomSecurityInfo(mahasiswa, index),
-                  style: TextStyle(
-                    color: _getSecurityColor(index),
-                    fontFamily: 'Courier',
-                    fontSize: 10,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _generateRandomSecurityInfo(MahasiswaDetail mahasiswa, int index) {
-    final hexCode = _getRandomHexValue(16);
-
-    switch (index) {
-      case 0:
-        return "LEVEL AKSES: ${_random.nextInt(3) + 2} | IP: 192.168.${_random.nextInt(255)}.${_random.nextInt(255)} | PORT: ${_random.nextInt(9000) + 1000}";
-      case 1:
-        return "INTEGRITAS DATA: ${_random.nextInt(30) + 70}% | ENKRIPSI: AES-256 | HASH: SHA3-${_random.nextInt(2) == 0 ? "256" : "512"}";
-      case 2:
-        return "SISTEM: MULTI-DB-SEC | NODE: ${_getRandomHexValue(4)}-${_getRandomHexValue(4)} | SESI: $hexCode"; // Updated
-      case 3:
-        int length = min(10, mahasiswa.id.length);
-        String idPrefix =
-            length > 0 ? mahasiswa.id.substring(0, length) : "UNKNOWN";
-        return "UPDATE TERAKHIR: ${DateTime.now().toString().substring(0, 16)} | ID RECORD: $idPrefix...";
-      case 4:
-        return "STATUS: ${_statusDotIsGreen ? "AMAN" : "MONITOR"} | CHECKSUM: ${_getRandomHexValue(8)} | AUTH: ${_getRandomHexValue(6)}";
-      default:
-        return "";
-    }
-  }
-
-  Color _getSecurityColor(int index) {
-    switch (index) {
-      case 0:
-        return CtOSColors.primary;
-      case 1:
-        return CtOSColors.secondary;
-      case 2:
-        return CtOSColors.textPrimary;
-      case 3:
-        return CtOSColors.warning;
-      case 4:
-        return CtOSColors.primary;
-      default:
-        return CtOSColors.textPrimary;
-    }
-  }
-
-  Widget _buildDataRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              color: CtOSColors.textPrimary.withOpacity(0.7),
-              fontFamily: 'Courier',
-              fontSize: 10,
-            ),
-          ),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-            decoration: BoxDecoration(
-              color: CtOSColors.background,
-              borderRadius: BorderRadius.circular(2),
-              border: Border.all(
-                color: CtOSColors.secondary.withOpacity(0.5),
-                width: 1,
-              ),
-            ),
-            child: Text(
-              value.isNotEmpty ? value : "-DISENSOR-",
-              style: const TextStyle(
-                color: CtOSColors.primary,
-                fontFamily: 'Courier',
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // U2-FIX: Removed 265 lines of dead code:
+  // - _buildDataTerminal (never called — replaced by _buildInfoCard)
+  // - _buildExternalDataTerminal (never called — Wikipedia fetch disabled)
+  // - _buildSecurityTerminal (never called)
+  // - _generateRandomSecurityInfo (only used by _buildSecurityTerminal)
+  // - _getSecurityColor (only used by _buildSecurityTerminal)
+  // - _buildDataRow (never called — replaced by _buildInfoRow)
 }

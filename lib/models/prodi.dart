@@ -1,3 +1,4 @@
+import 'dart:math' show min;
 import 'package:flutter/foundation.dart';
 class Prodi {
   final String id;
@@ -48,10 +49,6 @@ class Prodi {
     return value.toString();
   }
   
-  // Helper function to limit string length
-  static int min(int a, int b) {
-    return (a < b) ? a : b;
-  }
 }
 
 class ProdiDetail {

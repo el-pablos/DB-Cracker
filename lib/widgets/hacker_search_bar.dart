@@ -25,7 +25,7 @@ class HackerSearchBar extends StatelessWidget {
         border: Border.all(color: CtOSColors.secondary, width: 1),
         boxShadow: [
           BoxShadow(
-            color: CtOSColors.primary.withOpacity(0.3),
+            color: CtOSColors.primary.withValues(alpha: 0.3),
             spreadRadius: 1,
             blurRadius: 6,
             offset: const Offset(0, 3),
@@ -41,7 +41,7 @@ class HackerSearchBar extends StatelessWidget {
               vertical: 4
             ),
             decoration: BoxDecoration(
-              color: CtOSColors.surface.withOpacity(0.8),
+              color: CtOSColors.surface.withValues(alpha: 0.8),
               border: const Border(
                 bottom: BorderSide(
                   color: CtOSColors.secondary,
@@ -83,7 +83,7 @@ class HackerSearchBar extends StatelessWidget {
                     decoration: InputDecoration(
                       hintText: hintText,
                       hintStyle: TextStyle(
-                        color: CtOSColors.textPrimary.withOpacity(0.5),
+                        color: CtOSColors.textPrimary.withValues(alpha: 0.5),
                         fontFamily: 'Courier',
                         fontSize: 12,
                       ),
@@ -116,7 +116,7 @@ class HackerSearchBar extends StatelessWidget {
                 Container(
                   height: 48,
                   width: 1,
-                  color: CtOSColors.secondary.withOpacity(0.5),
+                  color: CtOSColors.secondary.withValues(alpha: 0.5),
                   margin: const EdgeInsets.symmetric(vertical: 4),
                 ),
                 InkWell(

@@ -23,7 +23,7 @@ class FilterStatus extends StatelessWidget {
         color: CtOSColors.background,
         borderRadius: BorderRadius.circular(4),
         border: Border.all(
-          color: CtOSColors.warning.withOpacity(0.7),
+          color: CtOSColors.warning.withValues(alpha: 0.7),
           width: 1,
         ),
       ),

@@ -24,62 +24,15 @@ class ApiServicesIntegration {
     'User-Agent': 'DB-Cracker-App/1.0',
   };
   
-  /// API Pencarian Data Pendidikan (dari open API collection)
+  /// API Pencarian Data Pendidikan
+  /// BUG-H4 FIX: GitHub API endpoint removed — it returned repo file listings,
+  /// NOT actual education data. The keyword was never used in the request URL.
+  /// This was a dead network call adding 10s latency with zero useful results.
   Future<List<Map<String, dynamic>>> searchEducationData(String keyword) async {
-    try {
-      // Hanya gunakan endpoint yang relevan dengan pendidikan
-      final List<String> apiEndpoints = [
-        'https://api.github.com/repos/IlhamriSKY/PDDIKTI-kemdikbud-API/contents/data',
-      ];
-      
-      List<Map<String, dynamic>> results = [];
-      
-      for (var endpoint in apiEndpoints) {
-        try {
-          final response = await http.get(
-            Uri.parse(endpoint),
-            headers: _headers,
-          ).timeout(
-            const Duration(seconds: 10),
-          );
-          
-          if (response.statusCode == 200) {
-            final dynamic data = jsonDecode(response.body);
-            
-            if (data is Map<String, dynamic>) {
-              if (data.containsKey('results') && data['results'] is List) {
-                for (var item in data['results']) {
-                  if (item is Map<String, dynamic>) {
-                    results.add(item);
-                  }
-                }
-              } else if (data.containsKey('data') && data['data'] is List) {
-                for (var item in data['data']) {
-                  if (item is Map<String, dynamic>) {
-                    results.add(item);
-                  }
-                }
-              } else {
-                results.add(data);
-              }
-            } else if (data is List) {
-              for (var item in data) {
-                if (item is Map<String, dynamic>) {
-                  results.add(item);
-                }
-              }
-            }
-          }
-        } catch (e) {
-          if (kDebugMode) debugPrint('Error searching from $endpoint: $e');
-        }
-      }
-      
-      return results;
-    } catch (e) {
-      if (kDebugMode) debugPrint('Error in education search: $e');
-      return [];
-    }
+    // No valid external education API endpoints available currently.
+    // PDDIKTI is the primary source, handled by PddiktiApi directly.
+    // This method kept for interface compatibility with MultiApiFactory.
+    return [];
   }
   
   /// Mencari data dari Wikipedia API

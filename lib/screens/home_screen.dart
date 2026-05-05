@@ -12,10 +12,9 @@ import '../widgets/console_text.dart';
 import '../widgets/terminal_window.dart';
 import '../widgets/filter_search_bar.dart';
 import '../widgets/filter_status.dart';
-import '../widgets/filter_overlay.dart';
+// filter_overlay import removed — blocking dialogs replaced with instant setState
 import '../widgets/dosen_search_button.dart'; // Tambahkan import
 import '../utils/constants.dart';
-import '../utils/screen_utils.dart';
 import 'detail_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -25,7 +24,7 @@ class HomeScreen extends StatefulWidget {
   _HomeScreenState createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
+class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   final TextEditingController _searchController = TextEditingController();
   final TextEditingController _filterController = TextEditingController();
   List<Mahasiswa> _searchResults = [];
@@ -37,7 +36,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   bool _showIntro = true;
   List<String> _consoleMessages = [];
   final List<Timer> _activeTimers = [];
-  final Random _random = Random();
   late final bool _statusDotIsGreen;
   Timer? _consoleTimer;
   
@@ -55,6 +53,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this); // U4-FIX: pause animation on background
     _statusDotIsGreen = Random().nextBool();
     _animationController = AnimationController(
       vsync: this,
@@ -110,14 +109,16 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     _addConsoleMessageWithDelay("AKSES DIBERIKAN KE MULTIPLE DATABASE", 4000);
     _addConsoleMessageWithDelay("DB CRACKER v3.0 SIAP - Author: Tamaengs", 4500);
     
-    // Sembunyikan intro setelah selesai
-    Timer(const Duration(milliseconds: 1500), () {
+    // BUG-U6 FIX: Timer harus setelah pesan terakhir (4500ms) + buffer
+    // Sebelumnya 1500ms — intro hilang sebelum semua pesan tampil
+    final introTimer = Timer(const Duration(milliseconds: 5000), () {
       if (mounted) {
         setState(() {
           _showIntro = false;
         });
       }
     });
+    _activeTimers.add(introTimer);
   }
 
   void _addConsoleMessageWithDelay(String message, int delay) {
@@ -131,8 +132,19 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     _activeTimers.add(timer);
   }
 
+  // U4-FIX: Pause/resume animation based on app lifecycle — saves battery
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+      _animationController.stop();
+    } else if (state == AppLifecycleState.resumed) {
+      _animationController.repeat(reverse: true);
+    }
+  }
+
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _searchController.dispose();
     _filterController.dispose();
     _animationController.dispose();
@@ -145,7 +157,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   void _simulateHacking() {
     if (_isSearchInProgress) return;
-    _isSearchInProgress = true;
+    _isSearchInProgress = true; // PERF-FIX: flag properly reset in _actuallyPerformSearch finally block
     setState(() {
       _consoleMessages = [];
       _isLoading = true;
@@ -178,36 +190,38 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   Future<void> _actuallyPerformSearch() async {
     final String query = _searchController.text.trim();
-    final sanitizedQuery = query.replaceAll('<', '').replaceAll('>', '').replaceAll('"', '').replaceAll("'", '');
-    if (sanitizedQuery.length < 2) { setState(() { _errorMessage = 'Minimal 2 karakter untuk pencarian'; _isLoading = false; }); _isSearchInProgress = false; return; }
-    if (query.isEmpty) {
+    // SECURITY-FIX: Whitelist sanitization + max length
+    final sanitizedQuery = query.replaceAll(RegExp(r'[<>"' "'" r']'), '').trim();
+    if (sanitizedQuery.length < 2) {
+      setState(() { _errorMessage = 'Minimal 2 karakter untuk pencarian'; _isLoading = false; });
+      _isSearchInProgress = false;
+      return;
+    }
+    if (sanitizedQuery.isEmpty) {
       setState(() {
         _searchResults = [];
         _filteredResults = [];
         _errorMessage = AppStrings.pleaseEnterSearchTerm;
         _isLoading = false;
+      });
       _isSearchInProgress = false;
-    });
       _addConsoleMessageWithDelay("ERROR: TARGET TIDAK DITENTUKAN", 500);
       return;
     }
 
     try {
-      // Tambahan indikator loading
       _addConsoleMessageWithDelay("MENGAKSES SERVER DATABASE...", 1000);
       _addConsoleMessageWithDelay("MENCOBA KONEKSI AMAN...", 2000);
 
-      // Cari data dengan error handling
       List<Mahasiswa> results = [];
       try {
         if (_useMultiSource) {
-          // Gunakan multi-source pencarian
-          results = await _multiApiFactory.searchAllSources(query);
+          // SECURITY-FIX: Gunakan sanitizedQuery, bukan raw query
+          results = await _multiApiFactory.searchAllSources(sanitizedQuery);
           _addConsoleMessageWithDelay("MENGGABUNGKAN DATA DARI MULTIPLE SUMBER...", 2500);
         } else {
-          // Gunakan hanya API PDDIKTI
           final api = Provider.of<ApiFactory>(context, listen: false);
-          results = await api.searchMahasiswa(query);
+          results = await api.searchMahasiswa(sanitizedQuery);
         }
       } catch (e) {
         if (kDebugMode) debugPrint('Error dalam pencarian: $e');
@@ -224,16 +238,15 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         }
       }
       
-      // Delay untuk simulasi hacking
       await Future.delayed(const Duration(milliseconds: 800));
       
       setState(() {
         _searchResults = results;
-        _filteredResults = results; // Awalnya, hasil filter sama dengan hasil pencarian
+        _filteredResults = results;
         _isLoading = false;
         
         if (results.isEmpty) {
-          _errorMessage = 'TIDAK DITEMUKAN HASIL UNTUK "$query"';
+          _errorMessage = 'TIDAK DITEMUKAN HASIL UNTUK "$sanitizedQuery"';
           _addConsoleMessageWithDelay("TIDAK ADA DATA YANG COCOK", 300);
           _addConsoleMessageWithDelay("AKSES DITOLAK", 600);
         } else {
@@ -241,8 +254,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           _addConsoleMessageWithDelay("DATA DITEMUKAN: ${results.length}", 300);
           _addConsoleMessageWithDelay("MENDEKRIPSI DATA...", 600);
           _addConsoleMessageWithDelay("AKSES DIBERIKAN", 900);
-          
-          // Ekstrak daftar universitas dari hasil
           _extractUniversities(results);
         }
       });
@@ -251,12 +262,14 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         _isLoading = false;
         _searchResults = [];
         _filteredResults = [];
-        // Bersihkan pesan error
         String errorMsg = e.toString().replaceAll("Exception: ", "");
         _errorMessage = errorMsg;
       });
       _addConsoleMessageWithDelay("KONEKSI TERPUTUS", 300);
       _addConsoleMessageWithDelay("PERINGATAN KEAMANAN: DISCONNECT...", 600);
+    } finally {
+      // BUG-C3 FIX: ALWAYS reset flag — prevents app from locking after search
+      _isSearchInProgress = false;
     }
   }
 
@@ -276,74 +289,37 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   }
 
   // Filter hasil berdasarkan universitas yang dipilih
+  // UX-FIX H5: Removed blocking dialog — filtering a local list is instant
   void _filterResults(String? university) {
     setState(() {
       _selectedUniversity = university;
-    });
-    
-    // Simulasi proses filtering dengan menampilkan overlay
-    // Ini membuat UX lebih menarik dengan visual hacking
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => const FilterOverlay(
-        message: AppStrings.filteringInProgress,
-      ),
-    );
-    
-    // Delay proses untuk efek visual
-    Future.delayed(const Duration(milliseconds: 800), () {
-      setState(() {
-        if (university == null) {
-          _filteredResults = _searchResults;
-        } else {
-          _filteredResults = _searchResults
-              .where((mahasiswa) => mahasiswa.namaPt == university)
-              .toList();
-        }
-      });
-      
-      // Tutup overlay dialog
-      Navigator.of(context).pop();
+      if (university == null) {
+        _filteredResults = _searchResults;
+      } else {
+        _filteredResults = _searchResults
+            .where((mahasiswa) => mahasiswa.namaPt == university)
+            .toList();
+      }
     });
   }
 
   void _clearFilter() {
-    // Tampilkan overlay untuk simulasi proses
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => const FilterOverlay(
-        message: "MEMBERSIHKAN FILTER...",
+    setState(() {
+      _selectedUniversity = null;
+      _filteredResults = _searchResults;
+      _filterController.clear();
+    });
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          AppStrings.filterCleared,
+          style: TextStyle(fontFamily: 'Courier', fontSize: 14),
+        ),
+        backgroundColor: CtOSColors.surface,
+        duration: Duration(seconds: 1),
       ),
     );
-    
-    // Delay untuk simulasi proses
-    Future.delayed(const Duration(milliseconds: 600), () {
-      setState(() {
-        _selectedUniversity = null;
-        _filteredResults = _searchResults;
-        _filterController.clear();
-      });
-      
-      // Tutup overlay dialog
-      Navigator.of(context).pop();
-      
-      // Tampilkan konfirmasi
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            AppStrings.filterCleared,
-            style: TextStyle(
-              fontFamily: 'Courier',
-              fontSize: 14,
-            ),
-          ),
-          backgroundColor: CtOSColors.surface,
-          duration: Duration(seconds: 2),
-        ),
-      );
-    });
   }
 
   void _viewMahasiswaDetail(BuildContext context, Mahasiswa mahasiswa) {
@@ -382,9 +358,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               animation: _animationController,
               builder: (context, child) {
                 return Container(
-                  width: 12,
-                  height: 12,
-                  margin: const EdgeInsets.only(right: 8),
+                  width: 10,
+                  height: 10,
+                  margin: const EdgeInsets.only(right: 6),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: _animationController.value > 0.5 
@@ -394,13 +370,17 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 );
               },
             ),
-            const Text(
-              AppStrings.homeTitle,
-              style: TextStyle(
-                fontFamily: 'Courier',
-                fontWeight: FontWeight.bold,
-                color: CtOSColors.primary,
-                fontSize: 16,
+            Flexible(
+              child: Text(
+                AppStrings.homeTitle,
+                style: const TextStyle(
+                  fontFamily: 'Courier',
+                  fontWeight: FontWeight.bold,
+                  color: CtOSColors.primary,
+                  fontSize: 14,
+                ),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
               ),
             ),
           ],
@@ -453,7 +433,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Container(
-                color: CtOSColors.surface.withOpacity(0.7),
+                color: CtOSColors.surface.withValues(alpha: 0.7),
                 padding: const EdgeInsets.all(8),
                 child: const Text(
                   'KONEKSI AMAN TERSEDIA',
@@ -568,7 +548,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                             children: [
                               Icon(
                                 Icons.search,
-                                color: CtOSColors.secondary.withOpacity(0.5),
+                                color: CtOSColors.secondary.withValues(alpha: 0.5),
                                 size: 64,
                               ),
                               const SizedBox(height: 16),

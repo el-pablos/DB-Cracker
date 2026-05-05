@@ -223,11 +223,13 @@ class _DosenSearchScreenNewState extends State<DosenSearchScreenNew>
               );
             },
           ),
-          const CtOSText(
-            "ctOS DATABASE SCANNER",
-            fontSize: 16.0,
-            fontWeight: FontWeight.bold,
-            color: CtOSColors.primary,
+          const Flexible(
+            child: CtOSText(
+              "ctOS DB SCANNER",
+              fontSize: 14.0,
+              fontWeight: FontWeight.bold,
+              color: CtOSColors.primary,
+            ),
           ),
         ],
       ),

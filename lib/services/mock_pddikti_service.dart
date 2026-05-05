@@ -378,12 +378,6 @@ class MockPddiktiService {
     // Buat 5 program studi acak untuk PT ini
     List<ProdiPt> prodiList = [];
     
-    // Ambil nama PT dari sample
-    final ptData = _samplePT.firstWhere(
-      (item) => item['id'] == ptId,
-      orElse: () => {"nama": "Perguruan Tinggi Sample"},
-    );
-    
     for (int i = 0; i < 5; i++) {
       // Buat data prodi acak
       final String idSms = "SMS${_random.nextInt(100000)}";
@@ -573,8 +567,4 @@ class MockPddiktiService {
     return filteredData.map((item) => Dosen.fromJson(item)).toList();
   }
   
-  // Helper function to limit string length
-  int min(int a, int b) {
-    return (a < b) ? a : b;
-  }
 }

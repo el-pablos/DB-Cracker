@@ -45,7 +45,7 @@ class CtOSContainer extends StatelessWidget {
         boxShadow: showGlow
             ? [
                 BoxShadow(
-                  color: CtOSColors.glow.withOpacity(0.3),
+                  color: CtOSColors.glow.withValues(alpha: 0.3),
                   blurRadius: 8.0,
                   spreadRadius: 2.0,
                 ),
@@ -159,9 +159,9 @@ class CtOSHeader extends StatelessWidget {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  CtOSColors.primary.withOpacity(0.0),
+                  CtOSColors.primary.withValues(alpha: 0.0),
                   CtOSColors.primary,
-                  CtOSColors.primary.withOpacity(0.0),
+                  CtOSColors.primary.withValues(alpha: 0.0),
                 ],
               ),
             ),
@@ -306,12 +306,12 @@ class _CtOSStatusIndicatorState extends State<CtOSStatusIndicator>
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: widget.isActive
-                    ? CtOSColors.primary.withOpacity(0.3 + 0.7 * _animationController.value)
+                    ? CtOSColors.primary.withValues(alpha: 0.3 + 0.7 * _animationController.value)
                     : CtOSColors.textTertiary,
                 boxShadow: widget.isActive
                     ? [
                         BoxShadow(
-                          color: CtOSColors.primary.withOpacity(0.5),
+                          color: CtOSColors.primary.withValues(alpha: 0.5),
                           blurRadius: 4.0,
                           spreadRadius: 1.0,
                         ),

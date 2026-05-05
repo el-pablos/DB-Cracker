@@ -80,7 +80,7 @@ class _FilterOverlayState extends State<FilterOverlay> with SingleTickerProvider
     final dots = '.' * _currentDots;
     
     return Container(
-      color: CtOSColors.background.withOpacity(0.85),
+      color: CtOSColors.background.withValues(alpha: 0.85),
       child: Center(
         child: Container(
           width: 200,
@@ -91,7 +91,7 @@ class _FilterOverlayState extends State<FilterOverlay> with SingleTickerProvider
             border: Border.all(color: CtOSColors.warning),
             boxShadow: [
               BoxShadow(
-                color: CtOSColors.warning.withOpacity(0.2),
+                color: CtOSColors.warning.withValues(alpha: 0.2),
                 blurRadius: 10,
                 spreadRadius: 2,
               ),
@@ -135,7 +135,7 @@ class _FilterOverlayState extends State<FilterOverlay> with SingleTickerProvider
                 decoration: BoxDecoration(
                   color: CtOSColors.background,
                   borderRadius: BorderRadius.circular(2),
-                  border: Border.all(color: CtOSColors.warning.withOpacity(0.5)),
+                  border: Border.all(color: CtOSColors.warning.withValues(alpha: 0.5)),
                 ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -143,7 +143,7 @@ class _FilterOverlayState extends State<FilterOverlay> with SingleTickerProvider
                   children: _hexLines.map((line) => Text(
                     line,
                     style: TextStyle(
-                      color: CtOSColors.warning.withOpacity(0.7),
+                      color: CtOSColors.warning.withValues(alpha: 0.7),
                       fontSize: 8,
                       fontFamily: 'Courier',
                       height: 1.2,

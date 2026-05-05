@@ -29,7 +29,6 @@ class _ProdiSearchScreenState extends State<ProdiSearchScreen> with SingleTicker
   late AnimationController _animationController;
   List<String> _consoleMessages = [];
   final List<Timer> _activeTimers = [];
-  final Random _random = Random();
   late final bool _statusDotIsGreen;
   Timer? _consoleTimer;
   
@@ -170,9 +169,6 @@ class _ProdiSearchScreenState extends State<ProdiSearchScreen> with SingleTicker
     // Initialize ScreenUtils for responsive design
     ScreenUtils.init(context);
     
-    // Adaptasi berdasarkan ukuran layar
-    final bool isMobile = ScreenUtils.isMobileScreen();
-    
     return Scaffold(
       backgroundColor: CtOSColors.background,
       appBar: AppBar(
@@ -214,7 +210,7 @@ class _ProdiSearchScreenState extends State<ProdiSearchScreen> with SingleTicker
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Container(
-                color: CtOSColors.surface.withOpacity(0.7),
+                color: CtOSColors.surface.withValues(alpha: 0.7),
                 padding: const EdgeInsets.all(8.0),
                 child: const FlexibleText(
                   'AKSES DATABASE PROGRAM STUDI',
@@ -309,7 +305,7 @@ class _ProdiSearchScreenState extends State<ProdiSearchScreen> with SingleTicker
                             children: [
                               Icon(
                                 Icons.school,
-                                color: CtOSColors.secondary.withOpacity(0.5),
+                                color: CtOSColors.secondary.withValues(alpha: 0.5),
                                 size: 64.0,
                               ),
                               const SizedBox(height: 16.0),

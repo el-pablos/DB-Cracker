@@ -25,10 +25,6 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Poco X3 Pro specific dimensions
-    const double screenWidth = 1080;
-    const double screenHeight = 2400;
-
     return Provider<ApiFactory>(
       create: (_) => ApiFactory(),
       child: MaterialApp(

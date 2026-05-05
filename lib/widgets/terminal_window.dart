@@ -33,7 +33,7 @@ class TerminalWindow extends StatelessWidget {
         borderRadius: BorderRadius.circular(4),
         boxShadow: [
           BoxShadow(
-            color: CtOSColors.primary.withOpacity(0.1),
+            color: CtOSColors.primary.withValues(alpha: 0.1),
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),
@@ -102,10 +102,10 @@ class TerminalWindow extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: color.withOpacity(0.7),
+        color: color.withValues(alpha: 0.7),
         shape: BoxShape.circle,
         border: Border.all(
-          color: color.withOpacity(0.3),
+          color: color.withValues(alpha: 0.3),
           width: 1,
         ),
       ),

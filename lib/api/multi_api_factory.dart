@@ -31,8 +31,8 @@ class MultiApiFactory {
   /// Base URL untuk API Data Mahasiswa Kemdikbud
   final String _kemdikbudApiUrl = 'https://api-frontend.kemdikbud.go.id';
 
-  /// Header untuk request
-  Map<String, String> get _headers => {
+  /// Header untuk request — cached as final to avoid Map recreation per access
+  final Map<String, String> _headers = const {
         'Accept': 'application/json, text/plain, */*',
         'Accept-Language': 'en-US,en;q=0.9,id;q=0.8',
         'Origin': 'https://indonesia-public-static-api.vercel.app',
@@ -158,6 +158,16 @@ class MultiApiFactory {
     }
   }
 
+  /// Wrap future dengan try-catch biar partial failure ga bikin semua gagal
+  Future<List<Dosen>> _safeSearchDosen(Future<List<Dosen>> future) async {
+    try {
+      return await future;
+    } catch (e) {
+      if (kDebugMode) debugPrint('Partial dosen search failed: $e');
+      return [];
+    }
+  }
+
   /// Cari data dosen dari berbagai sumber
   Future<List<Dosen>> searchAllDosen(String keyword) async {
     try {
@@ -170,8 +180,10 @@ class MultiApiFactory {
       // Cari dari API lain
       futures.add(_searchDosenFromOtherSources(keyword));
 
-      // Jalankan semua pencarian secara paralel
-      final responses = await Future.wait(futures);
+      // BUG-C1 FIX: Jalankan dengan error isolation (sama kayak searchAllSources)
+      final responses = await Future.wait(
+        futures.map((f) => _safeSearchDosen(f)).toList(),
+      );
 
       // Gabungkan semua hasil
       for (var response in responses) {
@@ -225,19 +237,10 @@ class MultiApiFactory {
       // Coba dapatkan dari PDDIKTI terlebih dahulu
       final detail = await _pddiktiApi.getMahasiswaDetail(mahasiswaId);
 
-      // Tambahkan data eksternal jika ada
-      try {
-        // Coba untuk memperkaya data dengan sumber-sumber lain
-        final kemdikbudDetail = await _searchKemdikbudDetail(mahasiswaId);
-        if (kemdikbudDetail != null) {
-          // Gunakan data dari Kemdikbud untuk melengkapi
-          // Implementasi penggabungan data bisa dikembangkan
-          return kemdikbudDetail;
-        }
-      } catch (e) {
-        if (kDebugMode) debugPrint('Gagal mendapatkan data tambahan: $e');
-        // Tidak perlu melakukan apa-apa, gunakan data yang sudah ada
-      }
+      // BUG-C2 FIX: Kemdikbud data hanya melengkapi field kosong, BUKAN menggantikan
+      // Data PDDIKTI lebih lengkap (riwayat semester, nilai, kelas) — jangan override
+      // Kemdikbud enrichment disabled karena endpoint kemungkinan sudah mati
+      // dan data yang dikembalikan lebih minim dari PDDIKTI
 
       return detail;
     } catch (e) {
@@ -303,51 +306,8 @@ class MultiApiFactory {
     }
   }
 
-  /// Mencari detail mahasiswa dari API Kemdikbud
-  Future<MahasiswaDetail?> _searchKemdikbudDetail(String mahasiswaId) async {
-    try {
-      final Uri url = Uri.parse(
-          '$_kemdikbudApiUrl/detail_mhs/${_parseString(mahasiswaId)}');
-
-      final response = await http
-          .get(
-            url,
-            headers: _headers,
-          )
-          .timeout(
-            Duration(seconds: 10),
-          );
-
-      if (response.statusCode == 200) {
-        final dynamic data = jsonDecode(response.body);
-
-        if (data is Map<String, dynamic>) {
-          // Konversi ke model MahasiswaDetail
-          return MahasiswaDetail(
-            id: mahasiswaId,
-            namaPt: data['nm_pt'] ?? 'Tidak Tersedia',
-            kodePt: data['kode_pt'] ?? '-',
-            kodeProdi: data['kode_prodi'] ?? '-',
-            prodi: data['nama_prodi'] ?? 'Tidak Tersedia',
-            nama: data['nm_mhs'] ?? 'Tidak Tersedia',
-            nim: data['nipd'] ?? '-',
-            jenisDaftar: data['jenis_daftar'] ?? 'Reguler',
-            idPt: data['id_pt'] ?? '-',
-            idSms: data['id_sms'] ?? '-',
-            jenisKelamin: data['jk'] ?? '-',
-            jenjang: data['jenjang'] ?? '-',
-            statusSaatIni: data['sts_mhs'] ?? '-',
-            tahunMasuk: data['mulai_smt'] ?? '-',
-          );
-        }
-      }
-
-      return null;
-    } catch (e) {
-      if (kDebugMode) debugPrint('Error mencari detail dari Kemdikbud: $e');
-      return null;
-    }
-  }
+  // BUG-C2 FIX: _searchKemdikbudDetail removed — endpoint likely dead (Kemdikbud → Kemdiktisaintek)
+  // and it was overriding complete PDDIKTI data with minimal 12-field response
 
   /// Mendapatkan informasi Perguruan Tinggi
   Future<PerguruanTinggiDetail?> getDetailPT(String ptId) async {

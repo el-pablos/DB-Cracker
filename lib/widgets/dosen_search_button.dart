@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../utils/constants.dart';
-import '../utils/screen_utils.dart';
 import 'flexible_text.dart';
 import '../screens/dosen_search_screen_new.dart';
 
@@ -15,9 +14,6 @@ class DosenSearchButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Adaptasi berdasarkan ukuran layar
-    final bool isMobile = ScreenUtils.isMobileScreen();
-
     return InkWell(
       onTap: () {
         // Navigasi ke pencarian dosen
@@ -43,7 +39,7 @@ class DosenSearchButton extends StatelessWidget {
           border: Border.all(color: CtOSColors.primary, width: 1.0),
           boxShadow: [
             BoxShadow(
-              color: CtOSColors.primary.withOpacity(0.2),
+              color: CtOSColors.primary.withValues(alpha: 0.2),
               blurRadius: 6,
               offset: const Offset(0, 2),
             ),

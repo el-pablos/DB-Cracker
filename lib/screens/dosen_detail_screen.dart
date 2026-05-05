@@ -26,7 +26,7 @@ class DosenDetailScreen extends StatefulWidget {
 }
 
 class _DosenDetailScreenState extends State<DosenDetailScreen>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   late Future<DosenDetail> _dosenFuture;
   bool _isLoading = true;
   List<String> _consoleMessages = [];
@@ -44,6 +44,7 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1500),
@@ -132,7 +133,17 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+      _animationController.stop();
+    } else if (state == AppLifecycleState.resumed) {
+      _animationController.repeat(reverse: true);
+    }
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _loadTimer?.cancel();
     _animationController.dispose();
     for (final timer in _activeTimers) { timer.cancel(); }
@@ -176,13 +187,16 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
                 );
               },
             ),
-            const Text(
-              "PROFIL DOSEN",
-              style: TextStyle(
-                fontFamily: 'Courier',
-                fontWeight: FontWeight.bold,
-                color: CtOSColors.primary,
-                fontSize: 16,
+            const Flexible(
+              child: Text(
+                "PROFIL DOSEN",
+                style: TextStyle(
+                  fontFamily: 'Courier',
+                  fontWeight: FontWeight.bold,
+                  color: CtOSColors.primary,
+                  fontSize: 14,
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
@@ -198,7 +212,7 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
           child: Column(
             children: [
               Container(
-                color: CtOSColors.surface.withOpacity(0.7),
+                color: CtOSColors.surface.withValues(alpha: 0.7),
                 padding: const EdgeInsets.all(8),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -403,11 +417,11 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: CtOSColors.surface,
-        border: Border.all(color: CtOSColors.primary.withOpacity(0.3)),
+        border: Border.all(color: CtOSColors.primary.withValues(alpha: 0.3)),
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: CtOSColors.primary.withOpacity(0.1),
+            color: CtOSColors.primary.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -423,7 +437,7 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
                 width: 80,
                 height: 80,
                 decoration: BoxDecoration(
-                  color: CtOSColors.primary.withOpacity(0.2),
+                  color: CtOSColors.primary.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(40),
                   border: Border.all(color: CtOSColors.primary, width: 2),
                 ),
@@ -495,8 +509,8 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: CtOSColors.primary.withOpacity(0.1),
-        border: Border.all(color: CtOSColors.primary.withOpacity(0.3)),
+        color: CtOSColors.primary.withValues(alpha: 0.1),
+        border: Border.all(color: CtOSColors.primary.withValues(alpha: 0.3)),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
@@ -523,7 +537,7 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
       decoration: BoxDecoration(
         color: CtOSColors.surface,
         borderRadius: BorderRadius.circular(25),
-        border: Border.all(color: CtOSColors.primary.withOpacity(0.3)),
+        border: Border.all(color: CtOSColors.primary.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: tabs.asMap().entries.map((entry) {
@@ -719,7 +733,7 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: CtOSColors.surface,
-        border: Border.all(color: CtOSColors.primary.withOpacity(0.3)),
+        border: Border.all(color: CtOSColors.primary.withValues(alpha: 0.3)),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
@@ -747,7 +761,7 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: CtOSColors.surface,
-        border: Border.all(color: CtOSColors.primary.withOpacity(0.3)),
+        border: Border.all(color: CtOSColors.primary.withValues(alpha: 0.3)),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
@@ -809,7 +823,7 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: CtOSColors.background,
-        border: Border.all(color: CtOSColors.secondary.withOpacity(0.3)),
+        border: Border.all(color: CtOSColors.secondary.withValues(alpha: 0.3)),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Column(
@@ -866,7 +880,7 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: CtOSColors.background,
-        border: Border.all(color: CtOSColors.secondary.withOpacity(0.3)),
+        border: Border.all(color: CtOSColors.secondary.withValues(alpha: 0.3)),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Column(
@@ -917,7 +931,7 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: CtOSColors.background,
-        border: Border.all(color: CtOSColors.secondary.withOpacity(0.3)),
+        border: Border.all(color: CtOSColors.secondary.withValues(alpha: 0.3)),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Column(
@@ -971,7 +985,7 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: CtOSColors.background,
-        border: Border.all(color: CtOSColors.secondary.withOpacity(0.3)),
+        border: Border.all(color: CtOSColors.secondary.withValues(alpha: 0.3)),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Column(
@@ -1022,7 +1036,7 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: CtOSColors.background,
-        border: Border.all(color: CtOSColors.secondary.withOpacity(0.3)),
+        border: Border.all(color: CtOSColors.secondary.withValues(alpha: 0.3)),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Column(
@@ -1078,7 +1092,7 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
         color: CtOSColors.surface,
-        border: Border.all(color: CtOSColors.primary.withOpacity(0.3)),
+        border: Border.all(color: CtOSColors.primary.withValues(alpha: 0.3)),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
