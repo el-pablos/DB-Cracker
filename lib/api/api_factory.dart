@@ -68,18 +68,10 @@ class ApiFactory {
             'ApiFactory.searchMahasiswa: Real API returned ${results.length} results');
         return results;
       } catch (e) {
-        if (kDebugMode) debugPrint('Error with real API, fallback to mock: $e');
-        // Fallback to mock data if the real API fails with specific errors
-        if (e.toString().contains('403') ||
-            e.toString().contains('CORS') ||
-            e.toString().contains('XMLHttpRequest')) {
-          if (kDebugMode) debugPrint(
-              'ApiFactory.searchMahasiswa: Fallback to mock service due to API error');
-          final results = await _mockService.searchMahasiswa(keyword);
-          if (kDebugMode) debugPrint(
-              'ApiFactory.searchMahasiswa: Mock fallback returned ${results.length} results');
-          return results;
-        }
+        if (kDebugMode) debugPrint('Error with real API: $e');
+        // FACTORY-FIX: Tidak fallback ke mock diam-diam di production
+        // Mock hanya boleh aktif jika _forceMock == true (eksplisit)
+        // User harus lihat error state, bukan data palsu
         rethrow;
       }
     }
