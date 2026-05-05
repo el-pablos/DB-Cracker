@@ -86,32 +86,9 @@ class ApiFactory {
         if (kDebugMode) debugPrint('Requesting mahasiswa detail from real API for id: $mahasiswaId');
         return await _realApi.getMahasiswaDetail(mahasiswaId);
       } catch (e) {
-        if (kDebugMode) debugPrint('Error with real API, fallback to mock: $e');
-
-        // Always fallback to mock on detail errors to ensure the UI can show something
-        try {
-          return _mockService.getMahasiswaDetail(mahasiswaId);
-        } catch (mockError) {
-          if (kDebugMode) debugPrint('Error with mock service too: $mockError');
-
-          // If even the mock service fails, create a minimal valid object
-          return MahasiswaDetail(
-            id: mahasiswaId,
-            namaPt: 'Data tidak tersedia',
-            kodePt: '-',
-            kodeProdi: '-',
-            prodi: 'Data tidak tersedia',
-            nama: 'Data tidak tersedia (error)',
-            nim: '-',
-            jenisDaftar: '-',
-            idPt: '-',
-            idSms: '-',
-            jenisKelamin: '-',
-            jenjang: '-',
-            statusSaatIni: '-',
-            tahunMasuk: '-',
-          );
-        }
+        if (kDebugMode) debugPrint('Error with real API: $e');
+        // FACTORY-FIX: Tidak fallback ke mock diam-diam — user harus lihat error state
+        rethrow;
       }
     }
   }
@@ -395,30 +372,8 @@ class ApiFactory {
         if (kDebugMode) debugPrint('Error dengan API asli, fallback ke mock: $e');
 
         // Fallback ke mock data
-        try {
-          return await _mockService.getDosenProfile(dosenId);
-        } catch (mockError) {
-          if (kDebugMode) debugPrint('Error dengan mock service juga: $mockError');
-
-          // Jika bahkan mock service gagal, buat objek minimal valid
-          return DosenDetail(
-            idSdm: dosenId,
-            namaDosen: 'Data tidak tersedia (error)',
-            namaPt: 'Data tidak tersedia',
-            namaProdi: 'Data tidak tersedia',
-            jenisKelamin: '-',
-            jabatanAkademik: '-',
-            pendidikanTertinggi: '-',
-            statusIkatanKerja: '-',
-            statusAktivitas: '-',
-            penelitian: [],
-            pengabdian: [],
-            karya: [],
-            paten: [],
-            riwayatStudi: [],
-            riwayatMengajar: [],
-          );
-        }
+        // FACTORY-FIX: Tidak fallback ke mock — rethrow agar UI tampilkan error
+        rethrow;
       }
     }
   }
@@ -438,41 +393,9 @@ class ApiFactory {
         if (kDebugMode) debugPrint('Meminta detail lengkap dosen dari API asli untuk id: $dosenId');
         return await _realApi.getDosenDetailLengkap(dosenId);
       } catch (e) {
-        if (kDebugMode) debugPrint('Error dengan API asli, fallback ke profil dasar: $e');
-
-        // Fallback ke profil dasar
-        try {
-          return await _realApi.getDosenProfile(dosenId);
-        } catch (profileError) {
-          if (kDebugMode) debugPrint(
-              'Error dengan profil dasar juga, fallback ke mock: $profileError');
-
-          // Fallback ke mock data
-          try {
-            return await _mockService.getDosenProfile(dosenId);
-          } catch (mockError) {
-            if (kDebugMode) debugPrint('Error dengan mock service juga: $mockError');
-
-            // Jika semua gagal, buat objek minimal valid
-            return DosenDetail(
-              idSdm: dosenId,
-              namaDosen: 'Data tidak tersedia',
-              namaPt: 'Data tidak tersedia',
-              namaProdi: 'Data tidak tersedia',
-              jenisKelamin: '-',
-              jabatanAkademik: '-',
-              pendidikanTertinggi: '-',
-              statusIkatanKerja: '-',
-              statusAktivitas: '-',
-              penelitian: [],
-              pengabdian: [],
-              karya: [],
-              paten: [],
-              riwayatStudi: [],
-              riwayatMengajar: [],
-            );
-          }
-        }
+        if (kDebugMode) debugPrint('Error dengan API asli: $e');
+        // FACTORY-FIX: Tidak fallback ke mock — user harus lihat error state
+        rethrow;
       }
     }
   }
