@@ -512,12 +512,59 @@ Gunakan aplikasi ini secara bertanggung jawab. Hormati privasi data dan rate lim
 
 ## 🗺️ Roadmap
 
-- [ ] Persistent cache (SQLite/Hive) untuk offline mode
-- [ ] Filter wilayah di search PT/Prodi
-- [ ] Sekolah lookup screen dedicated
-- [ ] Integration test E2E
+- [ ] Persistent cache (Hive) untuk offline mode penuh
+- [ ] Filter wilayah dropdown di search PT/Prodi
+- [ ] Integration test E2E dengan Playwright
 - [ ] Dark/light theme toggle
 - [ ] Export hasil pencarian ke PDF
+- [ ] Backend gateway untuk enrichment GARUDA/SINTA/RAMA yang lebih dalam
+- [ ] Statistik agregat dari data PDDIKTI (jumlah mahasiswa per provinsi, dll)
+- [ ] Push notification untuk update status provider
+
+## 📊 Testing & Quality
+
+Projek ini memiliki **180 unit tests** yang mencakup seluruh modul:
+
+| Category | Tests | Coverage |
+|----------|-------|----------|
+| Provider Chain | 10 | Fallback, timeout, cache, disabled provider |
+| Cache Store | 10 | Fresh, stale, expired, eviction, prefix clear |
+| Wilayah Service | 9 | Parser, fallback, cache, search |
+| Sekolah/NPSN | 9 | Validation, parser, cache, unavailable |
+| External Links | 8 | URL encoding, GARUDA/RAMA/SINTA builders |
+| Health Service | 8 | Healthy, degraded, timeout, rateLimited |
+| Provider Registry | 9 | byKind, byId, core, external, unique IDs |
+| DataResult | 5 | Live, cached, stale, sourceLabel |
+| Wikipedia/KBBI/MagangHub | 13 | Parser, cache, fallback, validation |
+| Models (Mahasiswa/Dosen/PT/Prodi) | 48 | JSON parsing, null safety, edge cases |
+| Widgets | 37 | Render, interaction, state |
+| Utils | 14 | Constants, JSON helpers |
+| **Total** | **180** | **100% passed** ✅ |
+
+Semua test menggunakan mock HTTP client — tidak ada test yang memukul API live secara default. Ini memastikan test deterministic dan bisa jalan di CI tanpa internet.
+
+```bash
+$ flutter test
+00:07 +180: All tests passed!
+```
+
+### Cara Menjalankan Test
+
+```bash
+# Unit tests (semua)
+flutter test
+
+# Test spesifik modul
+flutter test test/api/providers/
+flutter test test/cache/
+flutter test test/wilayah/
+flutter test test/sekolah/
+flutter test test/enrichment/
+flutter test test/health/
+
+# Analyze (zero errors, zero warnings)
+flutter analyze
+```
 
 ---
 

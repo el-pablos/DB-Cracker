@@ -55,12 +55,18 @@ class SekolahService {
         final dynamic responseData = json.decode(response.body);
         Map<String, dynamic>? sekolahData;
 
-        // Parse response — bisa langsung map atau nested
+        // Parse response — format fazriansyah: {data: {satuanPendidikan: {...}}}
         if (responseData is Map<String, dynamic>) {
-          if (responseData.containsKey('data') && responseData['data'] is Map) {
-            sekolahData = responseData['data'] as Map<String, dynamic>;
-          } else if (responseData.containsKey('dataSekolah') && responseData['dataSekolah'] is Map) {
-            sekolahData = responseData['dataSekolah'] as Map<String, dynamic>;
+          final data = responseData['data'];
+          if (data is Map<String, dynamic>) {
+            // Check for error response
+            if (data.containsKey('error')) return null;
+            // Nested satuanPendidikan
+            if (data.containsKey('satuanPendidikan') && data['satuanPendidikan'] is Map) {
+              sekolahData = data['satuanPendidikan'] as Map<String, dynamic>;
+            } else if (data.containsKey('npsn') || data.containsKey('nama')) {
+              sekolahData = data;
+            }
           } else if (responseData.containsKey('npsn') || responseData.containsKey('nama')) {
             sekolahData = responseData;
           }
