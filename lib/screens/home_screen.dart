@@ -577,6 +577,41 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                               const DosenSearchButton(),
                               
                               const SizedBox(height: 8),
+                              // Tombol NPSN Lookup
+                              InkWell(
+                                onTap: () => Navigator.pushNamed(context, '/sekolah'),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                  decoration: BoxDecoration(
+                                    color: CtOSColors.surface,
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: CtOSColors.secondary.withValues(alpha: 0.3)),
+                                  ),
+                                  child: const Row(
+                                    children: [
+                                      Icon(Icons.school, color: CtOSColors.secondary, size: 20),
+                                      SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text('NPSN LOOKUP', style: TextStyle(
+                                              color: CtOSColors.secondary, fontFamily: 'Courier',
+                                              fontSize: 13, fontWeight: FontWeight.bold,
+                                            )),
+                                            Text('Cari data sekolah via NPSN', style: TextStyle(
+                                              color: CtOSColors.textPrimary, fontFamily: 'Courier', fontSize: 11,
+                                            )),
+                                          ],
+                                        ),
+                                      ),
+                                      Icon(Icons.search, color: CtOSColors.secondary, size: 18),
+                                    ],
+                                  ),
+                                ),
+                              ),
+
+                              const SizedBox(height: 8),
                               const Text(
                                 "SIAP UNTUK MEMULAI PERETASAN",
                                 style: TextStyle(
