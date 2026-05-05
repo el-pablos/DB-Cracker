@@ -414,15 +414,22 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             },
           ),
           Padding(
-            padding: EdgeInsets.only(right: isMobile ? 8 : 16),
+            padding: EdgeInsets.only(right: isMobile ? 4 : 8),
             child: Text(
               _useMultiSource ? "MULTI-DB" : "PDDIKTI",
               style: const TextStyle(
                 color: CtOSColors.secondary,
                 fontFamily: 'Courier',
-                fontSize: 12,
+                fontSize: 10,
               ),
             ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.monitor_heart, color: CtOSColors.secondary, size: 18),
+            onPressed: () => Navigator.pushNamed(context, '/health'),
+            tooltip: 'Status Sistem',
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 36),
           ),
         ],
       ),
