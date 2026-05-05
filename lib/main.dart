@@ -40,7 +40,13 @@ class DBCrackerApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Provider<ApiFactory>(
-      create: (_) => ApiFactory(),
+      create: (_) {
+        final factory = ApiFactory();
+        // Enable mock data for testing when APIs are down
+        // TODO: Remove this when PDDIKTI APIs recover
+        if (kIsWeb) factory.enableMockData();
+        return factory;
+      },
       child: MaterialApp(
         title: 'DB Cracker',
         debugShowCheckedModeBanner: false,
