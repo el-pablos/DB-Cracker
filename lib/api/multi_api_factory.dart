@@ -29,7 +29,9 @@ class MultiApiFactory {
   final ApiServicesIntegration _apiServices = ApiServicesIntegration();
 
   /// Base URL untuk API Data Mahasiswa Kemdikbud
-  final String _kemdikbudApiUrl = 'https://api-frontend.kemdikbud.go.id';
+  /// NOTE: api-frontend.kemdikbud.go.id is DEAD (NXDOMAIN since ~2025).
+  /// Disabled — searches now rely on PDDIKTI proxy providers only.
+  final String _kemdikbudApiUrl = '';
 
   /// Header untuk request — cached as final to avoid Map recreation per access
   final Map<String, String> _headers = const {
@@ -105,7 +107,12 @@ class MultiApiFactory {
   }
 
   /// Cari data mahasiswa dari API Kemdikbud
+  /// DISABLED: api-frontend.kemdikbud.go.id domain no longer exists (NXDOMAIN).
+  /// Returns empty immediately to avoid DNS lookup timeout.
   Future<List<Mahasiswa>> _searchKemdikbud(String keyword) async {
+    // Domain is dead (NXDOMAIN) — skip immediately to avoid 10s DNS timeout
+    return [];
+
     try {
       final Uri url =
           Uri.parse('$_kemdikbudApiUrl/hit_mhs/${_parseString(keyword)}');

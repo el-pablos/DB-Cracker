@@ -374,27 +374,42 @@ class _HomeScreenState extends State<HomeScreen> {
                 icon: Icons.school_rounded,
                 label: 'Mahasiswa',
                 color: AppColors.primary,
-                onTap: () => _searchController.text.isEmpty
-                    ? null
-                    : _performSearch(),
+                // fix: tampilkan snackbar jika search kosong, bukan silent null - 2026-05-05
+                onTap: () {
+                  if (_searchController.text.trim().isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Ketik nama mahasiswa di search bar terlebih dahulu',
+                            style: AppTypography.bodySmall.copyWith(color: AppColors.textPrimary)),
+                        backgroundColor: AppColors.surface,
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
+                  } else {
+                    _performSearch();
+                  }
+                },
               ),
               NeoQuickAction(
                 icon: Icons.person_rounded,
                 label: 'Dosen',
                 color: AppColors.secondary,
-                onTap: () => Navigator.pushNamed(context, '/dosen'),
+                // fix: route /dosen tidak ada, yang benar /dosen/search - 2026-05-05
+                onTap: () => Navigator.pushNamed(context, '/dosen/search'),
               ),
               NeoQuickAction(
                 icon: Icons.menu_book_rounded,
                 label: 'Prodi',
                 color: AppColors.success,
-                onTap: () => Navigator.pushNamed(context, '/prodi'),
+                // fix: route /prodi tidak ada, yang benar /prodi/search - 2026-05-05
+                onTap: () => Navigator.pushNamed(context, '/prodi/search'),
               ),
               NeoQuickAction(
                 icon: Icons.account_balance_rounded,
                 label: 'Kampus',
                 color: AppColors.warning,
-                onTap: () => Navigator.pushNamed(context, '/kampus'),
+                // fix: route /kampus tidak ada, gunakan /sekolah yang merupakan lookup kampus - 2026-05-05
+                onTap: () => Navigator.pushNamed(context, '/sekolah'),
               ),
               NeoQuickAction(
                 icon: Icons.monitor_heart_rounded,

@@ -70,7 +70,7 @@ class ProviderRegistry {
       baseUrl: 'https://pddikti.fastapicloud.dev/api',
       kind: ProviderKind.pddikti,
       priority: 1,
-      timeout: Duration(seconds: 10),
+      timeout: Duration(seconds: 15),
     ),
     ApiProviderConfig(
       id: 'pddikti_rone',

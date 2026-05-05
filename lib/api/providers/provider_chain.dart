@@ -56,10 +56,16 @@ class AllProvidersFailedException implements Exception {
   /// User-friendly message
   String get userMessage {
     if (failures.any((f) => f.statusCode == 503 || f.statusCode == 429)) {
-      return 'Server PDDIKTI sedang sibuk. Coba lagi dalam beberapa menit.';
+      return 'Server PDDIKTI sedang sibuk (rate limited). Coba lagi dalam beberapa menit.';
     }
-    if (failures.any((f) => f.message.contains('Timeout'))) {
+    if (failures.any((f) => f.statusCode == 408)) {
+      return 'Server PDDIKTI tidak merespons (timeout). Coba lagi nanti.';
+    }
+    if (failures.any((f) => f.message.contains('Timeout') || f.message.contains('timed out'))) {
       return 'Koneksi timeout. Periksa internet dan coba lagi.';
+    }
+    if (failures.any((f) => f.message.contains('SocketException') || f.message.contains('host lookup'))) {
+      return 'Tidak ada koneksi internet. Periksa jaringan kamu.';
     }
     return 'Gagal terhubung ke server. Periksa koneksi internet.';
   }
@@ -138,78 +144,93 @@ class ProviderChainService {
     final failures = <ApiProviderFailure>[];
 
     for (final provider in enabledProviders) {
-      final stopwatch = Stopwatch()..start();
-      try {
-        final url = Uri.parse('${provider.baseUrl}$path');
-        final response = await httpClient
-            .get(url, headers: _defaultHeaders)
-            .timeout(provider.timeout);
-        stopwatch.stop();
+      // Retry loop: 408 (upstream timeout) gets one retry after delay
+      const maxAttempts = 2;
+      for (var attempt = 1; attempt <= maxAttempts; attempt++) {
+        final stopwatch = Stopwatch()..start();
+        try {
+          final url = Uri.parse('${provider.baseUrl}$path');
+          final response = await httpClient
+              .get(url, headers: _defaultHeaders)
+              .timeout(provider.timeout);
+          stopwatch.stop();
 
-        // Cek retryable status
-        if (provider.retryableStatusCodes.contains(response.statusCode)) {
+          // 408 = upstream timeout — retry once after short delay
+          if (response.statusCode == 408 && attempt < maxAttempts) {
+            if (kDebugMode) {
+              debugPrint('ProviderChain: ${provider.id} returned 408, retrying in 3s...');
+            }
+            await Future.delayed(const Duration(seconds: 3));
+            continue; // retry same provider
+          }
+
+          // Cek retryable status (skip to next provider)
+          if (provider.retryableStatusCodes.contains(response.statusCode)) {
+            failures.add(ApiProviderFailure(
+              providerId: provider.id,
+              message: 'Status ${response.statusCode} (attempt $attempt)',
+              statusCode: response.statusCode,
+              latency: stopwatch.elapsed,
+            ));
+            break; // Move to next provider
+          }
+
+          // Non-200 non-retryable = error final
+          if (response.statusCode != 200) {
+            failures.add(ApiProviderFailure(
+              providerId: provider.id,
+              message: 'Status ${response.statusCode}',
+              statusCode: response.statusCode,
+              latency: stopwatch.elapsed,
+            ));
+            break; // Move to next provider
+          }
+
+          // 3. Decode JSON sekali
+          final dynamic jsonData = json.decode(response.body);
+          final T data = decoder(jsonData);
+
+          // 4. Simpan ke cache
+          await cacheStore.put(CacheEntry(
+            key: cacheKey,
+            body: response.body,
+            createdAt: DateTime.now(),
+            freshUntil: DateTime.now().add(cachePolicy.freshTtl),
+            staleUntil: DateTime.now().add(cachePolicy.staleTtl),
+            source: provider.id,
+            statusCode: 200,
+          ));
+
+          return ProviderChainResult<T>(
+            data: data,
+            providerId: provider.id,
+            fromCache: false,
+            stale: false,
+            statusCode: 200,
+            latency: stopwatch.elapsed,
+          );
+        } on FormatException catch (e) {
+          stopwatch.stop();
           failures.add(ApiProviderFailure(
             providerId: provider.id,
-            message: 'Status ${response.statusCode}',
-            statusCode: response.statusCode,
+            message: 'JSON invalid: ${e.message}',
             latency: stopwatch.elapsed,
           ));
-          continue; // Coba provider berikutnya
-        }
-
-        // Non-200 non-retryable = error final
-        if (response.statusCode != 200) {
+          break; // JSON error won't fix on retry
+        } catch (e) {
+          stopwatch.stop();
+          final msg = e.toString().contains('TimeoutException')
+              ? 'Timeout (${provider.timeout.inSeconds}s)'
+              : e.toString().length > 100
+                  ? '${e.toString().substring(0, 100)}...'
+                  : e.toString();
           failures.add(ApiProviderFailure(
             providerId: provider.id,
-            message: 'Status ${response.statusCode}',
-            statusCode: response.statusCode,
+            message: msg,
             latency: stopwatch.elapsed,
           ));
-          continue;
+          break; // Network errors won't fix on retry for same provider
         }
-
-        // 3. Decode JSON sekali
-        final dynamic jsonData = json.decode(response.body);
-        final T data = decoder(jsonData);
-
-        // 4. Simpan ke cache
-        await cacheStore.put(CacheEntry(
-          key: cacheKey,
-          body: response.body,
-          createdAt: DateTime.now(),
-          freshUntil: DateTime.now().add(cachePolicy.freshTtl),
-          staleUntil: DateTime.now().add(cachePolicy.staleTtl),
-          source: provider.id,
-          statusCode: 200,
-        ));
-
-        return ProviderChainResult<T>(
-          data: data,
-          providerId: provider.id,
-          fromCache: false,
-          stale: false,
-          statusCode: 200,
-          latency: stopwatch.elapsed,
-        );
-      } on FormatException catch (e) {
-        stopwatch.stop();
-        failures.add(ApiProviderFailure(
-          providerId: provider.id,
-          message: 'JSON invalid: ${e.message}',
-          latency: stopwatch.elapsed,
-        ));
-      } catch (e) {
-        stopwatch.stop();
-        final msg = e.toString().contains('TimeoutException')
-            ? 'Timeout (${provider.timeout.inSeconds}s)'
-            : e.toString().length > 100
-                ? '${e.toString().substring(0, 100)}...'
-                : e.toString();
-        failures.add(ApiProviderFailure(
-          providerId: provider.id,
-          message: msg,
-          latency: stopwatch.elapsed,
-        ));
       }
     }
 

@@ -16,7 +16,7 @@ class ApiProvider {
     required this.priority,
     this.enabled = true,
     this.timeout = const Duration(seconds: 12),
-    this.retryableStatusCodes = const {429, 500, 502, 503, 504},
+    this.retryableStatusCodes = const {408, 425, 429, 500, 502, 503, 504},
   });
 
   @override
@@ -30,7 +30,7 @@ class PddiktiProviders {
     name: 'PDDikti FastAPI Cloud',
     baseUrl: 'https://pddikti.fastapicloud.dev/api',
     priority: 1,
-    timeout: Duration(seconds: 10),
+    timeout: Duration(seconds: 15),
   );
 
   static const rone = ApiProvider(

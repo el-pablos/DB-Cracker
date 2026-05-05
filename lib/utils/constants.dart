@@ -144,6 +144,8 @@ class ApiConstants {
   ApiConstants._();
 
   static const String pddiktiBaseUrl = 'https://api-pddikti.kemdiktisaintek.go.id';
+  /// DEAD: domain no longer resolves (NXDOMAIN). Kept for reference only.
+  @Deprecated('Domain api-frontend.kemdikbud.go.id is dead since ~2025')
   static const String kemdikbudBaseUrl = 'https://api-frontend.kemdikbud.go.id';
   static const Duration defaultTimeout = Duration(seconds: 20);
   static const Duration searchTimeout = Duration(seconds: 30);
