@@ -550,8 +550,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     : _searchResults.isEmpty
                       ? TerminalWindow(
                           title: "MENUNGGU INPUT",
-                          child: Column(
+                          child: SingleChildScrollView(
+                            child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
                                 Icons.search,
@@ -622,6 +624,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                 textAlign: TextAlign.center,
                               ),
                             ],
+                          ),
                           ),
                         )
                       : TerminalWindow(
