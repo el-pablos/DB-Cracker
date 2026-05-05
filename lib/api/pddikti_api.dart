@@ -23,33 +23,8 @@ class PddiktiApi {
   static const String _proxyFallbackUrl = 'https://pddikti.rone.dev/api';
   final String baseUrl = _proxyBaseUrl;
 
-  // Keep original URL for fallback if proxy is down
-  final String _originalBaseUrl = 'https://api-pddikti.kemdiktisaintek.go.id';
-
   // Shared HTTP client — reuse TCP connections (keep-alive)
   final http.Client _client = http.Client();
-
-  // Cache public IP biar ga fetch terus
-  String _cachedIp = '103.0.0.1';
-  bool _ipFetched = false;
-
-  /// Fetch public IP dari ipify (sama kayak frontend PDDIKTI)
-  Future<String> _getPublicIp() async {
-    if (_ipFetched) return _cachedIp;
-    try {
-      final response = await _client.get(
-        Uri.parse('https://api.ipify.org/?format=json'),
-      ).timeout(const Duration(seconds: 5));
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        _cachedIp = data['ip'] ?? '103.0.0.1';
-        _ipFetched = true;
-      }
-    } catch (_) {
-      // Fallback ke default IP
-    }
-    return _cachedIp;
-  }
 
   // Header untuk proxy API — simple, no spoofing needed
   late final Map<String, String> _baseHeaders = {
