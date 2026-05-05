@@ -7,6 +7,7 @@ import 'screens/prodi_search_screen.dart';
 import 'screens/pt_detail_screen.dart';
 import 'screens/dosen_search_screen_new.dart';
 import 'screens/dosen_detail_screen.dart';
+import 'screens/health_screen.dart';
 import 'api/api_factory.dart';
 import 'utils/constants.dart';
 
@@ -92,6 +93,7 @@ class MyApp extends StatelessWidget {
         routes: {
           '/prodi/search': (context) => const ProdiSearchScreen(),
           '/dosen/search': (context) => const DosenSearchScreenNew(),
+          '/health': (context) => const HealthScreen(),
         },
         // Untuk routes yang membutuhkan parameter
         onGenerateRoute: (settings) {
