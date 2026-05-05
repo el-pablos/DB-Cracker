@@ -6,37 +6,44 @@ import '../models/mahasiswa.dart';
 import '../models/dosen.dart';
 import '../models/prodi.dart';
 import '../models/pt.dart';
-
-/// PERF: Simple cache entry for API responses
-class _CachedResponse {
-  final http.Response response;
-  final DateTime timestamp;
-  _CachedResponse(this.response, this.timestamp);
-}
+import 'providers/api_provider.dart';
+import 'providers/provider_chain.dart';
+import 'cache/cache_store.dart';
+import 'cache/cache_policy.dart';
+import 'cache/in_memory_cache_store.dart';
 
 class PddiktiApi {
-  // FIX: Gunakan proxy API yang punya proper SSL cert
-  // Primary: pddikti.fastapicloud.dev (operational, proper SSL)
-  // Fallback: pddikti.rone.dev (may be rate-limited)
-  // Original API (api-pddikti.kemdiktisaintek.go.id) has SSL cert chain issues on some Android devices
+  // Base URL tetap dipakai untuk backward compat (beberapa method masih reference)
   static const String _proxyBaseUrl = 'https://pddikti.fastapicloud.dev/api';
-  static const String _proxyFallbackUrl = 'https://pddikti.rone.dev/api';
+  // Fallback URL handled by ProviderChainService (PddiktiProviders.defaults)
   final String baseUrl = _proxyBaseUrl;
 
-  // Shared HTTP client — reuse TCP connections (keep-alive)
-  final http.Client _client = http.Client();
+  // Shared HTTP client
+  final http.Client _client;
 
-  // Header untuk proxy API — simple, no spoofing needed
-  late final Map<String, String> _baseHeaders = {
-        'Accept': 'application/json',
-        'User-Agent': 'DB-Cracker-App/3.0',
-      };
+  // Shared cache store — unified, bukan Map primitif lagi
+  final CacheStore _cacheStore;
 
-  // Simple in-memory response cache (LRU-style, max 50 entries)
-  // PERF: menghindari network call untuk pencarian yang sama
-  final Map<String, _CachedResponse> _responseCache = {};
-  static const int _maxCacheSize = 50;
-  static const Duration _cacheTtl = Duration(minutes: 5);
+  // Provider Chain — menggantikan _makeApiRequest manual
+  late final ProviderChainService _chain;
+
+  /// Constructor — bisa inject dependencies untuk testing
+  PddiktiApi({http.Client? client, CacheStore? cacheStore})
+      : _client = client ?? http.Client(),
+        _cacheStore = cacheStore ?? InMemoryCacheStore() {
+    _chain = ProviderChainService(
+      providers: PddiktiProviders.defaults.map((p) => ApiProvider(
+        id: p.id,
+        name: p.name,
+        baseUrl: p.baseUrl,
+        priority: p.priority,
+        enabled: p.enabled,
+        timeout: p.timeout,
+      )).toList(),
+      cacheStore: _cacheStore,
+      httpClient: _client,
+    );
+  }
 
   // Encode parameter URL
   String _parseString(String text) {
@@ -68,74 +75,28 @@ class PddiktiApi {
     }
   }
 
-  // Shared request method — reuse _client, cached headers, optional response caching
-  // FIX: Proxy API doesn't need IP/Origin headers, simpler and more reliable
+  // Request via ProviderChain — otomatis fallback + cache fresh/stale
+  // Backward compat wrapper: return http.Response agar method lama tetap jalan
   Future<http.Response> _makeApiRequest(Uri url,
       {int timeoutSeconds = 15, bool useCache = false}) async {
-    final cacheKey = url.toString();
-
-    // Check cache first
-    if (useCache && _responseCache.containsKey(cacheKey)) {
-      final cached = _responseCache[cacheKey]!;
-      if (DateTime.now().difference(cached.timestamp) < _cacheTtl) {
-        return cached.response;
-      } else {
-        _responseCache.remove(cacheKey);
-      }
-    }
+    // Extract path dari URL (relative to baseUrl)
+    final path = url.toString().replaceFirst(_proxyBaseUrl, '');
+    final cachePolicy = useCache ? CachePolicy.searchMahasiswa : CachePolicy.health;
 
     try {
-      final response = await _client
-          .get(url, headers: _baseHeaders)
-          .timeout(Duration(seconds: timeoutSeconds));
-
-      // Cache successful responses
-      if (useCache && response.statusCode == 200) {
-        if (_responseCache.length >= _maxCacheSize) {
-          _responseCache.remove(_responseCache.keys.first);
-        }
-        _responseCache[cacheKey] = _CachedResponse(response, DateTime.now());
-      }
-
-      return response;
-    } catch (e) {
-      if (kDebugMode) debugPrint('Error in _makeApiRequest: $e');
-
-      // FIX: If proxy fails with SSL/connection error, try fallback proxy
-      if (e.toString().contains('CERTIFICATE_VERIFY_FAILED') ||
-          e.toString().contains('HandshakeException') ||
-          e.toString().contains('Connection refused')) {
-        // Try fallback URL
-        final fallbackUrl = url.toString().replaceFirst(_proxyBaseUrl, _proxyFallbackUrl);
-        if (fallbackUrl != url.toString()) {
-          if (kDebugMode) debugPrint('Trying fallback proxy: $fallbackUrl');
-          try {
-            final fallbackResponse = await _client
-                .get(Uri.parse(fallbackUrl), headers: _baseHeaders)
-                .timeout(Duration(seconds: timeoutSeconds));
-            if (fallbackResponse.statusCode == 200) {
-              return fallbackResponse;
-            }
-          } catch (fallbackError) {
-            if (kDebugMode) debugPrint('Fallback also failed: $fallbackError');
-          }
-        }
-      }
-
-      if (e.toString().contains('XMLHttpRequest')) {
-        throw Exception(
-            'Terjadi error CORS. Silakan gunakan versi mobile app.');
-      } else if (e.toString().contains('403') || e.toString().contains('503')) {
-        throw Exception(
-            'Server sedang sibuk. Coba lagi dalam beberapa menit.');
-      } else if (e.toString().contains('Timeout')) {
-        throw Exception(
-            'Koneksi timeout. Server mungkin sibuk, silakan coba lagi.');
-      } else {
-        throw Exception('Error koneksi: ${e.toString()}');
-      }
+      final result = await _chain.request<String>(
+        path: path,
+        cachePolicy: cachePolicy,
+        decoder: (dynamic data) => data is String ? data : jsonEncode(data),
+      );
+      // Reconstruct http.Response for backward compat
+      return http.Response(result.data, 200);
+    } on AllProvidersFailedException catch (e) {
+      throw Exception(e.userMessage);
     }
   }
+
+  String jsonEncode(dynamic data) => json.encode(data);
 
   // Pencarian mahasiswa
   Future<List<Mahasiswa>> searchMahasiswa(String keyword) async {
