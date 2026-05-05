@@ -2,7 +2,7 @@
   <img src="assets/images/logo.png" alt="DB Cracker Logo" width="120"/>
 </p>
 
-<h1 align="center">🔓 DB Cracker v3.0</h1>
+<h1 align="center">🔓 DB Cracker v3.1</h1>
 
 <p align="center">
   <strong>ctOS Faculty Database Scanner — Pencarian Data Pendidikan Indonesia</strong>
@@ -22,17 +22,28 @@
 
 ## 📖 Deskripsi
 
-**DB Cracker** adalah aplikasi Flutter multi-platform (Android & Web) buat nyari data pendidikan tinggi Indonesia dari database PDDIKTI (Pangkalan Data Pendidikan Tinggi). App ini punya tema hacker ctOS (terinspirasi Watch Dogs) yang bikin experience pencarian data jadi lebih seru.
+**DB Cracker** adalah aplikasi Flutter multi-platform (Android & Web) buat nyari data pendidikan tinggi Indonesia. App ini menggunakan arsitektur **provider chain** yang menghubungkan ke beberapa sumber data publik tanpa membutuhkan API key atau autentikasi. Semua provider core bersifat **free dan no-auth**.
 
-Fitur utama:
+Tema visual ctOS (terinspirasi Watch Dogs) bikin experience pencarian data jadi lebih seru — terminal-style console, animasi hacking, dan dark theme yang konsisten.
+
+### Fitur Utama
+
 - 🔍 **Pencarian Mahasiswa** — cari berdasarkan nama, NIM, atau universitas
 - 👨‍🏫 **Pencarian Dosen** — cari berdasarkan nama, NIDN, atau prodi
 - 🏫 **Pencarian Perguruan Tinggi** — cari universitas/institut/politeknik
 - 📚 **Pencarian Program Studi** — cari jurusan di seluruh Indonesia
 - 📊 **Detail Lengkap** — profil mahasiswa, riwayat akademik, profil dosen, penelitian, pengabdian
-- 🌐 **Multi-Source** — data dari beberapa sumber API sekaligus
-- ⚡ **Response Caching** — pencarian berulang instant tanpa network call
+- 🌐 **Provider Chain** — fallback otomatis ke provider berikutnya saat satu provider gagal
+- ⚡ **Smart Cache** — fresh cache (instant), stale cache (fallback saat offline), TTL per tipe data
+- 🗺️ **Wilayah Indonesia** — cache provinsi/kabupaten/kecamatan dari wilayah.id
+- 🏫 **Sekolah/NPSN Lookup** — cari data sekolah berdasarkan NPSN
+- 🔗 **Enrichment Links** — tautan langsung ke GARUDA, RAMA, SINTA untuk riset akademik
+- 📖 **Glossary Akademik** — definisi istilah pendidikan dari KBBI + local fallback
+- 📰 **Wikipedia Summary** — ringkasan umum PT/wilayah dari Wikipedia Indonesia
+- 💼 **MagangHub** — peluang magang dari provider eksternal (optional)
+- 🏥 **Health Dashboard** — monitoring status semua provider, latency, dan cache stats
 - 🎨 **ctOS Hacker Theme** — UI gelap dengan efek terminal, animasi console, dan visual hacking
+- 🔒 **Zero Auth Core** — tidak ada API key yang dibutuhkan untuk fitur utama
 
 ---
 
@@ -215,6 +226,91 @@ graph LR
 
 ---
 
+## 🔌 Provider Registry (No-Auth)
+
+Semua provider core tidak membutuhkan API key, OAuth, atau autentikasi apapun.
+
+| Provider | Jenis | Auth | Dipakai untuk | Mode |
+|----------|-------|------|---------------|------|
+| pddikti.fastapicloud.dev | PDDIKTI | no-auth | search/detail mahasiswa, dosen, PT, prodi | core primary |
+| pddikti.rone.dev | PDDIKTI | no-auth | fallback PDDIKTI | core fallback |
+| wilayah.id | Wilayah | no-auth | provinsi, kabupaten, kecamatan, desa | core primary |
+| emsifa (GitHub Pages) | Wilayah | no-auth | fallback wilayah (static JSON) | core fallback |
+| api.fazriansyah.eu.org | Sekolah | no-auth | lookup NPSN | optional |
+| Wikipedia Indonesia | Summary | no-auth | ringkasan umum PT/wilayah | optional |
+| KBBI API + local | Glossary | no-auth | definisi istilah akademik | optional |
+| MagangHub | Career | no-auth | peluang magang | optional |
+| GARUDA | External Link | no-auth | tautan pencarian publikasi | deep-link |
+| RAMA | External Link | no-auth | tautan pencarian repository | deep-link |
+| SINTA | External Link | no-auth | tautan pencarian profil riset | deep-link |
+
+> **Catatan**: GARUDA, RAMA, dan SINTA bukan API provider — hanya deep-link ke portal resmi. Tidak ada scraping otomatis.
+
+---
+
+## 🗺️ Wilayah Indonesia Cache
+
+Data wilayah di-cache agresif karena jarang berubah (TTL 30 hari fresh, 180 hari stale). Provider chain:
+
+1. **wilayah.id** (primary) — 38 provinsi terbaru termasuk pemekaran Papua
+2. **emsifa** (fallback) — static JSON di GitHub Pages, 34 provinsi
+
+Fitur:
+- Normalisasi otomatis UPPERCASE → Title Case
+- Support field `code`/`id`/`kode` dan `name`/`nama`
+- Pencarian provinsi case-insensitive
+- Cache persistent antar session
+
+---
+
+## 🏫 Sekolah/NPSN Lookup
+
+Fitur tambahan untuk lookup data sekolah berdasarkan NPSN (Nomor Pokok Sekolah Nasional):
+- Validasi input: harus numeric, minimal 6 digit
+- Parser defensif: support multiple candidate field names
+- Cache 7 hari fresh, 30 hari stale
+- Graceful unavailable jika provider mati
+
+---
+
+## 🔗 Enrichment Akademik
+
+Tautan langsung ke portal riset resmi — **bukan scraper**, hanya URL builder:
+
+- **GARUDA** → Pencarian publikasi ilmiah dosen
+- **RAMA** → Pencarian repository tugas akhir/tesis/disertasi
+- **SINTA** → Pencarian profil riset dan metrik dosen
+
+Label UI selalu jelas: "Buka pencarian di portal eksternal" — tidak mengklaim data berhasil diambil.
+
+---
+
+## 🏥 Health Dashboard
+
+Monitor status semua provider real-time:
+- Status: healthy / degraded / rateLimited / timeout / unavailable
+- Latency per provider (ms)
+- Cache statistics (fresh/stale/expired entries)
+- Tombol refresh manual
+- App version info
+
+Akses via tombol ❤️ di AppBar home screen atau route `/health`.
+
+---
+
+## 🔒 Keamanan & Privasi Data
+
+- Tidak ada API key di source code
+- Tidak ada bulk export data mahasiswa/dosen
+- Minimal keyword 3 karakter untuk search
+- Debounce search input
+- Cache hanya data publik, bisa di-clear
+- Attribution sumber data di README
+- Mock data tidak tampil sebagai live data di production
+- `.gitignore` melindungi semua file sensitif
+
+---
+
 ## ⚡ Performance Optimizations
 
 Versi 3.0 udah di-overhaul total dari sisi performa:
@@ -387,6 +483,44 @@ Projek ini dibuat untuk keperluan edukasi dan riset. Data yang ditampilkan bersu
 
 ---
 
+---
+
+## ⚠️ Disclaimer & Etika Penggunaan Data
+
+DB-Cracker menggunakan data publik dari PDDIKTI dan sumber terbuka lainnya. Aplikasi ini dibuat untuk keperluan edukasi dan riset, bukan untuk:
+- Stalking atau doxxing
+- Scraping massal data pribadi
+- Harvesting data untuk keperluan komersial tanpa izin
+- Bypass proteksi atau rate limit provider
+
+Gunakan aplikasi ini secara bertanggung jawab. Hormati privasi data dan rate limit provider.
+
+---
+
+## 🔧 Troubleshooting
+
+| Masalah | Solusi |
+|---------|--------|
+| API tidak merespons | Cek Health Dashboard, provider mungkin sedang down |
+| Data kosong setelah search | Pastikan keyword minimal 3 karakter |
+| SSL error di Android | App sudah menggunakan proxy dengan proper SSL |
+| CORS error di web | Normal — beberapa API tidak support CORS dari browser |
+| Cache stale warning | Data dari cache lama, refresh manual atau tunggu TTL |
+| Build APK gagal | Pastikan Android SDK terinstall dan `flutter doctor` clean |
+
+---
+
+## 🗺️ Roadmap
+
+- [ ] Persistent cache (SQLite/Hive) untuk offline mode
+- [ ] Filter wilayah di search PT/Prodi
+- [ ] Sekolah lookup screen dedicated
+- [ ] Integration test E2E
+- [ ] Dark/light theme toggle
+- [ ] Export hasil pencarian ke PDF
+
+---
+
 <p align="center">
   <strong>Made with ☕ by <a href="https://github.com/el-pablos">Tamaengs</a></strong>
 </p>
@@ -394,4 +528,5 @@ Projek ini dibuat untuk keperluan edukasi dan riset. Data yang ditampilkan bersu
 <p align="center">
   <img src="https://img.shields.io/badge/status-active-success?style=for-the-badge" alt="Status">
   <img src="https://img.shields.io/badge/made%20with-flutter-blue?style=for-the-badge&logo=flutter" alt="Made with Flutter">
+  <img src="https://img.shields.io/badge/no--auth-free%20API-brightgreen?style=for-the-badge" alt="No Auth">
 </p>
