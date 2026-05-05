@@ -4,10 +4,16 @@ import '../api/health/health_service.dart';
 import '../api/core/provider_registry.dart';
 import '../api/cache/in_memory_cache_store.dart';
 import '../api/cache/cache_store.dart';
-import '../utils/constants.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_typography.dart';
+import '../theme/app_spacing.dart';
+import '../widgets/core/neo_card.dart';
+import '../widgets/core/neo_badge.dart';
+import '../widgets/data/neo_stat_card.dart';
+import '../widgets/feedback/neo_error.dart';
 
-/// Health Dashboard Screen — status semua provider dan cache
-/// Tema ctOS: terminal-style monitoring dashboard
+/// API Health Monitor — Neo-Violet Academic theme
+/// Displays provider health status, latency, and cache stats.
 class HealthScreen extends StatefulWidget {
   const HealthScreen({super.key});
 
@@ -20,27 +26,48 @@ class _HealthScreenState extends State<HealthScreen> {
   bool _isLoading = false;
   String? _error;
 
+  // BUG-002/003 fix: create once, reuse across calls
+  late final http.Client _httpClient;
+  late final CacheStore _cacheStore;
+
   @override
   void initState() {
     super.initState();
+    _httpClient = http.Client();
+    _cacheStore = InMemoryCacheStore();
     _runHealthCheck();
   }
 
+  @override
+  void dispose() {
+    _httpClient.close();
+    super.dispose();
+  }
+
   Future<void> _runHealthCheck() async {
-    setState(() { _isLoading = true; _error = null; });
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
 
     try {
       final service = HealthService(
-        httpClient: http.Client(),
-        cacheStore: InMemoryCacheStore(), // Shared instance ideally via DI
+        httpClient: _httpClient,
+        cacheStore: _cacheStore,
       );
       final report = await service.checkAll();
       if (mounted) {
-        setState(() { _report = report; _isLoading = false; });
+        setState(() {
+          _report = report;
+          _isLoading = false;
+        });
       }
     } catch (e) {
       if (mounted) {
-        setState(() { _error = e.toString(); _isLoading = false; });
+        setState(() {
+          _error = e.toString();
+          _isLoading = false;
+        });
       }
     }
   }
@@ -48,219 +75,224 @@ class _HealthScreenState extends State<HealthScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: CtOSColors.background,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: CtOSColors.surface,
-        title: const Row(
-          children: [
-            Icon(Icons.monitor_heart, color: CtOSColors.primary, size: 18),
-            SizedBox(width: 8),
-            Flexible(
-              child: Text(
-                'STATUS SISTEM',
-                style: TextStyle(
-                  fontFamily: 'Courier',
-                  fontWeight: FontWeight.bold,
-                  color: CtOSColors.primary,
-                  fontSize: 14,
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
+        backgroundColor: AppColors.surface,
+        elevation: 0,
+        title: const Text('API Health Monitor', style: AppTypography.headlineMedium),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh, color: CtOSColors.primary),
+            icon: const Icon(Icons.refresh_rounded, color: AppColors.primary),
             onPressed: _isLoading ? null : _runHealthCheck,
             tooltip: 'Refresh',
           ),
         ],
       ),
-      body: _buildBody(),
+      body: RefreshIndicator(
+        color: AppColors.primary,
+        backgroundColor: AppColors.surface,
+        onRefresh: _runHealthCheck,
+        child: _buildBody(),
+      ),
     );
   }
 
   Widget _buildBody() {
-    if (_isLoading) {
+    if (_isLoading && _report == null) {
       return const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(color: CtOSColors.primary),
-            SizedBox(height: 16),
-            Text(
-              'SCANNING PROVIDERS...',
-              style: TextStyle(
-                color: CtOSColors.primary,
-                fontFamily: 'Courier',
-                fontSize: 12,
-              ),
-            ),
-          ],
-        ),
+        child: CircularProgressIndicator(color: AppColors.primary),
       );
     }
 
-    if (_error != null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline, color: CtOSColors.error, size: 48),
-            const SizedBox(height: 16),
-            Text('Error: $_error', style: const TextStyle(color: CtOSColors.error, fontFamily: 'Courier', fontSize: 12)),
-            const SizedBox(height: 16),
-            ElevatedButton(onPressed: _runHealthCheck, child: const Text('RETRY')),
-          ],
-        ),
+    if (_error != null && _report == null) {
+      return NeoError(
+        message: _error!,
+        onRetry: _runHealthCheck,
       );
     }
 
-    if (_report == null) return const SizedBox.shrink();
+    if (_report == null) {
+      return const SizedBox.shrink();
+    }
+
+    final report = _report!;
+    final allHealthy = report.unavailableCount == 0 && report.degradedCount == 0;
 
     return ListView(
-      padding: const EdgeInsets.all(16),
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: AppSpacing.screenPadding,
       children: [
-        // Summary card
-        _buildSummaryCard(),
-        const SizedBox(height: 16),
-        // Provider list
-        const Text('PROVIDERS', style: TextStyle(color: CtOSColors.primary, fontFamily: 'Courier', fontSize: 14, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 8),
-        ..._report!.providers.map(_buildProviderTile),
-        const SizedBox(height: 16),
-        // Cache stats
-        _buildCacheCard(),
-        const SizedBox(height: 16),
-        // App info
-        _buildAppInfoCard(),
+        // Overall status card
+        _buildOverallStatusCard(report, allHealthy),
+        const SizedBox(height: AppSpacing.lg),
+
+        // Stats row
+        _buildStatsRow(report),
+        const SizedBox(height: AppSpacing.lg),
+
+        // Endpoint list header
+        const Text('Endpoints', style: AppTypography.headlineSmall),
+        const SizedBox(height: AppSpacing.md2),
+
+        // Provider cards
+        ...report.providers.map(_buildProviderCard),
+
+        const SizedBox(height: AppSpacing.lg),
+
+        // Last check timestamp
+        Center(
+          child: Text(
+            'Terakhir dicek: ${_formatTimestamp(report.generatedAt)}',
+            style: AppTypography.codeSmall,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.md),
       ],
     );
   }
 
-  Widget _buildSummaryCard() {
-    final r = _report!;
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: CtOSColors.surface,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: CtOSColors.primary.withValues(alpha: 0.3)),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _buildStatColumn('HEALTHY', r.healthyCount.toString(), CtOSColors.success),
-          _buildStatColumn('DEGRADED', r.degradedCount.toString(), CtOSColors.warning),
-          _buildStatColumn('DOWN', r.unavailableCount.toString(), CtOSColors.error),
-          _buildStatColumn('TOTAL', r.providers.length.toString(), CtOSColors.textPrimary),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatColumn(String label, String value, Color color) {
-    return Column(
-      children: [
-        Text(value, style: TextStyle(color: color, fontFamily: 'Courier', fontSize: 24, fontWeight: FontWeight.bold)),
-        Text(label, style: TextStyle(color: color.withValues(alpha: 0.7), fontFamily: 'Courier', fontSize: 10)),
-      ],
-    );
-  }
-
-  Widget _buildProviderTile(ProviderHealthResult result) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: CtOSColors.surface,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: _statusColor(result.status).withValues(alpha: 0.3)),
-      ),
+  Widget _buildOverallStatusCard(AppHealthReport report, bool allHealthy) {
+    return NeoCard(
+      variant: NeoCardVariant.gradient,
       child: Row(
         children: [
           Container(
-            width: 8, height: 8,
-            decoration: BoxDecoration(shape: BoxShape.circle, color: _statusColor(result.status)),
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: (allHealthy ? AppColors.success : AppColors.warning)
+                  .withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(
+              allHealthy
+                  ? Icons.check_circle_rounded
+                  : Icons.warning_amber_rounded,
+              color: allHealthy ? AppColors.success : AppColors.warning,
+              size: 24,
+            ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(result.providerName, style: const TextStyle(color: CtOSColors.textPrimary, fontFamily: 'Courier', fontSize: 12, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 2),
                 Text(
-                  '${result.kind.name.toUpperCase()} • ${result.status.name} ${result.latency != null ? "• ${result.latency!.inMilliseconds}ms" : ""}',
-                  style: TextStyle(color: CtOSColors.textPrimary.withValues(alpha: 0.6), fontFamily: 'Courier', fontSize: 10),
+                  allHealthy ? 'Semua Sistem Normal' : 'Ada Gangguan',
+                  style: AppTypography.headlineMedium,
                 ),
-                if (result.message != null)
-                  Text(result.message!, style: TextStyle(color: CtOSColors.textPrimary.withValues(alpha: 0.4), fontFamily: 'Courier', fontSize: 9)),
+                const SizedBox(height: 4),
+                Text(
+                  '${report.providers.length} provider terpantau',
+                  style: AppTypography.bodySmall,
+                ),
               ],
             ),
           ),
-          Text(
-            result.status.name.toUpperCase(),
-            style: TextStyle(color: _statusColor(result.status), fontFamily: 'Courier', fontSize: 10, fontWeight: FontWeight.bold),
+          NeoBadge(
+            label: allHealthy ? 'OK' : '${report.unavailableCount} down',
+            variant:
+                allHealthy ? NeoBadgeVariant.success : NeoBadgeVariant.warning,
+            icon: allHealthy ? Icons.verified_rounded : Icons.error_outline,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildCacheCard() {
-    final stats = _report!.cacheStats;
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: CtOSColors.surface,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: CtOSColors.secondary.withValues(alpha: 0.3)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('CACHE STATUS', style: TextStyle(color: CtOSColors.secondary, fontFamily: 'Courier', fontSize: 12, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 12),
-          _buildCacheRow('Total Entries', stats.totalEntries.toString()),
-          _buildCacheRow('Fresh', stats.freshEntries.toString()),
-          _buildCacheRow('Stale', stats.staleEntries.toString()),
-          _buildCacheRow('Expired', stats.expiredEntries.toString()),
-        ],
-      ),
+  Widget _buildStatsRow(AppHealthReport report) {
+    return Row(
+      children: [
+        Expanded(
+          child: NeoStatCard(
+            label: 'Healthy',
+            value: report.healthyCount.toString(),
+            icon: Icons.check_circle_outline_rounded,
+            color: AppColors.success,
+          ),
+        ),
+        const SizedBox(width: AppSpacing.sm),
+        Expanded(
+          child: NeoStatCard(
+            label: 'Degraded',
+            value: report.degradedCount.toString(),
+            icon: Icons.warning_amber_rounded,
+            color: AppColors.warning,
+          ),
+        ),
+        const SizedBox(width: AppSpacing.sm),
+        Expanded(
+          child: NeoStatCard(
+            label: 'Down',
+            value: report.unavailableCount.toString(),
+            icon: Icons.cancel_outlined,
+            color: AppColors.error,
+          ),
+        ),
+      ],
     );
   }
 
-  Widget _buildCacheRow(String label, String value) {
+  Widget _buildProviderCard(ProviderHealthResult result) {
+    final color = _statusColor(result.status);
+    final latencyText = result.latency != null
+        ? '${result.latency!.inMilliseconds}ms'
+        : '-';
+
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label, style: TextStyle(color: CtOSColors.textPrimary.withValues(alpha: 0.7), fontFamily: 'Courier', fontSize: 11)),
-          Text(value, style: const TextStyle(color: CtOSColors.primary, fontFamily: 'Courier', fontSize: 11, fontWeight: FontWeight.bold)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAppInfoCard() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: CtOSColors.surface,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('APP INFO', style: TextStyle(color: CtOSColors.textPrimary, fontFamily: 'Courier', fontSize: 12, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 8),
-          _buildCacheRow('Version', _report!.appVersion),
-          _buildCacheRow('Last Check', _report!.generatedAt.toString().substring(0, 19)),
-          _buildCacheRow('Providers', _report!.providers.length.toString()),
-        ],
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: NeoCard(
+        variant: NeoCardVariant.flat,
+        child: Row(
+          children: [
+            // Status dot
+            Container(
+              width: 10,
+              height: 10,
+              decoration: BoxDecoration(
+                color: color,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: color.withValues(alpha: 0.4),
+                    blurRadius: 6,
+                    spreadRadius: 1,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: AppSpacing.md2),
+            // Name + status
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    result.providerName,
+                    style: AppTypography.bodyMedium.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    result.message ?? _statusLabel(result.status),
+                    style: AppTypography.bodySmall.copyWith(color: color),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            // Latency
+            Text(
+              latencyText,
+              style: AppTypography.codeMedium.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -268,16 +300,42 @@ class _HealthScreenState extends State<HealthScreen> {
   Color _statusColor(ProviderStatus status) {
     switch (status) {
       case ProviderStatus.healthy:
-        return CtOSColors.success;
+        return AppColors.success;
       case ProviderStatus.degraded:
       case ProviderStatus.rateLimited:
-        return CtOSColors.warning;
+        return AppColors.warning;
       case ProviderStatus.unavailable:
       case ProviderStatus.malformed:
       case ProviderStatus.timeout:
-        return CtOSColors.error;
+        return AppColors.error;
       case ProviderStatus.unknown:
-        return CtOSColors.secondary;
+        return AppColors.textTertiary;
     }
+  }
+
+  String _statusLabel(ProviderStatus status) {
+    switch (status) {
+      case ProviderStatus.healthy:
+        return 'Healthy';
+      case ProviderStatus.degraded:
+        return 'Degraded';
+      case ProviderStatus.rateLimited:
+        return 'Rate Limited';
+      case ProviderStatus.unavailable:
+        return 'Unavailable';
+      case ProviderStatus.malformed:
+        return 'Malformed Response';
+      case ProviderStatus.timeout:
+        return 'Timeout';
+      case ProviderStatus.unknown:
+        return 'Unknown';
+    }
+  }
+
+  String _formatTimestamp(DateTime dt) {
+    final h = dt.hour.toString().padLeft(2, '0');
+    final m = dt.minute.toString().padLeft(2, '0');
+    final s = dt.second.toString().padLeft(2, '0');
+    return '${dt.day}/${dt.month}/${dt.year} $h:$m:$s';
   }
 }

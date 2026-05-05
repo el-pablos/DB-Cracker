@@ -45,8 +45,8 @@ void main() {
           ),
         ),
       );
-      expect(find.text('COBA LAGI'), findsOneWidget);
-      await tester.tap(find.text('COBA LAGI'));
+      expect(find.text('Coba Lagi'), findsOneWidget);
+      await tester.tap(find.text('Coba Lagi'));
       expect(retried, true);
     });
 

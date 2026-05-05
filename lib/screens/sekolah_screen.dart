@@ -3,12 +3,20 @@ import 'package:http/http.dart' as http;
 import '../api/sekolah/sekolah_service.dart';
 import '../api/sekolah/sekolah_models.dart';
 import '../api/cache/in_memory_cache_store.dart';
-import '../utils/constants.dart';
-import '../widgets/source_badge.dart';
-import '../api/core/data_result.dart';
 
-/// Screen pencarian sekolah berdasarkan NPSN
-/// Tema ctOS — terminal style lookup
+import '../theme/app_colors.dart';
+import '../theme/app_typography.dart';
+import '../theme/app_spacing.dart';
+import '../widgets/search/neo_search_bar.dart';
+import '../widgets/core/neo_card.dart';
+import '../widgets/feedback/neo_empty.dart';
+import '../widgets/feedback/neo_error.dart';
+import '../widgets/feedback/neo_skeleton.dart';
+import '../widgets/data/neo_data_row.dart';
+import '../widgets/core/neo_badge.dart';
+
+/// Cari Sekolah — Neo-Violet Academic theme
+/// NPSN lookup with clean card-based result display.
 class SekolahLookupScreen extends StatefulWidget {
   const SekolahLookupScreen({super.key});
 
@@ -21,7 +29,25 @@ class _SekolahLookupScreenState extends State<SekolahLookupScreen> {
   Sekolah? _result;
   bool _isLoading = false;
   String? _error;
-  DataSourceType _sourceType = DataSourceType.unavailable;
+
+
+  // BUG-002/003 fix: create once, reuse across calls
+  late final http.Client _httpClient;
+  late final InMemoryCacheStore _cacheStore;
+
+  @override
+  void initState() {
+    super.initState();
+    _httpClient = http.Client();
+    _cacheStore = InMemoryCacheStore();
+  }
+
+  @override
+  void dispose() {
+    _npsnController.dispose();
+    _httpClient.close();
+    super.dispose();
+  }
 
   Future<void> _lookup() async {
     final npsn = _npsnController.text.trim();
@@ -34,25 +60,33 @@ class _SekolahLookupScreenState extends State<SekolahLookupScreen> {
       return;
     }
 
-    setState(() { _isLoading = true; _error = null; _result = null; });
+    setState(() {
+      _isLoading = true;
+      _error = null;
+      _result = null;
+    });
 
     try {
       final service = SekolahService(
-        httpClient: http.Client(),
-        cacheStore: InMemoryCacheStore(),
+        httpClient: _httpClient,
+        cacheStore: _cacheStore,
       );
       final result = await service.lookupByNpsn(npsn);
       if (mounted) {
         setState(() {
           _result = result;
           _isLoading = false;
-          _sourceType = result != null ? DataSourceType.live : DataSourceType.unavailable;
-          if (result == null) _error = 'Sekolah dengan NPSN "$npsn" tidak ditemukan';
+          if (result == null) {
+            _error = 'Sekolah dengan NPSN "$npsn" tidak ditemukan';
+          }
         });
       }
     } catch (e) {
       if (mounted) {
-        setState(() { _isLoading = false; _error = 'Error: $e'; });
+        setState(() {
+          _isLoading = false;
+          _error = e.toString();
+        });
       }
     }
   }
@@ -60,165 +94,221 @@ class _SekolahLookupScreenState extends State<SekolahLookupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: CtOSColors.background,
-      appBar: AppBar(
-        backgroundColor: CtOSColors.surface,
-        title: const Row(
-          children: [
-            Icon(Icons.school, color: CtOSColors.primary, size: 18),
-            SizedBox(width: 8),
-            Flexible(
-              child: Text('NPSN LOOKUP', style: TextStyle(
-                fontFamily: 'Courier', fontWeight: FontWeight.bold,
-                color: CtOSColors.primary, fontSize: 14,
-              ), overflow: TextOverflow.ellipsis),
-            ),
-          ],
-        ),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
+      backgroundColor: AppColors.background,
+      body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Input NPSN
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: CtOSColors.surface,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: CtOSColors.primary.withValues(alpha: 0.3)),
+            // Custom AppBar row
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.xs,
+                AppSpacing.md2,
+                AppSpacing.md,
+                AppSpacing.sm,
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Row(
                 children: [
-                  const Text('MASUKKAN NPSN', style: TextStyle(
-                    color: CtOSColors.primary, fontFamily: 'Courier',
-                    fontSize: 12, fontWeight: FontWeight.bold,
-                  )),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: _npsnController,
-                          keyboardType: TextInputType.number,
-                          style: const TextStyle(color: CtOSColors.primary, fontFamily: 'Courier'),
-                          decoration: const InputDecoration(
-                            hintText: 'contoh: 69952935',
-                            hintStyle: TextStyle(color: CtOSColors.secondary),
-                            border: InputBorder.none,
-                            prefixText: '> ',
-                            prefixStyle: TextStyle(color: CtOSColors.primary, fontWeight: FontWeight.bold),
-                          ),
-                          onSubmitted: (_) => _lookup(),
-                        ),
-                      ),
-                      ElevatedButton(
-                        onPressed: _isLoading ? null : _lookup,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: CtOSColors.primary,
-                          foregroundColor: CtOSColors.background,
-                        ),
-                        child: const Text('SCAN', style: TextStyle(fontFamily: 'Courier', fontWeight: FontWeight.bold)),
-                      ),
-                    ],
+                  IconButton(
+                    icon: const Icon(
+                      Icons.arrow_back_rounded,
+                      color: AppColors.textPrimary,
+                    ),
+                    onPressed: () => Navigator.of(context).pop(),
                   ),
+                  const SizedBox(width: AppSpacing.sm),
+                  const Text('Cari Sekolah', style: AppTypography.headlineMedium),
                 ],
               ),
             ),
-            const SizedBox(height: 16),
 
-            // Result area
-            if (_isLoading)
-              const Center(child: CircularProgressIndicator(color: CtOSColors.primary))
-            else if (_error != null)
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: CtOSColors.surface,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: CtOSColors.error.withValues(alpha: 0.3)),
-                ),
-                child: Text(_error!, style: const TextStyle(
-                  color: CtOSColors.error, fontFamily: 'Courier', fontSize: 12,
-                )),
-              )
-            else if (_result != null)
-              Expanded(child: _buildResult(_result!)),
+            // Search bar
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+              child: NeoSearchBar(
+                controller: _npsnController,
+                hintText: 'Masukkan NPSN (min 6 digit)...',
+                isLoading: _isLoading,
+                onSubmitted: (_) => _lookup(),
+                onClear: () {
+                  setState(() {
+                    _result = null;
+                    _error = null;
+                  });
+                },
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+
+            // Content area with AnimatedSwitcher
+            Expanded(
+              child: AnimatedSwitcher(
+                duration: AppSpacing.durationNormal,
+                switchInCurve: Curves.easeOut,
+                switchOutCurve: Curves.easeIn,
+                child: _buildContent(),
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildResult(Sekolah sekolah) {
-    return SingleChildScrollView(
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: CtOSColors.surface,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: CtOSColors.primary.withValues(alpha: 0.3)),
+  Widget _buildContent() {
+    // Loading state
+    if (_isLoading) {
+      return Padding(
+        key: const ValueKey('loading'),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+        child: Column(
+          children: [
+            NeoSkeleton.card(),
+            const SizedBox(height: AppSpacing.md2),
+            NeoSkeleton.card(),
+          ],
         ),
+      );
+    }
+
+    // Error state
+    if (_error != null) {
+      return NeoError(
+        key: const ValueKey('error'),
+        message: _error!,
+        onRetry: _lookup,
+      );
+    }
+
+    // Result state
+    if (_result != null) {
+      return _buildResultCard(_result!);
+    }
+
+    // Initial state — no search yet
+    return const NeoEmpty(
+      key: ValueKey('initial'),
+      icon: Icons.school_rounded,
+      title: 'Cari Sekolah',
+      subtitle: 'Masukkan NPSN untuk mencari data sekolah dari database nasional',
+    );
+  }
+
+  Widget _buildResultCard(Sekolah sekolah) {
+    return SingleChildScrollView(
+      key: const ValueKey('result'),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+      child: NeoCard(
+        variant: NeoCardVariant.elevated,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Header row
             Row(
               children: [
-                const Expanded(
-                  child: Text('DATA SEKOLAH', style: TextStyle(
-                    color: CtOSColors.primary, fontFamily: 'Courier',
-                    fontSize: 14, fontWeight: FontWeight.bold,
-                  )),
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.school_rounded,
+                    color: AppColors.primary,
+                    size: 20,
+                  ),
                 ),
-                SourceBadge(sourceType: _sourceType, compact: true),
+                const SizedBox(width: AppSpacing.md2),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        sekolah.nama,
+                        style: AppTypography.headlineSmall,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      NeoBadge(
+                        label: sekolah.bentukPendidikan.isNotEmpty
+                            ? sekolah.bentukPendidikan
+                            : 'Sekolah',
+                        variant: NeoBadgeVariant.info,
+                        icon: Icons.category_rounded,
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
-            const Divider(color: CtOSColors.secondary),
-            const SizedBox(height: 8),
-            _row('NPSN', sekolah.npsn),
-            _row('Nama', sekolah.nama),
-            _row('Bentuk', sekolah.bentukPendidikan),
-            _row('Status', sekolah.statusSekolah),
-            _row('Alamat', sekolah.alamat),
-            _row('Provinsi', sekolah.provinsi),
-            _row('Kab/Kota', sekolah.kabupatenKota),
-            _row('Kecamatan', sekolah.kecamatan),
-            _row('Kelurahan', sekolah.kelurahan),
-            if (sekolah.lintang.isNotEmpty) _row('Koordinat', '${sekolah.lintang}, ${sekolah.bujur}'),
+            const SizedBox(height: AppSpacing.md),
+            const Divider(color: AppColors.divider, height: 1),
+            const SizedBox(height: AppSpacing.sm),
+
+            // Data rows
+            NeoDataRow(
+              label: 'NPSN',
+              value: sekolah.npsn,
+              icon: Icons.tag_rounded,
+              isCode: true,
+              copyable: true,
+            ),
+            NeoDataRow(
+              label: 'Nama',
+              value: sekolah.nama,
+              icon: Icons.business_rounded,
+            ),
+            NeoDataRow(
+              label: 'Alamat',
+              value: sekolah.alamat,
+              icon: Icons.location_on_outlined,
+            ),
+            NeoDataRow(
+              label: 'Kab/Kota',
+              value: sekolah.kabupatenKota,
+              icon: Icons.location_city_rounded,
+            ),
+            NeoDataRow(
+              label: 'Provinsi',
+              value: sekolah.provinsi,
+              icon: Icons.map_outlined,
+            ),
+            NeoDataRow(
+              label: 'Jenjang',
+              value: sekolah.bentukPendidikan,
+              icon: Icons.school_outlined,
+            ),
+            if (sekolah.statusSekolah.isNotEmpty)
+              NeoDataRow(
+                label: 'Status',
+                value: sekolah.statusSekolah,
+                icon: Icons.verified_outlined,
+              ),
+            if (sekolah.kecamatan.isNotEmpty)
+              NeoDataRow(
+                label: 'Kecamatan',
+                value: sekolah.kecamatan,
+                icon: Icons.place_outlined,
+              ),
+            if (sekolah.kelurahan.isNotEmpty)
+              NeoDataRow(
+                label: 'Kelurahan',
+                value: sekolah.kelurahan,
+                icon: Icons.pin_drop_outlined,
+              ),
+            if (sekolah.lintang.isNotEmpty)
+              NeoDataRow(
+                label: 'Koordinat',
+                value: '${sekolah.lintang}, ${sekolah.bujur}',
+                icon: Icons.gps_fixed_rounded,
+                isCode: true,
+                copyable: true,
+              ),
           ],
         ),
       ),
     );
-  }
-
-  Widget _row(String label, String value) {
-    if (value.isEmpty) return const SizedBox.shrink();
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 90,
-            child: Text('$label:', style: TextStyle(
-              color: CtOSColors.secondary, fontFamily: 'Courier', fontSize: 11,
-            )),
-          ),
-          Expanded(
-            child: Text(value, style: const TextStyle(
-              color: CtOSColors.textPrimary, fontFamily: 'Courier', fontSize: 12,
-            )),
-          ),
-        ],
-      ),
-    );
-  }
-
-  @override
-  void dispose() {
-    _npsnController.dispose();
-    super.dispose();
   }
 }

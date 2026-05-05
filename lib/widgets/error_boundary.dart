@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../utils/constants.dart';
-import 'ctos_container.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_typography.dart';
 
-/// Widget untuk menangani error dengan styling ctOS
+/// Widget untuk menangani error state
 class CtOSErrorBoundary extends StatelessWidget {
   final Widget child;
   final String? errorMessage;
@@ -26,61 +26,49 @@ class CtOSErrorBoundary extends StatelessWidget {
   }
 
   Widget _buildErrorWidget() {
-    return CtOSContainer(
+    return Container(
       padding: const EdgeInsets.all(24.0),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+      ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Error icon
           Container(
-            width: 80.0,
-            height: 80.0,
+            width: 72,
+            height: 72,
             decoration: BoxDecoration(
-              color: CtOSColors.error.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(40.0),
-              border: Border.all(
-                color: CtOSColors.error,
-                width: 2.0,
-              ),
+              color: AppColors.errorSurface,
+              borderRadius: BorderRadius.circular(20),
             ),
             child: const Icon(
-              Icons.error_outline,
-              color: CtOSColors.error,
-              size: 40.0,
+              Icons.error_outline_rounded,
+              color: AppColors.error,
+              size: 32,
             ),
           ),
-          
-          const SizedBox(height: 24.0),
-          
-          // Error title
-          const CtOSText(
-            'SISTEM ERROR',
-            fontSize: 18.0,
-            fontWeight: FontWeight.bold,
-            color: CtOSColors.error,
+          const SizedBox(height: 20),
+          Text(
+            'Terjadi Kesalahan',
+            style: AppTypography.headlineSmall.copyWith(color: AppColors.error),
             textAlign: TextAlign.center,
           ),
-          
-          const SizedBox(height: 12.0),
-          
-          // Error message
-          CtOSText(
+          const SizedBox(height: 8),
+          Text(
             errorMessage ?? 'Terjadi kesalahan yang tidak diketahui',
-            fontSize: 14.0,
-            color: CtOSColors.textSecondary,
+            style: AppTypography.bodySmall,
             textAlign: TextAlign.center,
             maxLines: 3,
+            overflow: TextOverflow.ellipsis,
           ),
-          
-          const SizedBox(height: 24.0),
-          
-          // Retry button
+          const SizedBox(height: 20),
           if (showRetryButton && onRetry != null)
-            CtOSButton(
-              text: 'COBA LAGI',
+            OutlinedButton.icon(
               onPressed: onRetry!,
-              icon: Icons.refresh,
-              isPrimary: false,
+              icon: const Icon(Icons.refresh_rounded, size: 18),
+              label: const Text('Coba Lagi'),
             ),
         ],
       ),
@@ -88,7 +76,7 @@ class CtOSErrorBoundary extends StatelessWidget {
   }
 }
 
-/// Widget untuk loading state dengan styling ctOS
+/// Widget untuk loading state
 class CtOSLoadingWidget extends StatefulWidget {
   final String? message;
   final List<String>? consoleMessages;
@@ -100,7 +88,7 @@ class CtOSLoadingWidget extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _CtOSLoadingWidgetState createState() => _CtOSLoadingWidgetState();
+  State<CtOSLoadingWidget> createState() => _CtOSLoadingWidgetState();
 }
 
 class _CtOSLoadingWidgetState extends State<CtOSLoadingWidget>
@@ -125,79 +113,37 @@ class _CtOSLoadingWidgetState extends State<CtOSLoadingWidget>
 
   @override
   Widget build(BuildContext context) {
-    return CtOSContainer(
+    return Container(
       padding: const EdgeInsets.all(24.0),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+      ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Loading animation
-          AnimatedBuilder(
-            animation: _animationController,
-            builder: (context, child) {
-              return Container(
-                width: 60.0,
-                height: 60.0,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: CtOSColors.primary.withValues(alpha: 0.3),
-                    width: 3.0,
-                  ),
-                ),
-                child: CircularProgressIndicator(
-                  value: _animationController.value,
-                  strokeWidth: 3.0,
-                  valueColor: AlwaysStoppedAnimation<Color>(CtOSColors.primary),
-                ),
-              );
-            },
+          const SizedBox(
+            width: 40,
+            height: 40,
+            child: CircularProgressIndicator(
+              strokeWidth: 3,
+              color: AppColors.primary,
+            ),
           ),
-          
-          const SizedBox(height: 24.0),
-          
-          // Loading message
-          CtOSText(
-            widget.message ?? 'MEMPROSES DATA...',
-            fontSize: 16.0,
-            fontWeight: FontWeight.bold,
-            color: CtOSColors.primary,
+          const SizedBox(height: 20),
+          Text(
+            widget.message ?? 'Memuat data...',
+            style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary),
             textAlign: TextAlign.center,
           ),
-          
-          const SizedBox(height: 16.0),
-          
-          // Console messages
-          if (widget.consoleMessages != null && widget.consoleMessages!.isNotEmpty)
-            Container(
-              height: 120.0,
-              width: double.infinity,
-              padding: const EdgeInsets.all(12.0),
-              decoration: BoxDecoration(
-                color: CtOSColors.background,
-                border: Border.all(color: CtOSColors.border),
-                borderRadius: BorderRadius.circular(4.0),
-              ),
-              child: ListView.builder(
-                itemCount: widget.consoleMessages!.length,
-                itemBuilder: (context, index) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 2.0),
-                    child: CtOSText(
-                      "> ${widget.consoleMessages![index]}",
-                      fontSize: 11.0,
-                      color: CtOSColors.textAccent,
-                    ),
-                  );
-                },
-              ),
-            ),
         ],
       ),
     );
   }
 }
 
-/// Widget untuk empty state dengan styling ctOS
+/// Widget untuk empty state
 class CtOSEmptyWidget extends StatelessWidget {
   final String title;
   final String message;
@@ -216,60 +162,48 @@ class CtOSEmptyWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CtOSContainer(
+    return Container(
       padding: const EdgeInsets.all(24.0),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+      ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Empty icon
           Container(
-            width: 80.0,
-            height: 80.0,
+            width: 72,
+            height: 72,
             decoration: BoxDecoration(
-              color: CtOSColors.textSecondary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(40.0),
-              border: Border.all(
-                color: CtOSColors.textSecondary,
-                width: 2.0,
-              ),
+              color: AppColors.surfaceHigh,
+              borderRadius: BorderRadius.circular(20),
             ),
             child: Icon(
-              icon ?? Icons.inbox_outlined,
-              color: CtOSColors.textSecondary,
-              size: 40.0,
+              icon ?? Icons.inbox_rounded,
+              color: AppColors.textTertiary,
+              size: 32,
             ),
           ),
-          
-          const SizedBox(height: 24.0),
-          
-          // Empty title
-          CtOSText(
+          const SizedBox(height: 20),
+          Text(
             title,
-            fontSize: 18.0,
-            fontWeight: FontWeight.bold,
-            color: CtOSColors.textPrimary,
+            style: AppTypography.headlineSmall,
             textAlign: TextAlign.center,
           ),
-          
-          const SizedBox(height: 12.0),
-          
-          // Empty message
-          CtOSText(
+          const SizedBox(height: 8),
+          Text(
             message,
-            fontSize: 14.0,
-            color: CtOSColors.textSecondary,
+            style: AppTypography.bodySmall,
             textAlign: TextAlign.center,
             maxLines: 3,
+            overflow: TextOverflow.ellipsis,
           ),
-          
-          const SizedBox(height: 24.0),
-          
-          // Action button
+          const SizedBox(height: 20),
           if (onAction != null && actionText != null)
-            CtOSButton(
-              text: actionText!,
+            ElevatedButton(
               onPressed: onAction!,
-              isPrimary: true,
+              child: Text(actionText!),
             ),
         ],
       ),

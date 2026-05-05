@@ -1,19 +1,20 @@
 import 'package:flutter/foundation.dart';
 import 'dart:async';
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../api/api_factory.dart';
 import '../api/multi_api_factory.dart';
 import '../models/mahasiswa.dart';
-import '../widgets/hacker_search_bar.dart';
-import '../widgets/hacker_result_item.dart';
-import '../widgets/console_text.dart';
-import '../widgets/terminal_window.dart';
-import '../widgets/filter_search_bar.dart';
-import '../widgets/filter_status.dart';
-// filter_overlay import removed — blocking dialogs replaced with instant setState
-import '../widgets/dosen_search_button.dart'; // Tambahkan import
+import '../theme/app_colors.dart';
+import '../theme/app_typography.dart';
+import '../theme/app_spacing.dart';
+import '../theme/app_gradients.dart';
+import '../widgets/search/neo_search_bar.dart';
+import '../widgets/core/neo_card.dart';
+import '../widgets/core/neo_badge.dart';
+import '../widgets/feedback/neo_skeleton.dart';
+import '../widgets/feedback/neo_empty.dart';
+import '../widgets/navigation/neo_quick_action.dart';
 import '../utils/constants.dart';
 import 'detail_screen.dart';
 
@@ -24,7 +25,7 @@ class HomeScreen extends StatefulWidget {
   _HomeScreenState createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin, WidgetsBindingObserver {
+class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _searchController = TextEditingController();
   final TextEditingController _filterController = TextEditingController();
   List<Mahasiswa> _searchResults = [];
@@ -32,20 +33,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   bool _isLoading = false;
   bool _isSearchInProgress = false;
   String? _errorMessage;
-  late AnimationController _animationController;
-  bool _showIntro = true;
-  List<String> _consoleMessages = [];
-  final List<Timer> _activeTimers = [];
-  late final bool _statusDotIsGreen;
-  Timer? _consoleTimer;
-  
-  // Tambahkan instance MultiApiFactory
+
   late MultiApiFactory _multiApiFactory;
-  
-  // Tambahkan flag untuk menunjukkan pencarian multi-sumber
   bool _useMultiSource = true;
 
-  // Tambahkan variabel untuk filter universitas
   List<String> _universities = [];
   String? _selectedUniversity;
   Timer? _filterDebounce;
@@ -53,252 +44,58 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this); // U4-FIX: pause animation on background
-    _statusDotIsGreen = Random().nextBool();
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 2000),
-    );
-    _animationController.repeat(reverse: true);
-    
-    // Inisialisasi MultiApiFactory
     _multiApiFactory = MultiApiFactory();
-    
-    // Tampilkan intro
-    _runIntroSequence();
-    
-    // Untuk menunda filter saat pengetikan
     _filterController.addListener(_onFilterChanged);
   }
-  
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _filterController.dispose();
+    _filterDebounce?.cancel();
+    super.dispose();
+  }
+
+  // ─── Filter Logic ──────────────────────────────────────────────────────────
+
   void _onFilterChanged() {
     if (_filterDebounce?.isActive ?? false) {
       _filterDebounce!.cancel();
     }
-    
     _filterDebounce = Timer(const Duration(milliseconds: 500), () {
       if (_filterController.text.isNotEmpty) {
         _autoFilterResults(_filterController.text);
       }
     });
   }
-  
+
   void _autoFilterResults(String query) {
-    // Cari universitas yang sesuai dengan query
     final matchingUniversities = _universities
-        .where((university) => 
-            university.toLowerCase().contains(query.toLowerCase()))
+        .where((u) => u.toLowerCase().contains(query.toLowerCase()))
         .toList();
-    
     if (matchingUniversities.isNotEmpty) {
       _filterResults(matchingUniversities.first);
     }
   }
 
-  void _runIntroSequence() {
-    setState(() {
-      _consoleMessages = [];
-    });
-
-    _addConsoleMessageWithDelay("MEMULAI SISTEM DB CRACKER...", 300);
-    _addConsoleMessageWithDelay("MENGHUBUNGKAN KE SERVER...", 800);
-    _addConsoleMessageWithDelay("MELEWATI PROTOKOL KEAMANAN...", 1500);
-    _addConsoleMessageWithDelay("MEMBUAT KONEKSI DATABASE...", 2300);
-    _addConsoleMessageWithDelay("MEMINDAI CELAH FIREWALL...", 3000);
-    _addConsoleMessageWithDelay("MENGAKTIFKAN SUMBER DATA TAMBAHAN...", 3500);
-    _addConsoleMessageWithDelay("AKSES DIBERIKAN KE MULTIPLE DATABASE", 4000);
-    _addConsoleMessageWithDelay("DB CRACKER v3.0 SIAP - Author: Tamaengs", 4500);
-    
-    // BUG-U6 FIX: Timer harus setelah pesan terakhir (4500ms) + buffer
-    // Sebelumnya 1500ms — intro hilang sebelum semua pesan tampil
-    final introTimer = Timer(const Duration(milliseconds: 5000), () {
-      if (mounted) {
-        setState(() {
-          _showIntro = false;
-        });
-      }
-    });
-    _activeTimers.add(introTimer);
-  }
-
-  void _addConsoleMessageWithDelay(String message, int delay) {
-    final timer = Timer(Duration(milliseconds: delay), () {
-      if (mounted) {
-        setState(() {
-          _consoleMessages.add(message);
-        });
-      }
-    });
-    _activeTimers.add(timer);
-  }
-
-  // U4-FIX: Pause/resume animation based on app lifecycle — saves battery
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
-      _animationController.stop();
-    } else if (state == AppLifecycleState.resumed) {
-      _animationController.repeat(reverse: true);
-    }
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    _searchController.dispose();
-    _filterController.dispose();
-    _animationController.dispose();
-    _consoleTimer?.cancel();
-    _filterDebounce?.cancel();
-    for (final timer in _activeTimers) { timer.cancel(); }
-    _activeTimers.clear();
-    super.dispose();
-  }
-
-  void _simulateHacking() {
-    if (_isSearchInProgress) return;
-    _isSearchInProgress = true; // PERF-FIX: flag properly reset in _actuallyPerformSearch finally block
-    setState(() {
-      _consoleMessages = [];
-      _isLoading = true;
-      // Reset filter saat melakukan pencarian baru
-      _selectedUniversity = null;
-      _filterController.clear();
-      _universities = [];
-      _filteredResults = [];
-    });
-
-    final String query = _searchController.text.trim();
-    final sanitizedQuery = query.replaceAll('<', '').replaceAll('>', '').replaceAll('"', '').replaceAll("'", '');
-    if (sanitizedQuery.length < 2) { setState(() { _errorMessage = 'Minimal 2 karakter untuk pencarian'; _isLoading = false; }); _isSearchInProgress = false; return; }
-    
-    _addConsoleMessageWithDelay("MEMULAI PEMINDAIAN DATABASE UNTUK TARGET: $query", 300);
-    _addConsoleMessageWithDelay("MELEWATI LAPISAN KEAMANAN 1...", 800);
-    _addConsoleMessageWithDelay("MENYUNTIKKAN QUERY SQL...", 1200);
-    _addConsoleMessageWithDelay("MENCOBA MEMECAHKAN ENKRIPSI...", 1800);
-    _addConsoleMessageWithDelay("MENEMBUS FIREWALL...", 2400);
-    
-    if (_useMultiSource) {
-      _addConsoleMessageWithDelay("MENGAKSES BERBAGAI DATABASE PENDIDIKAN...", 3000);
-      _addConsoleMessageWithDelay("MENGGABUNGKAN HASIL DARI MULTIPLE SUMBER...", 3600);
-    } else {
-      _addConsoleMessageWithDelay("MENGAKSES DATABASE MAHASISWA...", 3000);
-    }
-    
-    _actuallyPerformSearch();
-  }
-
-  Future<void> _actuallyPerformSearch() async {
-    final String query = _searchController.text.trim();
-    // SECURITY-FIX: Whitelist sanitization + max length
-    final sanitizedQuery = query.replaceAll(RegExp(r'[<>"' "'" r']'), '').trim();
-    if (sanitizedQuery.length < 2) {
-      setState(() { _errorMessage = 'Minimal 2 karakter untuk pencarian'; _isLoading = false; });
-      _isSearchInProgress = false;
-      return;
-    }
-    if (sanitizedQuery.isEmpty) {
-      setState(() {
-        _searchResults = [];
-        _filteredResults = [];
-        _errorMessage = AppStrings.pleaseEnterSearchTerm;
-        _isLoading = false;
-      });
-      _isSearchInProgress = false;
-      _addConsoleMessageWithDelay("ERROR: TARGET TIDAK DITENTUKAN", 500);
-      return;
-    }
-
-    try {
-      _addConsoleMessageWithDelay("MENGAKSES SERVER DATABASE...", 1000);
-      _addConsoleMessageWithDelay("MENCOBA KONEKSI AMAN...", 2000);
-
-      List<Mahasiswa> results = [];
-      try {
-        if (_useMultiSource) {
-          // SECURITY-FIX: Gunakan sanitizedQuery, bukan raw query
-          results = await _multiApiFactory.searchAllSources(sanitizedQuery);
-          _addConsoleMessageWithDelay("MENGGABUNGKAN DATA DARI MULTIPLE SUMBER...", 2500);
-        } else {
-          final api = Provider.of<ApiFactory>(context, listen: false);
-          results = await api.searchMahasiswa(sanitizedQuery);
-        }
-      } catch (e) {
-        if (kDebugMode) debugPrint('Error dalam pencarian: $e');
-        String errorMsg = e.toString();
-        
-        if (errorMsg.contains('XMLHttpRequest')) {
-          throw Exception('Gagal terhubung ke server. Periksa koneksi internet atau coba lagi nanti.');
-        } else if (errorMsg.contains('Timeout')) {
-          throw Exception('Koneksi timeout. Server sibuk, silakan coba lagi.');
-        } else if (errorMsg.contains('403')) {
-          throw Exception('Akses ditolak oleh server (403 Forbidden). Menggunakan data offline.');
-        } else {
-          throw Exception('Error: $e');
-        }
-      }
-      
-      await Future.delayed(const Duration(milliseconds: 800));
-      
-      setState(() {
-        _searchResults = results;
-        _filteredResults = results;
-        _isLoading = false;
-        
-        if (results.isEmpty) {
-          _errorMessage = 'TIDAK DITEMUKAN HASIL UNTUK "$sanitizedQuery"';
-          _addConsoleMessageWithDelay("TIDAK ADA DATA YANG COCOK", 300);
-          _addConsoleMessageWithDelay("AKSES DITOLAK", 600);
-        } else {
-          _errorMessage = null;
-          _addConsoleMessageWithDelay("DATA DITEMUKAN: ${results.length}", 300);
-          _addConsoleMessageWithDelay("MENDEKRIPSI DATA...", 600);
-          _addConsoleMessageWithDelay("AKSES DIBERIKAN", 900);
-          _extractUniversities(results);
-        }
-      });
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-        _searchResults = [];
-        _filteredResults = [];
-        String errorMsg = e.toString().replaceAll("Exception: ", "");
-        _errorMessage = errorMsg;
-      });
-      _addConsoleMessageWithDelay("KONEKSI TERPUTUS", 300);
-      _addConsoleMessageWithDelay("PERINGATAN KEAMANAN: DISCONNECT...", 600);
-    } finally {
-      // BUG-C3 FIX: ALWAYS reset flag — prevents app from locking after search
-      _isSearchInProgress = false;
-    }
-  }
-
-  // Ekstrak daftar universitas unik dari hasil pencarian
   void _extractUniversities(List<Mahasiswa> results) {
-    Set<String> uniqueUniversities = {};
-    
-    for (var mahasiswa in results) {
-      if (mahasiswa.namaPt.isNotEmpty) {
-        uniqueUniversities.add(mahasiswa.namaPt);
-      }
+    final Set<String> unique = {};
+    for (var m in results) {
+      if (m.namaPt.isNotEmpty) unique.add(m.namaPt);
     }
-    
     setState(() {
-      _universities = uniqueUniversities.toList()..sort();
+      _universities = unique.toList()..sort();
     });
   }
 
-  // Filter hasil berdasarkan universitas yang dipilih
-  // UX-FIX H5: Removed blocking dialog — filtering a local list is instant
   void _filterResults(String? university) {
     setState(() {
       _selectedUniversity = university;
       if (university == null) {
         _filteredResults = _searchResults;
       } else {
-        _filteredResults = _searchResults
-            .where((mahasiswa) => mahasiswa.namaPt == university)
-            .toList();
+        _filteredResults =
+            _searchResults.where((m) => m.namaPt == university).toList();
       }
     });
   }
@@ -309,469 +106,563 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       _filteredResults = _searchResults;
       _filterController.clear();
     });
-    
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-          AppStrings.filterCleared,
-          style: TextStyle(fontFamily: 'Courier', fontSize: 14),
-        ),
-        backgroundColor: CtOSColors.surface,
-        duration: Duration(seconds: 1),
+      SnackBar(
+        content: Text(AppStrings.filterCleared, style: AppTypography.bodySmall.copyWith(color: AppColors.textPrimary)),
+        backgroundColor: AppColors.surface,
+        duration: const Duration(seconds: 1),
       ),
     );
+  }
+
+  // ─── Search Logic ──────────────────────────────────────────────────────────
+
+  void _performSearch([String? _]) {
+    if (_isSearchInProgress) return;
+    _isSearchInProgress = true;
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+      _selectedUniversity = null;
+      _filterController.clear();
+      _universities = [];
+      _filteredResults = [];
+    });
+
+    final String query = _searchController.text.trim();
+    final sanitizedQuery =
+        query.replaceAll(RegExp(r'[<>"' "'" r']'), '').trim();
+    if (sanitizedQuery.length < 2) {
+      setState(() {
+        _errorMessage = 'Minimal 2 karakter untuk pencarian';
+        _isLoading = false;
+      });
+      _isSearchInProgress = false;
+      return;
+    }
+
+    _actuallyPerformSearch(sanitizedQuery);
+  }
+
+  Future<void> _actuallyPerformSearch(String sanitizedQuery) async {
+    if (sanitizedQuery.isEmpty) {
+      setState(() {
+        _searchResults = [];
+        _filteredResults = [];
+        _errorMessage = AppStrings.pleaseEnterSearchTerm;
+        _isLoading = false;
+      });
+      _isSearchInProgress = false;
+      return;
+    }
+
+    try {
+      List<Mahasiswa> results = [];
+      try {
+        if (_useMultiSource) {
+          results = await _multiApiFactory.searchAllSources(sanitizedQuery);
+        } else {
+          final api = Provider.of<ApiFactory>(context, listen: false);
+          results = await api.searchMahasiswa(sanitizedQuery);
+        }
+      } catch (e) {
+        if (kDebugMode) debugPrint('Error dalam pencarian: $e');
+        String errorMsg = e.toString();
+        if (errorMsg.contains('XMLHttpRequest')) {
+          throw Exception('Gagal terhubung ke server. Periksa koneksi internet atau coba lagi nanti.');
+        } else if (errorMsg.contains('Timeout')) {
+          throw Exception('Koneksi timeout. Server sibuk, silakan coba lagi.');
+        } else if (errorMsg.contains('403')) {
+          throw Exception('Akses ditolak oleh server (403 Forbidden).');
+        } else {
+          throw Exception('Error: $e');
+        }
+      }
+
+      setState(() {
+        _searchResults = results;
+        _filteredResults = results;
+        _isLoading = false;
+        if (results.isEmpty) {
+          _errorMessage = '${AppStrings.noResultsFound} "$sanitizedQuery"';
+        } else {
+          _errorMessage = null;
+          _extractUniversities(results);
+        }
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _searchResults = [];
+        _filteredResults = [];
+        _errorMessage = e.toString().replaceAll('Exception: ', '');
+      });
+    } finally {
+      _isSearchInProgress = false;
+    }
   }
 
   void _viewMahasiswaDetail(BuildContext context, Mahasiswa mahasiswa) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => DetailScreen(mahasiswaId: mahasiswa.id, subjectName: mahasiswa.nama),
+        builder: (_) => DetailScreen(
+          mahasiswaId: mahasiswa.id,
+          subjectName: mahasiswa.nama,
+        ),
       ),
     );
   }
 
+  // ─── UI Helpers ────────────────────────────────────────────────────────────
+
+  bool get _hasResults => _searchResults.isNotEmpty && !_isLoading;
+
+  // ─── Build ─────────────────────────────────────────────────────────────────
+
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    final bool isMobile = size.width < 600;
-    
-    if (_showIntro) {
-      return TerminalWindow(
-        title: "BOOT SEQUENCE DB CRACKER",
-        child: ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: _consoleMessages.length,
-          itemBuilder: (context, index) {
-            return ConsoleText(text: _consoleMessages[index]);
-          },
-        ),
-      );
-    }
-
     return Scaffold(
-      backgroundColor: CtOSColors.background,
-      appBar: AppBar(
-        title: Row(
+      backgroundColor: AppColors.background,
+      resizeToAvoidBottomInset: true,
+      body: SafeArea(
+        child: Column(
           children: [
-            AnimatedBuilder(
-              animation: _animationController,
-              builder: (context, child) {
-                return Container(
-                  width: 10,
-                  height: 10,
-                  margin: const EdgeInsets.only(right: 6),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: _animationController.value > 0.5 
-                        ? CtOSColors.primary 
-                        : CtOSColors.error,
-                  ),
-                );
-              },
+            _buildGradientHeader(),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+              child: NeoSearchBar(
+                controller: _searchController,
+                onSubmitted: _performSearch,
+                isLoading: _isLoading,
+                hintText: AppStrings.searchHint,
+              ),
             ),
-            Flexible(
-              child: Text(
-                AppStrings.homeTitle,
-                style: const TextStyle(
-                  fontFamily: 'Courier',
-                  fontWeight: FontWeight.bold,
-                  color: CtOSColors.primary,
-                  fontSize: 14,
+            Expanded(
+              child: _isLoading
+                  ? _buildLoadingSkeleton()
+                  : _hasResults
+                      ? _buildSearchResults()
+                      : _errorMessage != null
+                          ? _buildErrorState()
+                          : _buildDefaultContent(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ─── Gradient Header ───────────────────────────────────────────────────────
+
+  Widget _buildGradientHeader() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 18),
+      decoration: const BoxDecoration(
+        gradient: AppGradients.primary,
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(24),
+          bottomRight: Radius.circular(24),
+        ),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  AppStrings.homeTitle,
+                  style: AppTypography.displayMedium.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
-                overflow: TextOverflow.ellipsis,
-                maxLines: 1,
+                const SizedBox(height: 4),
+                Text(
+                  'PDDIKTI Data Explorer',
+                  style: AppTypography.bodySmall.copyWith(
+                    color: Colors.white70,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              NeoBadge(
+                label: AppStrings.appVersion,
+                variant: NeoBadgeVariant.info,
+              ),
+              const SizedBox(height: 8),
+              _buildMultiSourceToggle(),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMultiSourceToggle() {
+    return GestureDetector(
+      onTap: () {
+        setState(() => _useMultiSource = !_useMultiSource);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              _useMultiSource
+                  ? 'Mode Multi-Source diaktifkan'
+                  : 'Mode PDDIKTI saja',
+              style: AppTypography.bodySmall.copyWith(color: AppColors.textPrimary),
+            ),
+            backgroundColor: AppColors.surface,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.15),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+          border: Border.all(color: Colors.white24),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              _useMultiSource ? Icons.cloud_sync_rounded : Icons.cloud_outlined,
+              size: 14,
+              color: Colors.white,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              _useMultiSource ? 'MULTI-DB' : 'PDDIKTI',
+              style: AppTypography.labelSmall.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ],
         ),
-        backgroundColor: CtOSColors.surface,
-        actions: [
-          // Toggle switch untuk mengaktifkan/menonaktifkan multi-source
-          Switch(
-            value: _useMultiSource,
-            activeColor: CtOSColors.primary,
-            inactiveThumbColor: CtOSColors.secondary,
-            onChanged: (bool value) {
-              setState(() {
-                _useMultiSource = value;
-              });
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    value 
-                      ? "MODE MULTI-SOURCE DIAKTIFKAN" 
-                      : "MODE HANYA PDDIKTI DIAKTIFKAN",
-                    style: const TextStyle(
-                      fontFamily: 'Courier',
-                      fontSize: 14,
-                    ),
-                  ),
-                  backgroundColor: CtOSColors.surface,
-                  duration: Duration(seconds: 2),
-                ),
-              );
-            },
-          ),
-          Padding(
-            padding: EdgeInsets.only(right: isMobile ? 4 : 8),
-            child: Text(
-              _useMultiSource ? "MULTI-DB" : "PDDIKTI",
-              style: const TextStyle(
-                color: CtOSColors.secondary,
-                fontFamily: 'Courier',
-                fontSize: 10,
+      ),
+    );
+  }
+
+  // ─── Default Content (Quick Actions) ───────────────────────────────────────
+
+  Widget _buildDefaultContent() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 8),
+          Text('Akses Cepat', style: AppTypography.headlineSmall),
+          const SizedBox(height: 12),
+          GridView.count(
+            crossAxisCount: 3,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            mainAxisSpacing: 12,
+            crossAxisSpacing: 12,
+            childAspectRatio: 0.95,
+            children: [
+              NeoQuickAction(
+                icon: Icons.school_rounded,
+                label: 'Mahasiswa',
+                color: AppColors.primary,
+                onTap: () => _searchController.text.isEmpty
+                    ? null
+                    : _performSearch(),
               ),
-            ),
+              NeoQuickAction(
+                icon: Icons.person_rounded,
+                label: 'Dosen',
+                color: AppColors.secondary,
+                onTap: () => Navigator.pushNamed(context, '/dosen'),
+              ),
+              NeoQuickAction(
+                icon: Icons.menu_book_rounded,
+                label: 'Prodi',
+                color: AppColors.success,
+                onTap: () => Navigator.pushNamed(context, '/prodi'),
+              ),
+              NeoQuickAction(
+                icon: Icons.account_balance_rounded,
+                label: 'Kampus',
+                color: AppColors.warning,
+                onTap: () => Navigator.pushNamed(context, '/kampus'),
+              ),
+              NeoQuickAction(
+                icon: Icons.monitor_heart_rounded,
+                label: 'Health',
+                color: AppColors.error,
+                onTap: () => Navigator.pushNamed(context, '/health'),
+              ),
+              NeoQuickAction(
+                icon: Icons.domain_rounded,
+                label: 'Sekolah',
+                color: AppColors.info,
+                onTap: () => Navigator.pushNamed(context, '/sekolah'),
+              ),
+            ],
           ),
-          IconButton(
-            icon: const Icon(Icons.monitor_heart, color: CtOSColors.secondary, size: 18),
-            onPressed: () => Navigator.pushNamed(context, '/health'),
-            tooltip: 'Status Sistem',
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(minWidth: 36),
+          const SizedBox(height: 24),
+          NeoEmpty(
+            icon: Icons.search_rounded,
+            title: AppStrings.emptySearchPrompt,
+            subtitle: 'Gunakan search bar di atas untuk mencari data mahasiswa dari PDDIKTI',
           ),
         ],
       ),
-      body: SafeArea(
-        child: Container(
-          color: CtOSColors.background,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Container(
-                color: CtOSColors.surface.withValues(alpha: 0.7),
-                padding: const EdgeInsets.all(8),
-                child: const Text(
-                  'KONEKSI AMAN TERSEDIA',
-                  style: TextStyle(
-                    color: CtOSColors.textAccent,
-                    fontFamily: 'Courier',
-                    fontSize: 12,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: HackerSearchBar(
-                  controller: _searchController,
-                  hintText: AppStrings.searchHint,
-                  onSearch: _simulateHacking,
-                ),
-              ),
-              // Tambahkan filter universitas jika ada hasil
-              if (_searchResults.isNotEmpty && _universities.isNotEmpty)
-                Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: FilterSearchBar(
-                        universities: _universities,
-                        selectedUniversity: _selectedUniversity,
-                        onFilter: _filterResults,
-                        onClear: _clearFilter,
-                        controller: _filterController,
-                      ),
-                    ),
-                    // Tampilkan status filter jika filter aktif
-                    if (_selectedUniversity != null)
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                        child: FilterStatus(
-                          university: _selectedUniversity!,
-                          count: _filteredResults.length,
-                          onClear: _clearFilter,
-                        ),
-                      ),
-                  ],
-                ),
-              Expanded(
-                child: _isLoading
-                  ? TerminalWindow(
-                      title: "HACKING SEDANG BERJALAN",
-                      child: ListView.builder(
-                        padding: const EdgeInsets.all(16),
-                        itemCount: _consoleMessages.length,
-                        itemBuilder: (context, index) {
-                          return ConsoleText(text: _consoleMessages[index]);
-                        },
-                      ),
-                    )
-                  : _errorMessage != null
-                    ? TerminalWindow(
-                        title: "PERINGATAN SISTEM",
-                        child: Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(
-                                  Icons.warning_amber_rounded,
-                                  color: CtOSColors.error,
-                                  size: 48,
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  _errorMessage!,
-                                  style: const TextStyle(
-                                    color: CtOSColors.error,
-                                    fontSize: 16,
-                                    fontFamily: 'Courier',
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                                const SizedBox(height: 24),
-                                ElevatedButton(
-                                  onPressed: _simulateHacking,
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: CtOSColors.surface,
-                                    foregroundColor: CtOSColors.primary,
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 16, 
-                                      vertical: 8
-                                    ),
-                                    side: const BorderSide(color: CtOSColors.primary),
-                                  ),
-                                  child: const Text(
-                                    'COBA LAGI',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontFamily: 'Courier',
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      )
-                    : _searchResults.isEmpty
-                      ? TerminalWindow(
-                          title: "MENUNGGU INPUT",
-                          child: SingleChildScrollView(
-                            child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.search,
-                                color: CtOSColors.secondary.withValues(alpha: 0.5),
-                                size: 64,
-                              ),
-                              const SizedBox(height: 16),
-                              const Text(
-                                AppStrings.emptySearchPrompt,
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: CtOSColors.textPrimary,
-                                  fontFamily: 'Courier',
-                                ),
-                                textAlign: TextAlign.center,
-                                maxLines: 2,
-                              ),
-                              
-                              // Tambahkan tombol-tombol menu disini
-                              const SizedBox(height: 24),
-                              
-                              // Tambahkan tombol pencarian dosen
-                              const DosenSearchButton(),
-                              
-                              const SizedBox(height: 8),
-                              // Tombol NPSN Lookup
-                              InkWell(
-                                onTap: () => Navigator.pushNamed(context, '/sekolah'),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                  decoration: BoxDecoration(
-                                    color: CtOSColors.surface,
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(color: CtOSColors.secondary.withValues(alpha: 0.3)),
-                                  ),
-                                  child: const Row(
-                                    children: [
-                                      Icon(Icons.school, color: CtOSColors.secondary, size: 20),
-                                      SizedBox(width: 12),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text('NPSN LOOKUP', style: TextStyle(
-                                              color: CtOSColors.secondary, fontFamily: 'Courier',
-                                              fontSize: 13, fontWeight: FontWeight.bold,
-                                            )),
-                                            Text('Cari data sekolah via NPSN', style: TextStyle(
-                                              color: CtOSColors.textPrimary, fontFamily: 'Courier', fontSize: 11,
-                                            )),
-                                          ],
-                                        ),
-                                      ),
-                                      Icon(Icons.search, color: CtOSColors.secondary, size: 18),
-                                    ],
-                                  ),
-                                ),
-                              ),
+    );
+  }
 
-                              const SizedBox(height: 8),
-                              const Text(
-                                "SIAP UNTUK MEMULAI PERETASAN",
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: CtOSColors.secondary,
-                                  fontFamily: 'Courier',
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ],
-                          ),
-                          ),
-                        )
-                      : TerminalWindow(
-                          title: _selectedUniversity != null 
-                              ? AppStrings.filterResults 
-                              : "REKAMAN TEREKSTRAK",
-                          child: Column(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.all(8),
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                        _selectedUniversity != null
-                                            ? Icons.filter_list
-                                            : Icons.person_search,
-                                        color: _selectedUniversity != null
-                                            ? CtOSColors.warning
-                                            : CtOSColors.primary,
-                                        size: 16),
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                      child: Text(
-                                        _selectedUniversity != null
-                                          ? 'DITEMUKAN ${_filteredResults.length} DARI ${_searchResults.length} SUBJEK'
-                                          : 'DITEMUKAN ${_searchResults.length} SUBJEK YANG COCOK',
-                                        style: TextStyle(
-                                          color: _selectedUniversity != null
-                                              ? CtOSColors.warning
-                                              : CtOSColors.primary,
-                                          fontFamily: 'Courier',
-                                          fontSize: 14,
-                                        ),
-                                        maxLines: 1,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              if (_filteredResults.isEmpty && _selectedUniversity != null)
-                                Expanded(
-                                  child: Center(
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        const Icon(
-                                          Icons.filter_alt_off,
-                                          color: CtOSColors.warning,
-                                          size: 40,
-                                        ),
-                                        const SizedBox(height: 16),
-                                        const Text(
-                                          AppStrings.noFilterResultsFound,
-                                          style: TextStyle(
-                                            color: CtOSColors.warning,
-                                            fontSize: 16,
-                                            fontFamily: 'Courier',
-                                          ),
-                                          textAlign: TextAlign.center,
-                                        ),
-                                        const SizedBox(height: 16),
-                                        ElevatedButton(
-                                          onPressed: _clearFilter,
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: CtOSColors.surface,
-                                            foregroundColor: CtOSColors.warning,
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 16, 
-                                              vertical: 8
-                                            ),
-                                            side: const BorderSide(color: CtOSColors.warning),
-                                          ),
-                                          child: const Text(
-                                            AppStrings.clearFilter,
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              fontFamily: 'Courier',
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                )
-                              else
-                                Expanded(
-                                  child: ListView.builder(
-                                    itemCount: _filteredResults.length,
-                                    itemBuilder: (context, index) {
-                                      final mahasiswa = _filteredResults[index];
-                                      return HackerResultItem(
-                                        mahasiswa: mahasiswa,
-                                        onTap: () => _viewMahasiswaDetail(context, mahasiswa),
-                                        isFiltered: _selectedUniversity != null,
-                                      );
-                                    },
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-              ),
-              Container(
-                color: CtOSColors.surface,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16, 
-                  vertical: 8
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  // ─── Loading Skeleton ──────────────────────────────────────────────────────
+
+  Widget _buildLoadingSkeleton() {
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: 6,
+      itemBuilder: (_, __) => Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: NeoCard(
+          child: Row(
+            children: [
+              NeoSkeleton.circle(size: 44),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 8,
-                          height: 8,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: _statusDotIsGreen ? CtOSColors.primary : CtOSColors.secondary,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          DateTime.now().toString().substring(0, 19),
-                          style: const TextStyle(
-                            color: CtOSColors.textPrimary,
-                            fontSize: 10,
-                            fontFamily: 'Courier',
-                          ),
-                          maxLines: 1,
-                        ),
-                      ],
-                    ),
-                    const Text(
-                      'BY: TAMAENGS',
-                      style: TextStyle(
-                        color: CtOSColors.textPrimary,
-                        fontSize: 10,
-                        fontFamily: 'Courier',
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    NeoSkeleton.text(width: 160),
+                    const SizedBox(height: 8),
+                    NeoSkeleton.text(width: 120),
+                    const SizedBox(height: 6),
+                    NeoSkeleton.text(width: 80),
                   ],
                 ),
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  // ─── Error State ───────────────────────────────────────────────────────────
+
+  Widget _buildErrorState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                color: AppColors.errorSurface,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Icon(Icons.error_outline_rounded, size: 32, color: AppColors.error),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              _errorMessage!,
+              style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 20),
+            FilledButton.icon(
+              onPressed: _performSearch,
+              icon: const Icon(Icons.refresh_rounded, size: 18),
+              label: const Text('Coba Lagi'),
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ─── Search Results ────────────────────────────────────────────────────────
+
+  Widget _buildSearchResults() {
+    final displayResults = _filteredResults;
+
+    return Column(
+      children: [
+        // Filter chips row
+        if (_universities.isNotEmpty)
+          Container(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+            child: Column(
+              children: [
+                SizedBox(
+                  height: 36,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _universities.length + 1,
+                    separatorBuilder: (_, __) => const SizedBox(width: 8),
+                    itemBuilder: (context, index) {
+                      if (index == 0) {
+                        final isActive = _selectedUniversity == null;
+                        return _buildFilterChip('Semua', isActive, () => _clearFilter());
+                      }
+                      final uni = _universities[index - 1];
+                      final isActive = _selectedUniversity == uni;
+                      return _buildFilterChip(
+                        uni.length > 20 ? '${uni.substring(0, 18)}...' : uni,
+                        isActive,
+                        () => _filterResults(uni),
+                      );
+                    },
+                  ),
+                ),
+                if (_selectedUniversity != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Row(
+                      children: [
+                        Icon(Icons.filter_alt_rounded, size: 14, color: AppColors.primary),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            '${displayResults.length} hasil dari $_selectedUniversity',
+                            style: AppTypography.labelMedium.copyWith(color: AppColors.primary),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        // Results count
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+          child: Row(
+            children: [
+              Text(
+                '${displayResults.length} hasil ditemukan',
+                style: AppTypography.labelMedium,
+              ),
+              const Spacer(),
+              if (_useMultiSource)
+                NeoBadge(label: 'Multi-Source', variant: NeoBadgeVariant.info, icon: Icons.cloud_sync_rounded),
+            ],
+          ),
+        ),
+        // Results list
+        Expanded(
+          child: displayResults.isEmpty
+              ? NeoEmpty(
+                  icon: Icons.filter_alt_off_rounded,
+                  title: AppStrings.noFilterResultsFound,
+                  actionLabel: AppStrings.clearFilter,
+                  onAction: _clearFilter,
+                )
+              : ListView.builder(
+                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+                  itemCount: displayResults.length,
+                  itemBuilder: (context, index) {
+                    final m = displayResults[index];
+                    return _buildResultItem(m);
+                  },
+                ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFilterChip(String label, bool isActive, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: AppSpacing.durationFast,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        decoration: BoxDecoration(
+          color: isActive ? AppColors.primary : AppColors.surface,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+          border: Border.all(
+            color: isActive ? AppColors.primary : AppColors.border,
+          ),
+        ),
+        child: Text(
+          label,
+          style: AppTypography.labelMedium.copyWith(
+            color: isActive ? Colors.white : AppColors.textSecondary,
+            fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildResultItem(Mahasiswa m) {
+    final initial = m.nama.isNotEmpty ? m.nama[0].toUpperCase() : '?';
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: NeoCard(
+        variant: NeoCardVariant.flat,
+        onTap: () => _viewMahasiswaDetail(context, m),
+        child: Row(
+          children: [
+            // Avatar
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                gradient: AppGradients.primary,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                initial,
+                style: AppTypography.headlineMedium.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            // Info
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    m.nama,
+                    style: AppTypography.headlineSmall,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    m.namaPt,
+                    style: AppTypography.bodySmall,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            // NIM badge
+            if (m.nim.isNotEmpty)
+              NeoBadge(label: m.nim, variant: NeoBadgeVariant.neutral),
+          ],
         ),
       ),
     );

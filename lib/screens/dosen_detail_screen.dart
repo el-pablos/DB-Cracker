@@ -1,1184 +1,495 @@
 import 'package:flutter/foundation.dart';
-import 'dart:async';
-import 'dart:math';
 import 'package:flutter/material.dart';
-import '../api/multi_api_factory.dart';
-import '../models/dosen.dart';
-import '../widgets/hacker_loading_indicator.dart';
-import '../widgets/console_text.dart';
-import '../widgets/terminal_window.dart';
-import '../utils/constants.dart';
-import '../utils/screen_utils.dart';
-import '../api/enrichment/external_links.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../api/multi_api_factory.dart';
+import '../api/enrichment/external_links.dart';
+import '../models/dosen.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_typography.dart';
+import '../theme/app_spacing.dart';
+import '../theme/app_gradients.dart';
+import '../widgets/core/neo_card.dart';
+import '../widgets/core/neo_badge.dart';
+import '../widgets/data/neo_data_row.dart';
+import '../widgets/navigation/neo_tab_bar.dart';
+import '../widgets/feedback/neo_error.dart';
+import '../widgets/feedback/neo_skeleton.dart';
+import '../widgets/feedback/neo_empty.dart';
 
-/// Screen untuk menampilkan detail dosen
 class DosenDetailScreen extends StatefulWidget {
   final String dosenId;
   final String dosenName;
 
   const DosenDetailScreen({
-    Key? key,
+    super.key,
     required this.dosenId,
     required this.dosenName,
-  }) : super(key: key);
+  });
 
   @override
-  _DosenDetailScreenState createState() => _DosenDetailScreenState();
+  State<DosenDetailScreen> createState() => _DosenDetailScreenState();
 }
 
 class _DosenDetailScreenState extends State<DosenDetailScreen>
-    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
-  late Future<DosenDetail> _dosenFuture;
-  bool _isLoading = true;
-  List<String> _consoleMessages = [];
-  final List<Timer> _activeTimers = [];
-  final Random _random = Random();
-  Timer? _loadTimer;
-  late AnimationController _animationController;
-
-  // Tab yang aktif
-  int _activeTabIndex = 0;
-
-  // Tambahkan instance MultiApiFactory
-  late MultiApiFactory _multiApiFactory;
+    with SingleTickerProviderStateMixin {
+  late final TabController _tabController;
+  late final Future<DosenDetail> _dosenFuture;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1500),
-    );
-    _animationController.repeat(reverse: true);
-
-    // Inisialisasi MultiApiFactory
-    _multiApiFactory = MultiApiFactory();
-
-    // Mulai sequence loading
-    _simulateLoading();
-  }
-
-  void _simulateLoading() {
-    setState(() {
-      _consoleMessages = [];
-      _isLoading = true;
-    });
-
-    _addConsoleMessageWithDelay("AKSES DATABASE AMAN...", 300);
-    _addConsoleMessageWithDelay("MENCARI DATA DOSEN: ${widget.dosenName}", 800);
-    _addConsoleMessageWithDelay("DEKRIPSI RIWAYAT AKADEMIK...", 1400);
-    _addConsoleMessageWithDelay("SCRAPING DATA INSTITUSI...", 2000);
-    _addConsoleMessageWithDelay("EKSTRAKSI RIWAYAT MENGAJAR...", 2600);
-    _addConsoleMessageWithDelay("AKSES KARYA ILMIAH...", 3200);
-    _addConsoleMessageWithDelay("KOMPILASI PROFIL DOSEN...", 3800);
-
-    // Fetch data setelah simulasi
-    _loadTimer = Timer(const Duration(milliseconds: 1200), () {
-      _fetchDosenDetail();
-    });
-  }
-
-  void _addConsoleMessageWithDelay(String message, int delay) {
-    final timer = Timer(Duration(milliseconds: delay), () {
-      if (mounted) {
-        setState(() {
-          _consoleMessages.add(message);
-        });
-      }
-    });
-    _activeTimers.add(timer);
-  }
-
-  void _fetchDosenDetail() {
-    // Gunakan MultiApiFactory untuk mengambil detail lengkap dosen
-    _dosenFuture =
-        _multiApiFactory.getDosenDetailFromAllSources(widget.dosenId);
-
-    _dosenFuture.then((dosenDetail) {
-      setState(() {
-        _isLoading = false;
-      });
-      _addConsoleMessageWithDelay("EKSTRAKSI DATA SELESAI", 300);
-      _addConsoleMessageWithDelay("AKSES DIBERIKAN", 600);
-
-      // Log detail yang berhasil diambil
-      if (kDebugMode) debugPrint('Successfully fetched dosen detail: ${dosenDetail.namaDosen}');
-    }).catchError((error) {
-      setState(() {
-        _isLoading = false;
-      });
-      if (kDebugMode) debugPrint('Error fetching dosen detail: $error');
-      _addConsoleMessageWithDelay("ERROR: Gagal mengambil data", 300);
-      _addConsoleMessageWithDelay("MENGGUNAKAN DATA FALLBACK", 600);
-
-      // Buat fallback future dengan data minimal
-      _dosenFuture = Future.value(DosenDetail(
-        idSdm: widget.dosenId,
-        namaDosen: widget.dosenName,
-        namaPt: 'Data tidak tersedia',
-        namaProdi: 'Data tidak tersedia',
-        jenisKelamin: '-',
-        jabatanAkademik: '-',
-        pendidikanTertinggi: '-',
-        statusIkatanKerja: '-',
-        statusAktivitas: '-',
-        penelitian: [],
-        pengabdian: [],
-        karya: [],
-        paten: [],
-        riwayatStudi: [],
-        riwayatMengajar: [],
-      ));
-    });
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
-      _animationController.stop();
-    } else if (state == AppLifecycleState.resumed) {
-      _animationController.repeat(reverse: true);
-    }
+    _tabController = TabController(length: 4, vsync: this);
+    _dosenFuture = MultiApiFactory().getDosenDetailFromAllSources(widget.dosenId);
   }
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    _loadTimer?.cancel();
-    _animationController.dispose();
-    for (final timer in _activeTimers) { timer.cancel(); }
-    _activeTimers.clear();
+    _tabController.dispose();
     super.dispose();
   }
 
-  String _getRandomHexValue(int length) {
-    const chars = '0123456789ABCDEF';
-    return List.generate(
-      length,
-      (_) => chars[_random.nextInt(chars.length)],
-    ).join();
+  Future<void> _launchUrl(Uri url) async {
+    try {
+      if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Tidak dapat membuka tautan')),
+          );
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error launching URL: $e');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Pastikan ScreenUtils diinisialisasi
-    if (ScreenUtils.screenWidth == 0) {
-      ScreenUtils.init(context);
-    }
-
     return Scaffold(
-      backgroundColor: CtOSColors.background,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Row(
-          children: [
-            AnimatedBuilder(
-              animation: _animationController,
-              builder: (context, child) {
-                return Container(
-                  width: 12,
-                  height: 12,
-                  margin: const EdgeInsets.only(right: 8),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: _animationController.value > 0.5
-                        ? CtOSColors.primary
-                        : CtOSColors.secondary,
-                  ),
-                );
-              },
-            ),
-            const Flexible(
-              child: Text(
-                "PROFIL DOSEN",
-                style: TextStyle(
-                  fontFamily: 'Courier',
-                  fontWeight: FontWeight.bold,
-                  color: CtOSColors.primary,
-                  fontSize: 14,
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
+        backgroundColor: AppColors.surface,
+        title: Text(
+          'Detail Dosen',
+          style: AppTypography.headlineMedium,
         ),
-        backgroundColor: CtOSColors.surface,
-        iconTheme: const IconThemeData(
-          color: CtOSColors.primary,
-        ),
+        centerTitle: true,
+        elevation: 0,
       ),
-      body: SafeArea(
-        child: Container(
-          color: CtOSColors.background,
-          child: Column(
-            children: [
-              Container(
-                color: CtOSColors.surface.withValues(alpha: 0.7),
-                padding: const EdgeInsets.all(8),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: _random.nextBool()
-                            ? CtOSColors.primary
-                            : CtOSColors.secondary,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'SUBJEK: ${widget.dosenName}',
-                      style: const TextStyle(
-                        color: CtOSColors.textAccent,
-                        fontFamily: 'Courier',
-                        fontSize: 12,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: _isLoading
-                    ? TerminalWindow(
-                        title: "DEKRIPSI DATA",
-                        child: Column(
-                          children: [
-                            Expanded(
-                              child: ListView.builder(
-                                padding: const EdgeInsets.all(16),
-                                itemCount: _consoleMessages.length,
-                                itemBuilder: (context, index) {
-                                  bool isSuccess =
-                                      index == _consoleMessages.length - 1 &&
-                                          _consoleMessages[index]
-                                              .contains("SELESAI");
-                                  bool isError = index ==
-                                          _consoleMessages.length - 1 &&
-                                      _consoleMessages[index].contains("ERROR");
-
-                                  return ConsoleText(
-                                    text: _consoleMessages[index],
-                                    isSuccess: isSuccess,
-                                    isError: isError,
-                                  );
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                      )
-                    : FutureBuilder<DosenDetail>(
-                        future: _dosenFuture,
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return const Center(
-                                child: HackerLoadingIndicator());
-                          } else if (snapshot.hasError) {
-                            return _buildErrorView();
-                          } else if (!snapshot.hasData) {
-                            return const Center(
-                              child: Text(
-                                'Data Dosen tidak tersedia',
-                                style: TextStyle(
-                                  color: CtOSColors.error,
-                                  fontFamily: 'Courier',
-                                  fontSize: 16,
-                                ),
-                              ),
-                            );
-                          }
-
-                          final dosen = snapshot.data!;
-                          return _buildDosenDetailView(dosen);
-                        },
-                      ),
-              ),
-              _buildFooter(),
-            ],
-          ),
-        ),
+      body: FutureBuilder<DosenDetail>(
+        future: _dosenFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return _buildSkeleton();
+          }
+          if (snapshot.hasError) {
+            return NeoError(
+              message: snapshot.error.toString(),
+              onRetry: () => setState(() {}),
+            );
+          }
+          if (!snapshot.hasData) {
+            return const NeoEmpty(title: 'Data dosen tidak ditemukan');
+          }
+          return _buildContent(snapshot.data!);
+        },
       ),
     );
   }
 
-  Widget _buildErrorView() {
-    return TerminalWindow(
-      title: "ERROR",
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(
-                Icons.warning_amber_rounded,
-                color: CtOSColors.error,
-                size: 48,
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'Gagal memuat data dosen',
-                style: TextStyle(
-                  color: CtOSColors.error,
-                  fontSize: 16,
-                  fontFamily: 'Courier',
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _simulateLoading,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: CtOSColors.surface,
-                  foregroundColor: CtOSColors.primary,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  side: const BorderSide(color: CtOSColors.primary),
-                ),
-                child: const Text("COBA LAGI", style: TextStyle(fontSize: 14)),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFooter() {
-    return Container(
-      color: CtOSColors.surface,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 8,
-                height: 8,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: _random.nextBool()
-                      ? CtOSColors.primary
-                      : CtOSColors.secondary,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                'KUNCI: ${_getRandomHexValue(8)}-${_getRandomHexValue(4)}-${_getRandomHexValue(4)}',
-                style: const TextStyle(
-                    color: CtOSColors.textPrimary,
-                    fontSize: 10,
-                    fontFamily: 'Courier'),
-              ),
-            ],
-          ),
-          const Text(
-            'BY: TAMAENGS',
-            style: TextStyle(
-                color: CtOSColors.textPrimary,
-                fontSize: 10,
-                fontFamily: 'Courier',
-                fontWeight: FontWeight.bold),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDosenDetailView(DosenDetail dosen) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+  Widget _buildSkeleton() {
+    return Padding(
+      padding: AppSpacing.screenPadding,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header Profile Card
-          _buildProfileCard(dosen),
+          NeoSkeleton.card(),
           const SizedBox(height: 16),
-
-          // Tab Navigation
-          _buildTabNavigation(),
-          const SizedBox(height: 16),
-
-          // Tab Content
-          _buildTabContent(dosen),
+          NeoSkeleton.card(),
+          const SizedBox(height: 12),
+          NeoSkeleton.text(width: 200),
+          const SizedBox(height: 8),
+          NeoSkeleton.text(),
         ],
       ),
     );
   }
 
-  Widget _buildProfileCard(DosenDetail dosen) {
+  Widget _buildContent(DosenDetail dosen) {
+    return Column(
+      children: [
+        _buildProfileHeader(dosen),
+        NeoTabBar(
+          controller: _tabController,
+          tabs: const ['Profil', 'Mengajar', 'Penelitian', 'Riwayat'],
+        ),
+        Expanded(
+          child: TabBarView(
+            controller: _tabController,
+            children: [
+              _buildProfilTab(dosen),
+              _buildMengajarTab(dosen),
+              _buildPenelitianTab(dosen),
+              _buildRiwayatTab(dosen),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildProfileHeader(DosenDetail dosen) {
+    final fullName = dosen.namaDosen;
+    final initial = fullName.isNotEmpty ? fullName[0].toUpperCase() : '?';
+    final gelar = [dosen.gelarDepan, dosen.gelarBelakang]
+        .where((g) => g.isNotEmpty)
+        .join(' ');
+
     return Container(
-      width: double.infinity,
+      margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: CtOSColors.surface,
-        border: Border.all(color: CtOSColors.primary.withValues(alpha: 0.3)),
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: CtOSColors.primary.withValues(alpha: 0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+        gradient: AppGradients.card,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              gradient: AppGradients.primary,
+              borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+            ),
+            child: Center(
+              child: Text(
+                initial,
+                style: AppTypography.displayMedium.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 14),
+          Text(
+            fullName,
+            style: AppTypography.headlineLarge,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          if (gelar.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(
+              gelar,
+              style: AppTypography.bodySmall,
+              textAlign: TextAlign.center,
+            ),
+          ],
+          const SizedBox(height: 6),
+          Text(
+            dosen.nidn.isNotEmpty ? 'NIDN: ${dosen.nidn}' : 'NIDK: ${dosen.nidk}',
+            style: AppTypography.codeMedium.copyWith(color: AppColors.secondary),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            dosen.namaPt,
+            style: AppTypography.bodySmall,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            alignment: WrapAlignment.center,
+            children: [
+              if (dosen.jabatanAkademik.isNotEmpty)
+                NeoBadge(
+                  label: dosen.jabatanAkademik,
+                  variant: NeoBadgeVariant.info,
+                  icon: Icons.school_rounded,
+                ),
+              NeoBadge(
+                label: dosen.statusAktivitas.isNotEmpty
+                    ? dosen.statusAktivitas
+                    : 'Tidak Diketahui',
+                variant: dosen.statusAktivitas.toLowerCase().contains('aktif')
+                    ? NeoBadgeVariant.success
+                    : NeoBadgeVariant.warning,
+              ),
+            ],
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Avatar dan Nama
-          Row(
+    );
+  }
+
+  Widget _buildProfilTab(DosenDetail dosen) {
+    return ListView(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      children: [
+        NeoCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Informasi Pribadi', style: AppTypography.headlineSmall),
+              const SizedBox(height: 8),
+              NeoDataRow(label: 'NIDN', value: dosen.nidn, isCode: true, copyable: true),
+              NeoDataRow(label: 'NIDK', value: dosen.nidk, isCode: true, copyable: true),
+              NeoDataRow(label: 'Nama Lengkap', value: dosen.namaDosen),
+              NeoDataRow(label: 'Jenis Kelamin', value: dosen.jenisKelamin),
+              NeoDataRow(label: 'Tempat Lahir', value: dosen.tempatLahir),
+              NeoDataRow(label: 'Tanggal Lahir', value: dosen.tanggalLahir),
+              NeoDataRow(label: 'Agama', value: dosen.agama),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        NeoCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Status Kepegawaian', style: AppTypography.headlineSmall),
+              const SizedBox(height: 8),
+              NeoDataRow(label: 'Ikatan Kerja', value: dosen.statusIkatanKerja),
+              NeoDataRow(label: 'Status Aktivitas', value: dosen.statusAktivitas),
+              NeoDataRow(label: 'Jabatan Akademik', value: dosen.jabatanAkademik),
+              NeoDataRow(label: 'Pendidikan', value: dosen.pendidikanTertinggi),
+              NeoDataRow(label: 'Bidang Ilmu', value: dosen.bidangIlmu),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        if (dosen.statusSertifikasi.isNotEmpty)
+          NeoCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Sertifikasi', style: AppTypography.headlineSmall),
+                const SizedBox(height: 8),
+                NeoDataRow(label: 'Status', value: dosen.statusSertifikasi),
+                NeoDataRow(label: 'Tahun', value: dosen.tahunSertifikasi),
+                NeoDataRow(label: 'No. Sertifikat', value: dosen.nomorSertifikat, isCode: true),
+                NeoDataRow(label: 'Bidang', value: dosen.bidangSertifikasi),
+              ],
+            ),
+          ),
+        const SizedBox(height: 12),
+        _buildExternalLinks(dosen),
+        const SizedBox(height: 24),
+      ],
+    );
+  }
+
+  Widget _buildMengajarTab(DosenDetail dosen) {
+    final items = dosen.riwayatMengajar;
+    if (items.isEmpty) {
+      return const NeoEmpty(
+        icon: Icons.menu_book_rounded,
+        title: 'Belum Ada Data Mengajar',
+        subtitle: 'Riwayat mengajar belum tersedia',
+      );
+    }
+    return ListView.separated(
+      padding: const EdgeInsets.all(16),
+      itemCount: items.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 10),
+      itemBuilder: (context, index) {
+        final item = items[index];
+        return NeoCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                item.namaMatkul,
+                style: AppTypography.headlineSmall,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 12,
+                runSpacing: 6,
+                children: [
+                  if (item.namaSemester.isNotEmpty)
+                    _infoChip(Icons.calendar_today_rounded, item.namaSemester),
+                  if (item.kodeMatkul.isNotEmpty)
+                    _infoChip(Icons.code_rounded, item.kodeMatkul),
+                ],
+              ),
+              if (item.namaKelas.isNotEmpty) ...[
+                const SizedBox(height: 6),
+                Text(
+                  'Kelas: ${item.namaKelas}',
+                  style: AppTypography.bodySmall,
+                ),
+              ],
+              if (item.namaPt.isNotEmpty) ...[
+                const SizedBox(height: 4),
+                Text(
+                  item.namaPt,
+                  style: AppTypography.bodySmall,
+                ),
+              ],
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildPenelitianTab(DosenDetail dosen) {
+    final items = dosen.penelitian;
+    if (items.isEmpty) {
+      return const NeoEmpty(
+        icon: Icons.science_rounded,
+        title: 'Belum Ada Data Penelitian',
+        subtitle: 'Data penelitian belum tersedia',
+      );
+    }
+    return ListView.separated(
+      padding: const EdgeInsets.all(16),
+      itemCount: items.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 10),
+      itemBuilder: (context, index) {
+        final item = items[index];
+        return NeoCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                item.judulKegiatan,
+                style: AppTypography.headlineSmall,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 8),
+              if (item.tahunKegiatan.isNotEmpty)
+                _infoChip(Icons.calendar_today_rounded, item.tahunKegiatan),
+              if (item.detailKegiatan.isNotEmpty) ...[
+                const SizedBox(height: 4),
+                Text(
+                  item.detailKegiatan,
+                  style: AppTypography.bodySmall,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildRiwayatTab(DosenDetail dosen) {
+    final items = dosen.riwayatStudi;
+    if (items.isEmpty) {
+      return const NeoEmpty(
+        icon: Icons.history_edu_rounded,
+        title: 'Belum Ada Riwayat Pendidikan',
+        subtitle: 'Data riwayat pendidikan belum tersedia',
+      );
+    }
+    return ListView.separated(
+      padding: const EdgeInsets.all(16),
+      itemCount: items.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 10),
+      itemBuilder: (context, index) {
+        final item = items[index];
+        return NeoCard(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                width: 80,
-                height: 80,
+                width: 44,
+                height: 44,
                 decoration: BoxDecoration(
-                  color: CtOSColors.primary.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(40),
-                  border: Border.all(color: CtOSColors.primary, width: 2),
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(
-                  Icons.person,
-                  size: 40,
-                  color: CtOSColors.primary,
+                child: Center(
+                  child: Text(
+                    item.jenjang,
+                    style: AppTypography.labelLarge.copyWith(
+                      color: AppColors.primary,
+                    ),
+                  ),
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      dosen.namaDosen,
-                      style: const TextStyle(
-                        color: CtOSColors.primary,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Courier',
-                      ),
+                      item.perguruan,
+                      style: AppTypography.headlineSmall,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 4),
-                    if (dosen.nidn.isNotEmpty)
+                    if (item.bidangStudi.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(item.bidangStudi, style: AppTypography.bodySmall),
+                    ],
+                    if (item.tahunLulus.isNotEmpty) ...[
+                      const SizedBox(height: 4),
                       Text(
-                        'NIDN: ${dosen.nidn}',
-                        style: const TextStyle(
-                          color: CtOSColors.secondary,
-                          fontSize: 14,
-                          fontFamily: 'Courier',
-                        ),
+                        'Lulus: ${item.tahunLulus}',
+                        style: AppTypography.codeSmall,
                       ),
-                    if (dosen.jabatanAkademik.isNotEmpty)
-                      Text(
-                        dosen.jabatanAkademik,
-                        style: const TextStyle(
-                          color: CtOSColors.textAccent,
-                          fontSize: 14,
-                          fontFamily: 'Courier',
-                        ),
-                      ),
+                    ],
                   ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-
-          // Status Indicators
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              _buildStatusChip('Status', dosen.statusAktivitas),
-              _buildStatusChip('Ikatan Kerja', dosen.statusIkatanKerja),
-              if (dosen.pendidikanTertinggi.isNotEmpty)
-                _buildStatusChip('Pendidikan', dosen.pendidikanTertinggi),
-            ],
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
-  Widget _buildStatusChip(String label, String value) {
-    if (value.isEmpty) return const SizedBox.shrink();
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: CtOSColors.primary.withValues(alpha: 0.1),
-        border: Border.all(color: CtOSColors.primary.withValues(alpha: 0.3)),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        '$label: $value',
-        style: const TextStyle(
-          color: CtOSColors.primary,
-          fontSize: 12,
-          fontFamily: 'Courier',
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTabNavigation() {
-    final tabs = [
-      'PROFIL',
-      'INSTITUSI',
-      'RIWAYAT',
-      'PORTFOLIO',
-    ];
-
-    return Container(
-      height: 50,
-      decoration: BoxDecoration(
-        color: CtOSColors.surface,
-        borderRadius: BorderRadius.circular(25),
-        border: Border.all(color: CtOSColors.primary.withValues(alpha: 0.3)),
-      ),
-      child: Row(
-        children: tabs.asMap().entries.map((entry) {
-          final index = entry.key;
-          final tab = entry.value;
-          final isActive = _activeTabIndex == index;
-
-          return Expanded(
-            child: GestureDetector(
-              onTap: () => setState(() => _activeTabIndex = index),
-              child: Container(
-                margin: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: isActive ? CtOSColors.primary : Colors.transparent,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Center(
-                  child: Text(
-                    tab,
-                    style: TextStyle(
-                      color: isActive
-                          ? CtOSColors.background
-                          : CtOSColors.primary,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Courier',
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
-
-  Widget _buildTabContent(DosenDetail dosen) {
-    switch (_activeTabIndex) {
-      case 0:
-        return _buildProfilTab(dosen);
-      case 1:
-        return _buildInstitusiTab(dosen);
-      case 2:
-        return _buildRiwayatTab(dosen);
-      case 3:
-        return _buildPortfolioTab(dosen);
-      default:
-        return _buildProfilTab(dosen);
-    }
-  }
-
-  Widget _buildProfilTab(DosenDetail dosen) {
-    return Column(
-      children: [
-        _buildInfoCard('INFORMASI PERSONAL', [
-          _buildInfoRow('Nama Lengkap', dosen.namaDosen),
-          _buildInfoRow('NIDN', dosen.nidn),
-          _buildInfoRow('NIDK', dosen.nidk),
-          _buildInfoRow('Gelar Depan', dosen.gelarDepan),
-          _buildInfoRow('Gelar Belakang', dosen.gelarBelakang),
-          _buildInfoRow('Jenis Kelamin', dosen.jenisKelamin),
-          _buildInfoRow('Tempat Lahir', dosen.tempatLahir),
-          _buildInfoRow('Tanggal Lahir', dosen.tanggalLahir),
-          _buildInfoRow('Agama', dosen.agama),
-        ]),
-        const SizedBox(height: 16),
-        _buildInfoCard('STATUS KEPEGAWAIAN', [
-          _buildInfoRow('Status Ikatan Kerja', dosen.statusIkatanKerja),
-          _buildInfoRow('Status Aktivitas', dosen.statusAktivitas),
-          _buildInfoRow('Jabatan Akademik', dosen.jabatanAkademik),
-          _buildInfoRow('Tanggal SK', dosen.tanggalSk),
-          _buildInfoRow('TMT Jabatan', dosen.tmtJabatan),
-          _buildInfoRow('Nomor SK', dosen.nomorSk),
-        ]),
-        const SizedBox(height: 16),
-        _buildInfoCard('SERTIFIKASI', [
-          _buildInfoRow('Status Sertifikasi', dosen.statusSertifikasi),
-          _buildInfoRow('Tahun Sertifikasi', dosen.tahunSertifikasi),
-          _buildInfoRow('Nomor Sertifikat', dosen.nomorSertifikat),
-          _buildInfoRow('Bidang Sertifikasi', dosen.bidangSertifikasi),
-        ]),
-      ],
-    );
-  }
-
-  Widget _buildInstitusiTab(DosenDetail dosen) {
-    return Column(
-      children: [
-        _buildInfoCard('PERGURUAN TINGGI', [
-          _buildInfoRow('Nama PT', dosen.namaPt),
-          _buildInfoRow('Program Studi', dosen.namaProdi),
-          _buildInfoRow('Home PT', dosen.homePt),
-          _buildInfoRow('Home Prodi', dosen.homeProdi),
-          _buildInfoRow('Status Homebase', dosen.statusHomebase),
-          _buildInfoRow('Rasio Homebase', dosen.rasioHomebase),
-        ]),
-        const SizedBox(height: 16),
-        _buildInfoCard('PENDIDIKAN TERTINGGI', [
-          _buildInfoRow('Jenjang', dosen.pendidikanTertinggi),
-          _buildInfoRow('Bidang Ilmu', dosen.bidangIlmu),
-          _buildInfoRow('Institusi', dosen.institusiPendidikan),
-          _buildInfoRow('Tahun Lulus', dosen.tahunLulusTertinggi),
-        ]),
-      ],
-    );
-  }
-
-  Widget _buildRiwayatTab(DosenDetail dosen) {
-    return Column(
-      children: [
-        if (dosen.riwayatStudi.isNotEmpty) ...[
-          _buildListCard(
-              'RIWAYAT PENDIDIKAN',
-              dosen.riwayatStudi
-                  .map((studi) => _buildRiwayatStudiItem(studi))
-                  .toList()),
-          const SizedBox(height: 16),
-        ],
-        if (dosen.riwayatMengajar.isNotEmpty) ...[
-          _buildListCard(
-              'RIWAYAT MENGAJAR',
-              dosen.riwayatMengajar
-                  .map((mengajar) => _buildRiwayatMengajarItem(mengajar))
-                  .toList()),
-          const SizedBox(height: 16),
-        ],
-        if (dosen.riwayatJabatan.isNotEmpty) ...[
-          _buildListCard(
-              'RIWAYAT JABATAN',
-              dosen.riwayatJabatan
-                  .map((jabatan) => _buildRiwayatJabatanItem(jabatan))
-                  .toList()),
-          const SizedBox(height: 16),
-        ],
-        if (dosen.riwayatPenugasan.isNotEmpty) ...[
-          _buildListCard(
-              'RIWAYAT PENUGASAN',
-              dosen.riwayatPenugasan
-                  .map((penugasan) => _buildRiwayatPenugasanItem(penugasan))
-                  .toList()),
-        ],
-        if (dosen.riwayatStudi.isEmpty &&
-            dosen.riwayatMengajar.isEmpty &&
-            dosen.riwayatJabatan.isEmpty &&
-            dosen.riwayatPenugasan.isEmpty)
-          _buildEmptyState('Belum ada data riwayat'),
-      ],
-    );
-  }
-
-  Widget _buildPortfolioTab(DosenDetail dosen) {
-    return Column(
-      children: [
-        if (dosen.penelitian.isNotEmpty) ...[
-          _buildListCard(
-              'PENELITIAN',
-              dosen.penelitian
-                  .map((item) => _buildPortfolioItem(item))
-                  .toList()),
-          const SizedBox(height: 16),
-        ],
-        if (dosen.pengabdian.isNotEmpty) ...[
-          _buildListCard(
-              'PENGABDIAN MASYARAKAT',
-              dosen.pengabdian
-                  .map((item) => _buildPortfolioItem(item))
-                  .toList()),
-          const SizedBox(height: 16),
-        ],
-        if (dosen.karya.isNotEmpty) ...[
-          _buildListCard('KARYA ILMIAH',
-              dosen.karya.map((item) => _buildPortfolioItem(item)).toList()),
-          const SizedBox(height: 16),
-        ],
-        if (dosen.paten.isNotEmpty) ...[
-          _buildListCard('PATEN',
-              dosen.paten.map((item) => _buildPortfolioItem(item)).toList()),
-        ],
-        if (dosen.penelitian.isEmpty &&
-            dosen.pengabdian.isEmpty &&
-            dosen.karya.isEmpty &&
-            dosen.paten.isEmpty)
-          _buildEmptyState('Belum ada data portfolio'),
-
-        // Enrichment Links — GARUDA/SINTA/RAMA deep-links
-        const SizedBox(height: 16),
-        _buildEnrichmentLinksSection(dosen),
-      ],
-    );
-  }
-
-  /// Section tautan enrichment akademik — deep-link ke portal eksternal
-  Widget _buildEnrichmentLinksSection(DosenDetail dosen) {
+  Widget _buildExternalLinks(DosenDetail dosen) {
     final links = getDosenEnrichmentLinks(
       dosenName: dosen.namaDosen,
-      institutionName: dosen.namaPt.isNotEmpty ? dosen.namaPt : null,
+      institutionName: dosen.namaPt,
     );
-    if (links.isEmpty) return const SizedBox.shrink();
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: CtOSColors.surface,
-        border: Border.all(color: CtOSColors.secondary.withValues(alpha: 0.3)),
-        borderRadius: BorderRadius.circular(8),
-      ),
+    return NeoCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('TAUTAN ENRICHMENT', style: TextStyle(
-            color: CtOSColors.secondary, fontFamily: 'Courier',
-            fontSize: 13, fontWeight: FontWeight.bold,
-          )),
-          const SizedBox(height: 4),
-          const Text('Buka pencarian di portal eksternal', style: TextStyle(
-            color: CtOSColors.textPrimary, fontFamily: 'Courier', fontSize: 10,
-          )),
-          const Divider(color: CtOSColors.secondary, height: 16),
-          ...links.map((link) => Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: InkWell(
-              onTap: () => launchUrl(link.url, mode: LaunchMode.externalApplication),
-              child: Row(
-                children: [
-                  const Icon(Icons.open_in_new, size: 14, color: CtOSColors.primary),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(link.title, style: const TextStyle(
-                          color: CtOSColors.primary, fontSize: 12, fontFamily: 'Courier',
-                          decoration: TextDecoration.underline,
-                        )),
-                        Text(link.description, style: const TextStyle(
-                          color: CtOSColors.textPrimary, fontSize: 10, fontFamily: 'Courier',
-                        ), maxLines: 2, overflow: TextOverflow.ellipsis),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          )),
-        ],
-      ),
-    );
-  }
-
-  // Helper Methods
-  Widget _buildInfoCard(String title, List<Widget> children) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: CtOSColors.surface,
-        border: Border.all(color: CtOSColors.primary.withValues(alpha: 0.3)),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              color: CtOSColors.primary,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'Courier',
-            ),
-          ),
+          Text('Tautan Eksternal', style: AppTypography.headlineSmall),
           const SizedBox(height: 12),
-          ...children,
-        ],
-      ),
-    );
-  }
-
-  Widget _buildListCard(String title, List<Widget> children) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: CtOSColors.surface,
-        border: Border.all(color: CtOSColors.primary.withValues(alpha: 0.3)),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              color: CtOSColors.primary,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'Courier',
-            ),
-          ),
-          const SizedBox(height: 12),
-          ...children,
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInfoRow(String label, String value) {
-    if (value.isEmpty) return const SizedBox.shrink();
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 120,
-            child: Text(
-              '$label:',
-              style: const TextStyle(
-                color: CtOSColors.secondary,
-                fontSize: 14,
-                fontFamily: 'Courier',
-              ),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: const TextStyle(
-                color: CtOSColors.textPrimary,
-                fontSize: 14,
-                fontFamily: 'Courier',
-              ),
-            ),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: links.map((link) {
+              return OutlinedButton.icon(
+                onPressed: () => _launchUrl(link.url),
+                icon: const Icon(Icons.open_in_new_rounded, size: 16),
+                label: Text(link.title, style: const TextStyle(fontSize: 12)),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.secondary,
+                  side: const BorderSide(color: AppColors.border),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                ),
+              );
+            }).toList(),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildRiwayatStudiItem(DosenRiwayatStudi studi) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: CtOSColors.background,
-        border: Border.all(color: CtOSColors.secondary.withValues(alpha: 0.3)),
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '${studi.jenjang} - ${studi.gelar}',
-            style: const TextStyle(
-              color: CtOSColors.primary,
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'Courier',
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            studi.perguruan,
-            style: const TextStyle(
-              color: CtOSColors.textPrimary,
-              fontSize: 13,
-              fontFamily: 'Courier',
-            ),
-          ),
-          if (studi.bidangStudi.isNotEmpty) ...[
-            const SizedBox(height: 2),
-            Text(
-              'Bidang: ${studi.bidangStudi}',
-              style: const TextStyle(
-                color: CtOSColors.secondary,
-                fontSize: 12,
-                fontFamily: 'Courier',
-              ),
-            ),
-          ],
-          if (studi.tahunLulus.isNotEmpty) ...[
-            const SizedBox(height: 2),
-            Text(
-              'Lulus: ${studi.tahunLulus}',
-              style: const TextStyle(
-                color: CtOSColors.textAccent,
-                fontSize: 12,
-                fontFamily: 'Courier',
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRiwayatMengajarItem(DosenRiwayatMengajar mengajar) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: CtOSColors.background,
-        border: Border.all(color: CtOSColors.secondary.withValues(alpha: 0.3)),
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            mengajar.namaMatkul,
-            style: const TextStyle(
-              color: CtOSColors.primary,
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'Courier',
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Kode: ${mengajar.kodeMatkul}',
-            style: const TextStyle(
-              color: CtOSColors.secondary,
-              fontSize: 12,
-              fontFamily: 'Courier',
-            ),
-          ),
-          Text(
-            'Kelas: ${mengajar.namaKelas}',
-            style: const TextStyle(
-              color: CtOSColors.textPrimary,
-              fontSize: 12,
-              fontFamily: 'Courier',
-            ),
-          ),
-          Text(
-            'Semester: ${mengajar.namaSemester}',
-            style: const TextStyle(
-              color: CtOSColors.textAccent,
-              fontSize: 12,
-              fontFamily: 'Courier',
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRiwayatJabatanItem(DosenJabatanFungsional jabatan) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: CtOSColors.background,
-        border: Border.all(color: CtOSColors.secondary.withValues(alpha: 0.3)),
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            jabatan.jabatan,
-            style: const TextStyle(
-              color: CtOSColors.primary,
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'Courier',
-            ),
-          ),
-          const SizedBox(height: 4),
-          if (jabatan.tanggalSk.isNotEmpty)
-            Text(
-              'Tanggal SK: ${jabatan.tanggalSk}',
-              style: const TextStyle(
-                color: CtOSColors.textPrimary,
-                fontSize: 12,
-                fontFamily: 'Courier',
-              ),
-            ),
-          if (jabatan.nomorSk.isNotEmpty)
-            Text(
-              'Nomor SK: ${jabatan.nomorSk}',
-              style: const TextStyle(
-                color: CtOSColors.secondary,
-                fontSize: 12,
-                fontFamily: 'Courier',
-              ),
-            ),
-          if (jabatan.tmtJabatan.isNotEmpty)
-            Text(
-              'TMT: ${jabatan.tmtJabatan}',
-              style: const TextStyle(
-                color: CtOSColors.textAccent,
-                fontSize: 12,
-                fontFamily: 'Courier',
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRiwayatPenugasanItem(DosenPenugasan penugasan) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: CtOSColors.background,
-        border: Border.all(color: CtOSColors.secondary.withValues(alpha: 0.3)),
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            penugasan.namaPt,
-            style: const TextStyle(
-              color: CtOSColors.primary,
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'Courier',
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Prodi: ${penugasan.namaProdi}',
-            style: const TextStyle(
-              color: CtOSColors.textPrimary,
-              fontSize: 12,
-              fontFamily: 'Courier',
-            ),
-          ),
-          Text(
-            'Status: ${penugasan.statusPenugasan}',
-            style: const TextStyle(
-              color: CtOSColors.secondary,
-              fontSize: 12,
-              fontFamily: 'Courier',
-            ),
-          ),
-          Text(
-            'Periode: ${penugasan.tahunMulai}${penugasan.tahunSelesai.isNotEmpty ? ' - ${penugasan.tahunSelesai}' : ' - Sekarang'}',
-            style: const TextStyle(
-              color: CtOSColors.textAccent,
-              fontSize: 12,
-              fontFamily: 'Courier',
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPortfolioItem(DosenPortofolio portfolio) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: CtOSColors.background,
-        border: Border.all(color: CtOSColors.secondary.withValues(alpha: 0.3)),
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            portfolio.judulKegiatan,
-            style: const TextStyle(
-              color: CtOSColors.primary,
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'Courier',
-            ),
-          ),
-          const SizedBox(height: 4),
-          if (portfolio.jenisKegiatan.isNotEmpty)
-            Text(
-              'Jenis: ${portfolio.jenisKegiatan}',
-              style: const TextStyle(
-                color: CtOSColors.secondary,
-                fontSize: 12,
-                fontFamily: 'Courier',
-              ),
-            ),
-          if (portfolio.tahunKegiatan.isNotEmpty)
-            Text(
-              'Tahun: ${portfolio.tahunKegiatan}',
-              style: const TextStyle(
-                color: CtOSColors.textAccent,
-                fontSize: 12,
-                fontFamily: 'Courier',
-              ),
-            ),
-          if (portfolio.detailKegiatan.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(
-              portfolio.detailKegiatan,
-              style: const TextStyle(
-                color: CtOSColors.textPrimary,
-                fontSize: 12,
-                fontFamily: 'Courier',
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEmptyState(String message) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(32),
-      decoration: BoxDecoration(
-        color: CtOSColors.surface,
-        border: Border.all(color: CtOSColors.primary.withValues(alpha: 0.3)),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        children: [
-          Icon(
-            Icons.info_outline,
-            color: CtOSColors.secondary,
-            size: 48,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            message,
-            style: const TextStyle(
-              color: CtOSColors.secondary,
-              fontSize: 14,
-              fontFamily: 'Courier',
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
+  Widget _infoChip(IconData icon, String text) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 13, color: AppColors.textTertiary),
+        const SizedBox(width: 4),
+        Text(text, style: AppTypography.codeSmall),
+      ],
     );
   }
 }

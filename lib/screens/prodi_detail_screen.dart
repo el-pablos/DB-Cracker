@@ -1,862 +1,302 @@
-// lib/screens/prodi_detail_screen.dart
-import 'dart:async';
-import 'dart:math';
 import 'package:flutter/material.dart';
 import '../api/multi_api_factory.dart';
 import '../models/prodi.dart';
-import '../widgets/hacker_loading_indicator.dart';
-import '../widgets/console_text.dart';
-import '../widgets/terminal_window.dart';
-import '../widgets/flexible_text.dart';
-import '../widgets/responsive_card.dart';
-import '../utils/constants.dart';
-import '../utils/screen_utils.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_typography.dart';
+import '../theme/app_spacing.dart';
+import '../theme/app_gradients.dart';
+import '../widgets/core/neo_card.dart';
+import '../widgets/core/neo_badge.dart';
+import '../widgets/data/neo_data_row.dart';
+import '../widgets/data/neo_stat_card.dart';
+import '../widgets/feedback/neo_error.dart';
+import '../widgets/feedback/neo_skeleton.dart';
 
-/// Screen untuk menampilkan detail program studi
 class ProdiDetailScreen extends StatefulWidget {
   final String prodiId;
   final String prodiName;
 
   const ProdiDetailScreen({
-    Key? key,
+    super.key,
     required this.prodiId,
     required this.prodiName,
-  }) : super(key: key);
+  });
 
   @override
-  _ProdiDetailScreenState createState() => _ProdiDetailScreenState();
+  State<ProdiDetailScreen> createState() => _ProdiDetailScreenState();
 }
 
-class _ProdiDetailScreenState extends State<ProdiDetailScreen> with SingleTickerProviderStateMixin {
-  late Future<ProdiDetail?> _prodiFuture;
-  bool _isLoading = true;
-  List<String> _consoleMessages = [];
-  final List<Timer> _activeTimers = [];
-  final Random _random = Random();
-  late final bool _statusDotIsGreen;
-  Timer? _loadTimer;
-  late AnimationController _animationController;
-  
-  // Tambahkan instance MultiApiFactory
-  late MultiApiFactory _multiApiFactory;
-  
+class _ProdiDetailScreenState extends State<ProdiDetailScreen> {
+  late final Future<ProdiDetail?> _prodiFuture;
+
   @override
   void initState() {
     super.initState();
-    _statusDotIsGreen = Random().nextBool();
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1500),
-    );
-    _animationController.repeat(reverse: true);
-    
-    // Inisialisasi MultiApiFactory
-    _multiApiFactory = MultiApiFactory();
-    
-    // Mulai sequence loading
-    _simulateLoading();
-  }
-
-  void _simulateLoading() {
-    setState(() {
-      _consoleMessages = [];
-      _isLoading = true;
-    });
-
-    _addConsoleMessageWithDelay("AKSES DATABASE AMAN...", 300);
-    _addConsoleMessageWithDelay("MENCARI PROGRAM STUDI: ${widget.prodiName}", 800);
-    _addConsoleMessageWithDelay("EKSTRAKSI KURIKULUM...", 1400);
-    _addConsoleMessageWithDelay("ANALISIS AKREDITASI...", 2000);
-    _addConsoleMessageWithDelay("MENGAMBIL DATA KOMPETENSI...", 2600);
-    
-    // Fetch data setelah simulasi
-    _loadTimer = Timer(const Duration(milliseconds: 800), () {
-      _fetchProdiDetail();
-    });
-  }
-
-  void _addConsoleMessageWithDelay(String message, int delay) {
-    final timer = Timer(Duration(milliseconds: delay), () {
-      if (mounted) {
-        setState(() {
-          _consoleMessages.add(message);
-        });
-      }
-    });
-    _activeTimers.add(timer);
-  }
-
-  void _fetchProdiDetail() {
-    // Gunakan MultiApiFactory untuk mendapatkan detail Prodi
-    _prodiFuture = _multiApiFactory.getDetailProdi(widget.prodiId);
-    
-    _prodiFuture.then((_) {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    }).catchError((error) {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _loadTimer?.cancel();
-    _animationController.dispose();
-    for (final timer in _activeTimers) { timer.cancel(); }
-    _activeTimers.clear();
-    super.dispose();
-  }
-
-  String _getRandomHexValue(int length) {
-    const chars = '0123456789ABCDEF';
-    return List.generate(
-      length,
-      (_) => chars[_random.nextInt(chars.length)],
-    ).join();
+    _prodiFuture = MultiApiFactory().getDetailProdi(widget.prodiId);
   }
 
   @override
   Widget build(BuildContext context) {
-    // Pastikan ScreenUtils diinisialisasi
-    if (ScreenUtils.screenWidth == 0) {
-      ScreenUtils.init(context);
-    }
-    
     return Scaffold(
-      backgroundColor: CtOSColors.background,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Row(
-          children: [
-            AnimatedBuilder(
-              animation: _animationController,
-              builder: (context, child) {
-                return Container(
-                  width: 12,
-                  height: 12,
-                  margin: const EdgeInsets.only(right: 8),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: _animationController.value > 0.5 
-                        ? CtOSColors.primary 
-                        : CtOSColors.secondary,
-                  ),
-                );
-              },
-            ),
-            FlexibleText(
-              "PROGRAM STUDI",
-              style: TextStyle(
-                fontFamily: 'Courier',
-                fontWeight: FontWeight.bold,
-                color: CtOSColors.primary,
-                fontSize: 14,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
+        backgroundColor: AppColors.surface,
+        title: Text(
+          'Detail Program Studi',
+          style: AppTypography.headlineMedium,
         ),
-        backgroundColor: CtOSColors.surface,
-        iconTheme: const IconThemeData(
-          color: CtOSColors.primary,
-        ),
+        centerTitle: true,
+        elevation: 0,
       ),
-      body: SafeArea(
-        child: Container(
-          color: CtOSColors.background,
-          child: Column(
-            children: [
-              Container(
-                color: CtOSColors.surface.withValues(alpha: 0.7),
-                padding: const EdgeInsets.all(8),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: _statusDotIsGreen 
-                            ? CtOSColors.primary 
-                            : CtOSColors.secondary,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: FlexibleText(
-                        'PROGRAM: ${widget.prodiName}',
-                        style: const TextStyle(
-                          color: CtOSColors.textAccent,
-                          fontFamily: 'Courier',
-                          fontSize: 12,
-                        ),
-                        textAlign: TextAlign.center,
-                        maxLines: 1,
-                      ),
-                    ),
-                  ],
-                ),
+      body: FutureBuilder<ProdiDetail?>(
+        future: _prodiFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return _buildSkeleton();
+          }
+          if (snapshot.hasError) {
+            return NeoError(
+              message: snapshot.error.toString(),
+              onRetry: () => setState(() {}),
+            );
+          }
+          final data = snapshot.data;
+          if (data == null) {
+            return const Center(
+              child: Text(
+                'Data program studi tidak ditemukan',
+                style: AppTypography.bodyMedium,
               ),
-              Expanded(
-                child: _isLoading
-                  ? TerminalWindow(
-                      title: "DATA LOADING",
-                      child: Column(
-                        children: [
-                          Expanded(
-                            child: ListView.builder(
-                              padding: const EdgeInsets.all(16),
-                              itemCount: _consoleMessages.length,
-                              itemBuilder: (context, index) {
-                                return ConsoleText(text: _consoleMessages[index]);
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  : FutureBuilder<ProdiDetail?>(
-                      future: _prodiFuture,
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
-                          return const Center(child: HackerLoadingIndicator());
-                        } else if (snapshot.hasError) {
-                          return TerminalWindow(
-                            title: "ERROR",
-                            child: Center(
-                              child: Padding(
-                                padding: const EdgeInsets.all(16),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    const Icon(
-                                      Icons.warning_amber_rounded,
-                                      color: CtOSColors.error,
-                                      size: 48,
-                                    ),
-                                    const SizedBox(height: 16),
-                                    FlexibleText(
-                                      'Error: ${snapshot.error}',
-                                      style: const TextStyle(
-                                        color: CtOSColors.error,
-                                        fontSize: 16,
-                                        fontFamily: 'Courier',
-                                      ),
-                                      textAlign: TextAlign.center,
-                                      maxLines: 3,
-                                    ),
-                                    const SizedBox(height: 24),
-                                    ElevatedButton(
-                                      onPressed: _simulateLoading,
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: CtOSColors.surface,
-                                        foregroundColor: CtOSColors.primary,
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 16, 
-                                          vertical: 8
-                                        ),
-                                        side: const BorderSide(color: CtOSColors.primary),
-                                      ),
-                                      child: const FlexibleText(
-                                        "COBA LAGI",
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          );
-                        } else if (!snapshot.hasData) {
-                          return const Center(
-                            child: FlexibleText(
-                              'Data Program Studi tidak tersedia',
-                              style: TextStyle(
-                                color: CtOSColors.error,
-                                fontFamily: 'Courier',
-                                fontSize: 16,
-                              ),
-                            ),
-                          );
-                        }
-
-                        final prodi = snapshot.data!;
-                        return _buildProdiDetailView(prodi);
-                      },
-                    ),
-              ),
-              Container(
-                color: CtOSColors.surface,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 8,
-                          height: 8,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: _statusDotIsGreen 
-                                ? CtOSColors.primary 
-                                : CtOSColors.secondary,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        FlexibleText(
-                          'KODE: ${_getRandomHexValue(8)}-${_getRandomHexValue(4)}',
-                          style: const TextStyle(
-                            color: CtOSColors.textPrimary,
-                            fontSize: 10,
-                            fontFamily: 'Courier',
-                          ),
-                          maxLines: 1,
-                        ),
-                      ],
-                    ),
-                    const FlexibleText(
-                      'BY: TAMAENGS',
-                      style: TextStyle(
-                        color: CtOSColors.textPrimary,
-                        fontSize: 10,
-                        fontFamily: 'Courier',
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
+            );
+          }
+          return _buildContent(data);
+        },
       ),
     );
   }
 
-  Widget _buildProdiDetailView(ProdiDetail prodi) {
-    final bool isMobile = ScreenUtils.isMobileScreen();
-    
+  Widget _buildSkeleton() {
     return Padding(
-      padding: const EdgeInsets.all(12),
+      padding: AppSpacing.screenPadding,
       child: Column(
         children: [
-          Expanded(
-            child: isMobile
-                // Layout mobile: info umum di atas, info detail di bawah
-                ? Column(
-                    children: [
-                      Expanded(
-                        child: _buildInfoSection(
-                          title: "INFO UMUM",
-                          icon: Icons.school,
-                          content: [
-                            _buildDataRow("NAMA", prodi.namaProdi),
-                            _buildDataRow("KODE", prodi.kodeProdi),
-                            _buildDataRow("JENJANG", prodi.jenjangDidik),
-                            _buildDataRow("PERGURUAN TINGGI", prodi.namaPt),
-                            _buildDataRow("AKREDITASI", prodi.akreditasi),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Expanded(
-                        child: _buildInfoSection(
-                          title: "DETAIL",
-                          icon: Icons.info,
-                          content: [
-                            _buildDataRow("ALAMAT", prodi.alamat),
-                            _buildDataRow("KOTA", prodi.kabKota),
-                            _buildDataRow("PROVINSI", prodi.provinsi),
-                            _buildDataRow("WEBSITE", prodi.website),
-                            _buildDataRow("EMAIL", prodi.email),
-                            _buildDataRow("KONTAK", prodi.noTel),
-                          ],
-                        ),
-                      ),
-                    ],
-                  )
-                // Layout tablet/desktop: info umum di kiri, info detail di kanan
-                : Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        flex: 1,
-                        child: _buildInfoSection(
-                          title: "INFO UMUM",
-                          icon: Icons.school,
-                          content: [
-                            _buildDataRow("NAMA", prodi.namaProdi),
-                            _buildDataRow("KODE", prodi.kodeProdi),
-                            _buildDataRow("JENJANG", prodi.jenjangDidik),
-                            _buildDataRow("PERGURUAN TINGGI", prodi.namaPt),
-                            _buildDataRow("AKREDITASI", prodi.akreditasi),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        flex: 1,
-                        child: _buildInfoSection(
-                          title: "DETAIL",
-                          icon: Icons.info,
-                          content: [
-                            _buildDataRow("ALAMAT", prodi.alamat),
-                            _buildDataRow("KOTA", prodi.kabKota),
-                            _buildDataRow("PROVINSI", prodi.provinsi),
-                            _buildDataRow("WEBSITE", prodi.website),
-                            _buildDataRow("EMAIL", prodi.email),
-                            _buildDataRow("KONTAK", prodi.noTel),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+          NeoSkeleton.card(),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(child: NeoSkeleton(height: 90, borderRadius: 12)),
+              const SizedBox(width: 12),
+              Expanded(child: NeoSkeleton(height: 90, borderRadius: 12)),
+            ],
           ),
-          const SizedBox(height: 12),
-          isMobile 
-              ? Column(
-                  children: [
-                    _buildVisiMisiSection(prodi),
-                    const SizedBox(height: 8),
-                    _buildKompetensiSection(prodi),
-                  ],
-                )
-              : Row(
-                  children: [
-                    Expanded(
-                      flex: 1,
-                      child: _buildVisiMisiSection(prodi),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      flex: 1,
-                      child: _buildKompetensiSection(prodi),
-                    ),
-                  ],
-                ),
-          const SizedBox(height: 12),
-          _buildSecuritySection(prodi),
+          const SizedBox(height: 16),
+          NeoSkeleton.card(),
         ],
       ),
     );
   }
 
-  Widget _buildInfoSection({
-    required String title,
-    required IconData icon,
-    required List<Widget> content,
-  }) {
-    return ResponsiveCard(
-      color: CtOSColors.surface,
-      borderColor: CtOSColors.secondary,
-      padding: const EdgeInsets.all(12),
+  Widget _buildContent(ProdiDetail prodi) {
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        _buildProfileHeader(prodi),
+        const SizedBox(height: 16),
+        _buildStatsRow(prodi),
+        const SizedBox(height: 16),
+        _buildInfoSection(prodi),
+        const SizedBox(height: 16),
+        _buildContactSection(prodi),
+        if (prodi.visi.isNotEmpty || prodi.misi.isNotEmpty) ...[
+          const SizedBox(height: 16),
+          _buildVisiMisiSection(prodi),
+        ],
+        const SizedBox(height: 24),
+      ],
+    );
+  }
+
+  Widget _buildProfileHeader(ProdiDetail prodi) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: AppGradients.card,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              gradient: AppGradients.primary,
+              borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+            ),
+            child: const Icon(
+              Icons.school_rounded,
+              color: Colors.white,
+              size: 28,
+            ),
+          ),
+          const SizedBox(height: 14),
+          Text(
+            prodi.namaProdi,
+            style: AppTypography.headlineLarge,
+            textAlign: TextAlign.center,
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 6),
+          Text(
+            prodi.namaPt,
+            style: AppTypography.bodySmall,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            alignment: WrapAlignment.center,
+            children: [
+              if (prodi.jenjangDidik.isNotEmpty)
+                NeoBadge(
+                  label: prodi.jenjangDidik,
+                  variant: NeoBadgeVariant.info,
+                  icon: Icons.layers_rounded,
+                ),
+              if (prodi.akreditasi.isNotEmpty)
+                NeoBadge(
+                  label: 'Akreditasi ${prodi.akreditasi}',
+                  variant: _akreditasiVariant(prodi.akreditasi),
+                  icon: Icons.verified_rounded,
+                ),
+              if (prodi.status.isNotEmpty)
+                NeoBadge(
+                  label: prodi.status,
+                  variant: prodi.status.toLowerCase().contains('aktif')
+                      ? NeoBadgeVariant.success
+                      : NeoBadgeVariant.warning,
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatsRow(ProdiDetail prodi) {
+    // Only show stats row if we have meaningful data
+    final hasRataMasa = prodi.rataMasaStudi.isNotEmpty;
+    if (!hasRataMasa && prodi.kelBidang.isEmpty) return const SizedBox.shrink();
+
+    return Row(
+      children: [
+        if (hasRataMasa)
+          Expanded(
+            child: NeoStatCard(
+              label: 'Rata-rata Masa Studi',
+              value: prodi.rataMasaStudi,
+              icon: Icons.timer_rounded,
+              color: AppColors.secondary,
+            ),
+          ),
+        if (hasRataMasa && prodi.kelBidang.isNotEmpty)
+          const SizedBox(width: 12),
+        if (prodi.kelBidang.isNotEmpty)
+          Expanded(
+            child: NeoStatCard(
+              label: 'Kelompok Bidang',
+              value: prodi.kelBidang,
+              icon: Icons.category_rounded,
+              color: AppColors.primary,
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildInfoSection(ProdiDetail prodi) {
+    return NeoCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Icon(
-                icon,
-                color: CtOSColors.primary,
-                size: 18,
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: FlexibleText(
-                  title,
-                  style: const TextStyle(
-                    color: CtOSColors.primary,
-                    fontFamily: 'Courier',
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  maxLines: 1,
-                ),
-              ),
-            ],
-          ),
-          const Divider(
-            color: CtOSColors.secondary,
-            height: 24,
-          ),
-          Expanded(
-            child: ListView(
-              physics: const BouncingScrollPhysics(),
-              children: content,
-            ),
-          ),
+          Text('Informasi Program Studi', style: AppTypography.headlineSmall),
+          const SizedBox(height: 8),
+          NeoDataRow(label: 'Kode Prodi', value: prodi.kodeProdi, isCode: true, copyable: true),
+          NeoDataRow(label: 'Jenjang', value: prodi.jenjangDidik),
+          NeoDataRow(label: 'Status', value: prodi.status),
+          NeoDataRow(label: 'Akreditasi', value: prodi.akreditasi),
+          if (prodi.akreditasiInternasional.isNotEmpty)
+            NeoDataRow(label: 'Akred. Intl', value: prodi.akreditasiInternasional),
+          NeoDataRow(label: 'Tanggal Berdiri', value: prodi.tglBerdiri),
+          NeoDataRow(label: 'SK Selenggara', value: prodi.skSelenggara, isCode: true),
+          NeoDataRow(label: 'Perguruan Tinggi', value: prodi.namaPt),
+          NeoDataRow(label: 'Kode PT', value: prodi.kodePt, isCode: true),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContactSection(ProdiDetail prodi) {
+    final hasContact = prodi.alamat.isNotEmpty ||
+        prodi.noTel.isNotEmpty ||
+        prodi.email.isNotEmpty ||
+        prodi.website.isNotEmpty;
+
+    if (!hasContact) return const SizedBox.shrink();
+
+    return NeoCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Kontak & Lokasi', style: AppTypography.headlineSmall),
+          const SizedBox(height: 8),
+          if (prodi.alamat.isNotEmpty)
+            NeoDataRow(label: 'Alamat', value: prodi.alamat, icon: Icons.location_on_rounded),
+          if (prodi.kabKota.isNotEmpty)
+            NeoDataRow(label: 'Kota', value: prodi.kabKota),
+          if (prodi.provinsi.isNotEmpty)
+            NeoDataRow(label: 'Provinsi', value: prodi.provinsi),
+          if (prodi.noTel.isNotEmpty)
+            NeoDataRow(label: 'Telepon', value: prodi.noTel, icon: Icons.phone_rounded),
+          if (prodi.email.isNotEmpty)
+            NeoDataRow(label: 'Email', value: prodi.email, icon: Icons.email_rounded, copyable: true),
+          if (prodi.website.isNotEmpty)
+            NeoDataRow(label: 'Website', value: prodi.website, icon: Icons.language_rounded, copyable: true),
         ],
       ),
     );
   }
 
   Widget _buildVisiMisiSection(ProdiDetail prodi) {
-    return ResponsiveCard(
-      color: CtOSColors.surface,
-      borderColor: CtOSColors.secondary,
-      padding: const EdgeInsets.all(12),
+    return NeoCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              const Icon(
-                Icons.remove_red_eye,
-                color: CtOSColors.primary,
-                size: 18,
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: FlexibleText(
-                  "VISI & MISI",
-                  style: const TextStyle(
-                    color: CtOSColors.primary,
-                    fontFamily: 'Courier',
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  maxLines: 1,
-                ),
-              ),
-            ],
-          ),
-          const Divider(
-            color: CtOSColors.secondary,
-            height: 24,
-          ),
-          Expanded(
-            child: ListView(
-              physics: const BouncingScrollPhysics(),
-              children: [
-                const FlexibleText(
-                  "VISI:",
-                  style: TextStyle(
-                    color: CtOSColors.secondary,
-                    fontFamily: 'Courier',
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  maxLines: 1,
-                ),
-                const SizedBox(height: 4),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: CtOSColors.background,
-                    borderRadius: BorderRadius.circular(4),
-                    border: Border.all(
-                      color: CtOSColors.secondary.withValues(alpha: 0.5),
-                    ),
-                  ),
-                  child: FlexibleText(
-                    prodi.visi.isNotEmpty ? prodi.visi : "Data visi tidak tersedia",
-                    style: const TextStyle(
-                      color: CtOSColors.textPrimary,
-                      fontFamily: 'Courier',
-                      fontSize: 12,
-                    ),
-                    maxLines: 10,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                const FlexibleText(
-                  "MISI:",
-                  style: TextStyle(
-                    color: CtOSColors.secondary,
-                    fontFamily: 'Courier',
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  maxLines: 1,
-                ),
-                const SizedBox(height: 4),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: CtOSColors.background,
-                    borderRadius: BorderRadius.circular(4),
-                    border: Border.all(
-                      color: CtOSColors.secondary.withValues(alpha: 0.5),
-                    ),
-                  ),
-                  child: FlexibleText(
-                    prodi.misi.isNotEmpty ? prodi.misi : "Data misi tidak tersedia",
-                    style: const TextStyle(
-                      color: CtOSColors.textPrimary,
-                      fontFamily: 'Courier',
-                      fontSize: 12,
-                    ),
-                    maxLines: 15,
-                  ),
-                ),
-              ],
-            ),
-          ),
+          Text('Visi & Misi', style: AppTypography.headlineSmall),
+          const SizedBox(height: 12),
+          if (prodi.visi.isNotEmpty) ...[
+            Text('Visi', style: AppTypography.labelLarge.copyWith(color: AppColors.primary)),
+            const SizedBox(height: 4),
+            Text(prodi.visi, style: AppTypography.bodyMedium),
+            const SizedBox(height: 12),
+          ],
+          if (prodi.misi.isNotEmpty) ...[
+            Text('Misi', style: AppTypography.labelLarge.copyWith(color: AppColors.primary)),
+            const SizedBox(height: 4),
+            Text(prodi.misi, style: AppTypography.bodyMedium),
+          ],
         ],
       ),
     );
   }
 
-  Widget _buildKompetensiSection(ProdiDetail prodi) {
-    return ResponsiveCard(
-      color: CtOSColors.surface,
-      borderColor: CtOSColors.secondary,
-      padding: const EdgeInsets.all(12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(
-                Icons.psychology,
-                color: CtOSColors.primary,
-                size: 18,
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: FlexibleText(
-                  "KOMPETENSI & CAPAIAN",
-                  style: const TextStyle(
-                    color: CtOSColors.primary,
-                    fontFamily: 'Courier',
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  maxLines: 1,
-                ),
-              ),
-            ],
-          ),
-          const Divider(
-            color: CtOSColors.secondary,
-            height: 24,
-          ),
-          Expanded(
-            child: ListView(
-              physics: const BouncingScrollPhysics(),
-              children: [
-                const FlexibleText(
-                  "KOMPETENSI LULUSAN:",
-                  style: TextStyle(
-                    color: CtOSColors.secondary,
-                    fontFamily: 'Courier',
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  maxLines: 1,
-                ),
-                const SizedBox(height: 4),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: CtOSColors.background,
-                    borderRadius: BorderRadius.circular(4),
-                    border: Border.all(
-                      color: CtOSColors.secondary.withValues(alpha: 0.5),
-                    ),
-                  ),
-                  child: FlexibleText(
-                    prodi.kompetensi.isNotEmpty ? prodi.kompetensi : "Data kompetensi tidak tersedia",
-                    style: const TextStyle(
-                      color: CtOSColors.textPrimary,
-                      fontFamily: 'Courier',
-                      fontSize: 12,
-                    ),
-                    maxLines: 10,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                const FlexibleText(
-                  "CAPAIAN PEMBELAJARAN:",
-                  style: TextStyle(
-                    color: CtOSColors.secondary,
-                    fontFamily: 'Courier',
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  maxLines: 1,
-                ),
-                const SizedBox(height: 4),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: CtOSColors.background,
-                    borderRadius: BorderRadius.circular(4),
-                    border: Border.all(
-                      color: CtOSColors.secondary.withValues(alpha: 0.5),
-                    ),
-                  ),
-                  child: FlexibleText(
-                    prodi.capaianBelajar.isNotEmpty ? prodi.capaianBelajar : "Data capaian pembelajaran tidak tersedia",
-                    style: const TextStyle(
-                      color: CtOSColors.textPrimary,
-                      fontFamily: 'Courier',
-                      fontSize: 12,
-                    ),
-                    maxLines: 15,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                FlexibleText(
-                  "RATA-RATA MASA STUDI: ${prodi.rataMasaStudi.isNotEmpty ? prodi.rataMasaStudi : 'Tidak tersedia'} tahun",
-                  style: const TextStyle(
-                    color: CtOSColors.warning,
-                    fontFamily: 'Courier',
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  maxLines: 1,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSecuritySection(ProdiDetail prodi) {
-    // Adaptasi berdasarkan ukuran layar
-    final bool isMobile = ScreenUtils.isMobileScreen();
-    final double terminalHeight = isMobile ? 100 : 120;
-    
-    return Container(
-      height: terminalHeight,
-      decoration: BoxDecoration(
-        color: CtOSColors.surface,
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: CtOSColors.secondary),
-      ),
-      padding: const EdgeInsets.all(8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 8),
-            decoration: BoxDecoration(
-              color: CtOSColors.background,
-              borderRadius: BorderRadius.circular(2),
-            ),
-            child: const FlexibleText(
-              "ANALISIS PRODI",
-              style: TextStyle(
-                color: CtOSColors.warning,
-                fontFamily: 'Courier',
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Expanded(
-            child: ListView.builder(
-              itemCount: 5,
-              itemBuilder: (context, index) {
-                return FlexibleText(
-                  _generateRandomProdiInfo(prodi, index),
-                  style: TextStyle(
-                    color: _getInfoColor(index),
-                    fontFamily: 'Courier',
-                    fontSize: 10,
-                  ),
-                  maxLines: 1,
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _generateRandomProdiInfo(ProdiDetail prodi, int index) {
-    final hexCode = _getRandomHexValue(8);
-    
-    switch (index) {
-      case 0:
-        return "STATUS: ${prodi.status} | AKREDITASI: ${prodi.akreditasi} | BIDANG: ${prodi.kelBidang.isNotEmpty ? prodi.kelBidang : 'N/A'}";
-      case 1:
-        return "DIDIRIKAN: ${prodi.tglBerdiri} | SK: ${prodi.skSelenggara.isNotEmpty ? prodi.skSelenggara.substring(0, min(prodi.skSelenggara.length, 15)) : '-'}...";
-      case 2:
-        return "LOKASI: LAT ${prodi.lintang}, LONG ${prodi.bujur} | PROV: ${prodi.provinsi}";
-      case 3:
-        return "AKREDIT. INT'L: ${prodi.akreditasiInternasional.isNotEmpty ? prodi.akreditasiInternasional : 'TIDAK ADA'} | STATUS AKRED: ${prodi.statusAkreditasi}";
-      case 4:
-        return "SISTEM: PRODI-ANALYZER | CODE: ${hexCode} | TIME: ${DateTime.now().toString().substring(0, 16)}";
-      default:
-        return "";
-    }
-  }
-
-  Color _getInfoColor(int index) {
-    switch (index) {
-      case 0:
-        return CtOSColors.primary;
-      case 1:
-        return CtOSColors.secondary;
-      case 2:
-        return CtOSColors.textPrimary;
-      case 3:
-        return CtOSColors.warning;
-      case 4:
-        return CtOSColors.primary;
-      default:
-        return CtOSColors.textPrimary;
-    }
-  }
-
-  Widget _buildDataRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          FlexibleText(
-            label,
-            style: TextStyle(
-              color: CtOSColors.textPrimary.withValues(alpha: 0.7),
-              fontFamily: 'Courier',
-              fontSize: 10,
-            ),
-          ),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-            decoration: BoxDecoration(
-              color: CtOSColors.background,
-              borderRadius: BorderRadius.circular(2),
-              border: Border.all(
-                color: CtOSColors.secondary.withValues(alpha: 0.5),
-                width: 1,
-              ),
-            ),
-            child: FlexibleText(
-              value.isNotEmpty ? value : "-DISENSOR-",
-              style: const TextStyle(
-                color: CtOSColors.primary,
-                fontFamily: 'Courier',
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-              maxLines: 2,
-            ),
-          ),
-        ],
-      ),
-    );
+  NeoBadgeVariant _akreditasiVariant(String akreditasi) {
+    final upper = akreditasi.toUpperCase().trim();
+    if (upper == 'A' || upper == 'UNGGUL') return NeoBadgeVariant.success;
+    if (upper == 'B' || upper == 'BAIK SEKALI') return NeoBadgeVariant.info;
+    if (upper == 'C' || upper == 'BAIK') return NeoBadgeVariant.warning;
+    return NeoBadgeVariant.neutral;
   }
 }

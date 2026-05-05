@@ -76,7 +76,7 @@ class DBCrackerApp extends StatelessWidget {
                 ? settings.arguments as Map<String, dynamic>
                 : null;
             return MaterialPageRoute(
-              builder: (context) => PTDetailScreen(
+              builder: (context) => PtDetailScreen(
                 ptId: ptId,
                 ptName: args?['ptName'] ?? 'Institusi',
               ),
