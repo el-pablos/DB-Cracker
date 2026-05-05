@@ -44,16 +44,31 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-# Environment & Secrets
+# Environment & Secrets — HARDCODED: JANGAN PERNAH COMMIT SECRETS
 .env
 .env.*
+.env.local
+.env.production
 *.key
 *.pem
 *.jks
 *.keystore
+*.p12
+*.pfx
 key.properties
 credentials.json
 secrets/
+config.json
+token.txt
+*.token
+gh_token
+GITHUB_TOKEN
+api_keys.dart
+
+# Playwright MCP artifacts (testing)
+.playwright-mcp/
+*.png
+!assets/images/*.png
 
 # Coverage
 coverage/
@@ -70,3 +85,12 @@ coverage/
 # Analysis report (generated)
 DEEP_DIVE_ANALYSIS.md
 PROMPTING_OPUS_REFACTOR.md
+
+# CocoIndex
+.cocoindex_code/
+
+# Build artifacts
+build/
+*.apk
+*.aab
+*.ipa
