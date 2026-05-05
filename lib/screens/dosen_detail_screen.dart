@@ -9,6 +9,8 @@ import '../widgets/console_text.dart';
 import '../widgets/terminal_window.dart';
 import '../utils/constants.dart';
 import '../utils/screen_utils.dart';
+import '../api/enrichment/external_links.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 /// Screen untuk menampilkan detail dosen
 class DosenDetailScreen extends StatefulWidget {
@@ -722,7 +724,70 @@ class _DosenDetailScreenState extends State<DosenDetailScreen>
             dosen.karya.isEmpty &&
             dosen.paten.isEmpty)
           _buildEmptyState('Belum ada data portfolio'),
+
+        // Enrichment Links — GARUDA/SINTA/RAMA deep-links
+        const SizedBox(height: 16),
+        _buildEnrichmentLinksSection(dosen),
       ],
+    );
+  }
+
+  /// Section tautan enrichment akademik — deep-link ke portal eksternal
+  Widget _buildEnrichmentLinksSection(DosenDetail dosen) {
+    final links = getDosenEnrichmentLinks(
+      dosenName: dosen.namaDosen,
+      institutionName: dosen.namaPt.isNotEmpty ? dosen.namaPt : null,
+    );
+    if (links.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: CtOSColors.surface,
+        border: Border.all(color: CtOSColors.secondary.withValues(alpha: 0.3)),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('TAUTAN ENRICHMENT', style: TextStyle(
+            color: CtOSColors.secondary, fontFamily: 'Courier',
+            fontSize: 13, fontWeight: FontWeight.bold,
+          )),
+          const SizedBox(height: 4),
+          const Text('Buka pencarian di portal eksternal', style: TextStyle(
+            color: CtOSColors.textPrimary, fontFamily: 'Courier', fontSize: 10,
+          )),
+          const Divider(color: CtOSColors.secondary, height: 16),
+          ...links.map((link) => Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: InkWell(
+              onTap: () => launchUrl(link.url, mode: LaunchMode.externalApplication),
+              child: Row(
+                children: [
+                  const Icon(Icons.open_in_new, size: 14, color: CtOSColors.primary),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(link.title, style: const TextStyle(
+                          color: CtOSColors.primary, fontSize: 12, fontFamily: 'Courier',
+                          decoration: TextDecoration.underline,
+                        )),
+                        Text(link.description, style: const TextStyle(
+                          color: CtOSColors.textPrimary, fontSize: 10, fontFamily: 'Courier',
+                        ), maxLines: 2, overflow: TextOverflow.ellipsis),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          )),
+        ],
+      ),
     );
   }
 
