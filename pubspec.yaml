@@ -1,7 +1,7 @@
 name: db_cracker_tamaengs
-description: "ctOS Faculty Database Scanner — Flutter app untuk pencarian data pendidikan Indonesia via PDDIKTI API."
+description: "PDDIKTI Data Explorer — Pencarian data mahasiswa, dosen, dan prodi Indonesia."
 publish_to: 'none'
-version: 3.2.0+1
+version: 2.0.0+1
 
 environment:
   sdk: ">=3.6.0 <4.0.0"
@@ -25,8 +25,23 @@ flutter:
     - assets/images/
 
   fonts:
-    - family: Courier
+    - family: Inter
       fonts:
-        - asset: assets/fonts/CourierPrime-Regular.ttf
-        - asset: assets/fonts/CourierPrime-Bold.ttf
+        - asset: assets/fonts/Inter/Inter-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Inter/Inter-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Inter/Inter-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Inter/Inter-Bold.ttf
+          weight: 700
+    - family: JetBrainsMono
+      fonts:
+        - asset: assets/fonts/JetBrainsMono/JetBrainsMono-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/JetBrainsMono/JetBrainsMono-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/JetBrainsMono/JetBrainsMono-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/JetBrainsMono/JetBrainsMono-Bold.ttf
           weight: 700

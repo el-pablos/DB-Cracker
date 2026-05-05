@@ -26,7 +26,7 @@ enum DataSourceType {
 /// Generic result wrapper — membawa data + metadata sumber
 /// Agar UI bisa menampilkan source badge dan warning stale
 class DataResult<T> {
-  final T data;
+  final T? data;
   final DataSourceType sourceType;
   final String providerId;
   final String providerName;
@@ -37,7 +37,7 @@ class DataResult<T> {
   final Object? rawError;
 
   const DataResult({
-    required this.data,
+    this.data,
     required this.sourceType,
     required this.providerId,
     required this.providerName,
@@ -86,7 +86,7 @@ class DataResult<T> {
     required String providerName,
     Object? error,
   }) => DataResult(
-    data: null as T,
+    data: null,
     sourceType: DataSourceType.unavailable,
     providerId: providerId,
     providerName: providerName,

@@ -172,7 +172,7 @@ class _DetailScreenState extends State<DetailScreen>
             ),
             Flexible(
               child: Text(
-                AppStrings.detailTitle,
+                'Detail Profil',
                 style: const TextStyle(
                   fontFamily: 'Courier',
                   fontWeight: FontWeight.bold,
