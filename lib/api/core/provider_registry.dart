@@ -100,13 +100,15 @@ class ProviderRegistry {
     ),
 
     // === Sekolah/NPSN ===
+    // NOTE: api.fazriansyah.eu.org may be intermittently unavailable
+    // Service handles connection failures gracefully (returns null)
     ApiProviderConfig(
       id: 'fazriansyah_sekolah',
       name: 'API Sekolah Indonesia',
       baseUrl: 'https://api.fazriansyah.eu.org/v1',
       kind: ProviderKind.sekolah,
       priority: 1,
-      timeout: Duration(seconds: 10),
+      timeout: Duration(seconds: 5), // Reduced timeout — fail fast if DNS dead
     ),
 
     // === Wikipedia ===
