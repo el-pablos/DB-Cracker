@@ -38,11 +38,55 @@ Fitur utama:
 
 ## 📱 Screenshots
 
+### Home & Search
+
 <p align="center">
-  <img src="assets/screenshots/home_screen.png" alt="Home Screen" width="250"/>
+  <img src="assets/screenshots/02_home_screen.jpeg" alt="Home Screen" width="230"/>
+  &nbsp;&nbsp;
+  <img src="assets/screenshots/04_search_results.jpeg" alt="Search Results" width="230"/>
+  &nbsp;&nbsp;
+  <img src="assets/screenshots/01_splash_screen.jpeg" alt="Splash" width="230"/>
 </p>
 
-<p align="center"><em>Home Screen — Target Locator dengan hacker console</em></p>
+<p align="center"><em>Home Screen • Search Results • Splash Screen</em></p>
+
+### Detail Mahasiswa
+
+<p align="center">
+  <img src="assets/screenshots/03_mahasiswa_detail_profil.jpeg" alt="Mahasiswa Profil" width="230"/>
+  &nbsp;&nbsp;
+  <img src="assets/screenshots/05_mahasiswa_detail_akademik.jpeg" alt="Mahasiswa Akademik" width="230"/>
+</p>
+
+<p align="center"><em>Tab Profil • Tab Akademik</em></p>
+
+### Pencarian & Detail Dosen
+
+<p align="center">
+  <img src="assets/screenshots/06_dosen_search_results.jpeg" alt="Dosen Search" width="230"/>
+  &nbsp;&nbsp;
+  <img src="assets/screenshots/07_dosen_search_filter.jpeg" alt="Dosen Filter" width="230"/>
+  &nbsp;&nbsp;
+  <img src="assets/screenshots/09_dosen_loading.jpeg" alt="Dosen Loading" width="230"/>
+</p>
+
+<p align="center"><em>Search Dosen • Filter PT • Loading Animation</em></p>
+
+<p align="center">
+  <img src="assets/screenshots/08_dosen_detail_profil.jpeg" alt="Dosen Profil" width="230"/>
+  &nbsp;&nbsp;
+  <img src="assets/screenshots/10_dosen_detail_institusi.jpeg" alt="Dosen Institusi" width="230"/>
+  &nbsp;&nbsp;
+  <img src="assets/screenshots/11_dosen_detail_riwayat.jpeg" alt="Dosen Riwayat" width="230"/>
+</p>
+
+<p align="center"><em>Profil Dosen • Institusi • Riwayat Pendidikan & Mengajar</em></p>
+
+<p align="center">
+  <img src="assets/screenshots/12_dosen_detail_portfolio.jpeg" alt="Dosen Portfolio" width="230"/>
+</p>
+
+<p align="center"><em>Portfolio Penelitian Dosen</em></p>
 
 ---
 
