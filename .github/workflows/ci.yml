@@ -2,12 +2,14 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
+    tags:
+      - 'v*'
   pull_request:
     branches: [main]
 
 jobs:
-  analyze-and-test:
+  analyze:
     name: 🔍 Analyze & Test
     runs-on: ubuntu-latest
     steps:
@@ -16,30 +18,37 @@ jobs:
         with:
           flutter-version: '3.27.x'
           channel: 'stable'
+          cache: true
       - run: flutter pub get
-      - run: flutter analyze --no-fatal-infos
+      - run: flutter analyze --fatal-infos
       - run: flutter test
+      - run: dart format --set-exit-if-changed .
 
   build-android:
     name: 🤖 Build Android APK
-    needs: analyze-and-test
+    needs: analyze
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.27.x'
           channel: 'stable'
+          cache: true
       - run: flutter pub get
-      - run: flutter build apk --release
+      - run: flutter build apk --release --split-per-abi
       - uses: actions/upload-artifact@v4
         with:
           name: release-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          path: build/app/outputs/flutter-apk/*.apk
 
   build-web:
     name: 🌐 Build Web
-    needs: analyze-and-test
+    needs: analyze
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -47,44 +56,33 @@ jobs:
         with:
           flutter-version: '3.27.x'
           channel: 'stable'
+          cache: true
       - run: flutter pub get
-      - run: flutter build web --release
+      - run: flutter build web --release --web-renderer canvaskit
       - uses: actions/upload-artifact@v4
         with:
           name: web-build
           path: build/web/
 
-  create-release:
+  release:
     name: 🚀 Create Release
     needs: [build-android, build-web]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
       - uses: actions/download-artifact@v4
         with:
           name: release-apk
-      - name: Get version from pubspec
-        id: version
-        run: |
-          VERSION=$(grep 'version:' pubspec.yaml | head -1 | awk '{print $2}' | cut -d'+' -f1)
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "Version: $VERSION"
-      - name: Generate changelog
-        id: changelog
-        run: |
-          echo "## Changes" > CHANGELOG_BODY.md
-          git log --oneline --no-merges $(git describe --tags --abbrev=0 2>/dev/null || git rev-list --max-parents=0 HEAD)..HEAD >> CHANGELOG_BODY.md 2>/dev/null || echo "- Initial release" >> CHANGELOG_BODY.md
+          path: apk-artifacts
+      - uses: actions/download-artifact@v4
+        with:
+          name: web-build
+          path: web-artifacts
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ steps.version.outputs.version }}
-          name: "🎉 DB Cracker v${{ steps.version.outputs.version }}"
-          body_path: CHANGELOG_BODY.md
           generate_release_notes: true
-          files: app-release.apk
-          make_latest: true
+          files: apk-artifacts/*.apk
