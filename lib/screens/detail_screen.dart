@@ -392,21 +392,67 @@ class _DetailScreenState extends State<DetailScreen>
   // ─── Riwayat Tab ─────────────────────────────────────────────────────────────
 
   Widget _buildRiwayatTab(MahasiswaDetail detail) {
-    if (detail.riwayatSemester.isEmpty) {
-      return const NeoEmpty(
-        icon: Icons.history_rounded,
-        title: 'Belum ada riwayat',
-        subtitle: 'Data riwayat semester belum tersedia.',
-      );
-    }
-
-    return ListView.builder(
+    return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      itemCount: detail.riwayatSemester.length,
-      itemBuilder: (context, index) {
-        final semester = detail.riwayatSemester[index];
-        return _buildSemesterCard(semester);
-      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Riwayat Pendidikan Sebelumnya
+          NeoCard(
+            variant: NeoCardVariant.flat,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Riwayat Pendidikan', style: AppTypography.labelLarge),
+                const SizedBox(height: 8),
+                const Divider(color: AppColors.divider, height: 1),
+                NeoDataRow(
+                  icon: Icons.school_outlined,
+                  label: 'Jenjang Saat Ini',
+                  value: detail.jenjang.isNotEmpty ? detail.jenjang : '-',
+                ),
+                NeoDataRow(
+                  icon: Icons.login_rounded,
+                  label: 'Jenis Pendaftaran',
+                  value: detail.jenisDaftar.isNotEmpty ? detail.jenisDaftar : '-',
+                ),
+                NeoDataRow(
+                  icon: Icons.route_rounded,
+                  label: 'Jalur Masuk',
+                  value: detail.jalurMasuk.isNotEmpty ? detail.jalurMasuk : '-',
+                ),
+                NeoDataRow(
+                  icon: Icons.calendar_month_outlined,
+                  label: 'Tahun Masuk',
+                  value: detail.tahunMasuk.isNotEmpty ? detail.tahunMasuk : '-',
+                ),
+                NeoDataRow(
+                  icon: Icons.emoji_events_outlined,
+                  label: 'Tahun Lulus',
+                  value: detail.tahunLulus.isNotEmpty ? detail.tahunLulus : '-',
+                ),
+                NeoDataRow(
+                  icon: Icons.verified_outlined,
+                  label: 'Status Akhir',
+                  value: detail.statusAkhir.isNotEmpty ? detail.statusAkhir : detail.statusSaatIni,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          // Riwayat Semester
+          if (detail.riwayatSemester.isNotEmpty) ...[
+            Text('Riwayat Semester', style: AppTypography.labelLarge),
+            const SizedBox(height: 8),
+            ...detail.riwayatSemester.map((semester) => _buildSemesterCard(semester)),
+          ] else
+            const NeoEmpty(
+              icon: Icons.history_rounded,
+              title: 'Belum ada riwayat semester',
+              subtitle: 'Data riwayat semester belum tersedia dari PDDIKTI.',
+            ),
+        ],
+      ),
     );
   }
 
