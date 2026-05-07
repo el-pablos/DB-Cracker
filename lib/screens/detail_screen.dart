@@ -51,8 +51,11 @@ class _DetailScreenState extends State<DetailScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Scaffold(
       backgroundColor: AppColors.background,
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         backgroundColor: AppColors.surface,
         elevation: 0,
@@ -95,6 +98,7 @@ class _DetailScreenState extends State<DetailScreen>
           return _buildContent(snapshot.data!);
         },
       ),
+    ),
     );
   }
 
