@@ -49,7 +49,7 @@ void main() {
       expect(result.summary!.totalPackages, 3000);
       expect(result.regions, hasLength(1));
       expect(result.regions[0].regionKey, 'jawa-barat-kab-bandung');
-      verify(() => mockDio.get('https://assai.id/nemesis/api/bootstrap'))
+      verify(() => mockDio.get('https://nemesis.tams.codes/api/bootstrap'))
           .called(1);
     });
 
@@ -75,6 +75,7 @@ void main() {
     test('throws RateLimitException on 429 response', () async {
       when(() => mockDio.get(any())).thenThrow(
         DioException(
+          type: DioExceptionType.badResponse,
           response: Response(
             data: {'error': 'Too Many Requests'},
             statusCode: 429,
@@ -106,7 +107,7 @@ void main() {
       );
     });
 
-    test('throws ServerException on DioException without response', () async {
+    test('throws TimeoutException on connectionTimeout', () async {
       when(() => mockDio.get(any())).thenThrow(
         DioException(
           type: DioExceptionType.connectionTimeout,
@@ -117,7 +118,7 @@ void main() {
 
       expect(
         () => dataSource.getBootstrap(),
-        throwsA(isA<ServerException>()),
+        throwsA(isA<TimeoutException>()),
       );
     });
   });
@@ -273,6 +274,7 @@ void main() {
       when(() => mockDio.get(any(), queryParameters: any(named: 'queryParameters')))
           .thenThrow(
         DioException(
+          type: DioExceptionType.badResponse,
           response: Response(
             data: {'error': 'Rate limited'},
             statusCode: 429,
@@ -343,7 +345,7 @@ void main() {
       await dataSource.getRegionPackages(regionKey: 'jawa-timur-kota-surabaya');
 
       verify(() => mockDio.get(
-            'https://assai.id/nemesis/api/regions/jawa-timur-kota-surabaya/packages',
+            'https://nemesis.tams.codes/api/regions/jawa-timur-kota-surabaya/packages',
             queryParameters: any(named: 'queryParameters'),
           )).called(1);
     });
@@ -362,7 +364,7 @@ void main() {
       final result = await dataSource.healthCheck();
 
       expect(result, isTrue);
-      verify(() => mockDio.get('https://assai.id/nemesis/api/health')).called(1);
+      verify(() => mockDio.get('https://nemesis.tams.codes/api/health')).called(1);
     });
 
     test('returns false on non-200 response', () async {
@@ -411,7 +413,7 @@ void main() {
 
       await dataSource.healthCheck();
 
-      verify(() => mockDio.get('https://assai.id/nemesis/api/health')).called(1);
+      verify(() => mockDio.get('https://nemesis.tams.codes/api/health')).called(1);
     });
   });
 }

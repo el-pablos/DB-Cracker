@@ -24,7 +24,7 @@ class ProcurementRepositoryImpl implements ProcurementRepository {
 
   @override
   Future<Either<Failure, BootstrapModel>> getBootstrap() async {
-    // Check cache
+    // Check cache first
     if (_cachedBootstrap != null && _bootstrapCachedAt != null) {
       final age = DateTime.now().difference(_bootstrapCachedAt!);
       if (age < _bootstrapTtl) return Right(_cachedBootstrap!);
@@ -43,14 +43,21 @@ class ProcurementRepositoryImpl implements ProcurementRepository {
     } on RateLimitException {
       if (_cachedBootstrap != null) return Right(_cachedBootstrap!);
       return const Left(RateLimitFailure());
-    } on ServerException catch (e) {
+    } on TimeoutException {
+      // FIX #4: Handle timeout separately from server errors
       if (_cachedBootstrap != null) return Right(_cachedBootstrap!);
-      return Left(ServerFailure(e.message, e.statusCode));
+      return const Left(TimeoutFailure());
     } on NetworkException {
       if (_cachedBootstrap != null) return Right(_cachedBootstrap!);
       return const Left(NetworkFailure());
-    } catch (e) {
-      return Left(ServerFailure(e.toString()));
+    } on ServerException catch (e) {
+      if (_cachedBootstrap != null) return Right(_cachedBootstrap!);
+      // FIX #3: Use sanitized message from datasource (already cleaned)
+      return Left(ServerFailure(e.message, e.statusCode));
+    } catch (_) {
+      // FIX #3: Never leak raw exception details — use generic message
+      if (_cachedBootstrap != null) return Right(_cachedBootstrap!);
+      return const Left(ServerFailure('Gagal memuat data dashboard'));
     }
   }
 
@@ -81,10 +88,14 @@ class ProcurementRepositoryImpl implements ProcurementRepository {
       return Right(result);
     } on RateLimitException {
       return const Left(RateLimitFailure());
+    } on TimeoutException {
+      return const Left(TimeoutFailure());
+    } on NetworkException {
+      return const Left(NetworkFailure());
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message, e.statusCode));
-    } catch (e) {
-      return Left(ServerFailure(e.toString()));
+    } catch (_) {
+      return const Left(ServerFailure('Gagal memuat data paket'));
     }
   }
 
@@ -111,10 +122,14 @@ class ProcurementRepositoryImpl implements ProcurementRepository {
       return Right(result);
     } on RateLimitException {
       return const Left(RateLimitFailure());
+    } on TimeoutException {
+      return const Left(TimeoutFailure());
+    } on NetworkException {
+      return const Left(NetworkFailure());
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message, e.statusCode));
-    } catch (e) {
-      return Left(ServerFailure(e.toString()));
+    } catch (_) {
+      return const Left(ServerFailure('Gagal memuat data paket provinsi'));
     }
   }
 }

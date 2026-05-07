@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:dio/dio.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 
 import '../../../../theme/app_colors.dart';
@@ -10,25 +9,100 @@ import '../../../../widgets/data/neo_stat_card.dart';
 import '../../../../widgets/core/neo_badge.dart';
 import '../../../../widgets/feedback/neo_error.dart';
 import '../../../../widgets/feedback/neo_skeleton.dart';
+import '../../../../core/error/failures.dart';
 import '../../../../core/network/network_info.dart';
 import '../../data/datasources/nemesis_remote_datasource.dart';
 import '../../data/repositories/procurement_repository_impl.dart';
 import '../../data/models/bootstrap_model.dart';
 import '../../data/models/region_model.dart';
 
-// ─── Provider ────────────────────────────────────────────────────────────────
+// ─── Providers (Singleton Hierarchy) ─────────────────────────────────────────
+//
+// FIX #5: Provider hierarchy ensures single instances.
+// Repository is created ONCE → in-memory cache actually works.
 
-final _bootstrapProvider = FutureProvider<BootstrapModel>((ref) async {
-  final repo = ProcurementRepositoryImpl(
-    remoteDataSource: NemesisRemoteDataSourceImpl(dio: Dio()),
-    networkInfo: NetworkInfoImpl(Connectivity()),
+/// Singleton NetworkInfo provider
+final _networkInfoProvider = Provider<NetworkInfo>((ref) {
+  return NetworkInfoImpl(Connectivity());
+});
+
+/// Singleton Dio instance configured for Nemesis API
+/// with timeouts, retry interceptor, gzip, and logging.
+final _nemesisDioProvider = Provider((ref) {
+  // FIX #2: Use factory that configures Dio with 30s timeout,
+  // retry interceptor, gzip, and debug logging.
+  return NemesisRemoteDataSourceImpl.createConfiguredDio();
+});
+
+/// Singleton data source — reuses the configured Dio
+final _nemesisDataSourceProvider = Provider<NemesisRemoteDataSource>((ref) {
+  return NemesisRemoteDataSourceImpl(dio: ref.watch(_nemesisDioProvider));
+});
+
+/// Singleton repository — cache persists across rebuilds
+final _procurementRepoProvider = Provider<ProcurementRepositoryImpl>((ref) {
+  return ProcurementRepositoryImpl(
+    remoteDataSource: ref.watch(_nemesisDataSourceProvider),
+    networkInfo: ref.watch(_networkInfoProvider),
   );
+});
+
+/// Bootstrap data provider — uses the singleton repo so cache works
+final _bootstrapProvider = FutureProvider<BootstrapModel>((ref) async {
+  final repo = ref.watch(_procurementRepoProvider);
   final result = await repo.getBootstrap();
   return result.fold(
-    (failure) => throw Exception(failure.message),
+    // FIX #3: Throw typed ProcurementException with user-friendly message
+    // instead of raw Exception(failure.message) which leaks internals.
+    (failure) => throw ProcurementException.fromFailure(failure),
     (data) => data,
   );
 });
+
+// ─── Exception Wrapper ───────────────────────────────────────────────────────
+
+/// User-facing exception that maps Failure types to friendly messages.
+/// Never exposes internal details like URLs, stack traces, or Dio messages.
+class ProcurementException implements Exception {
+  final String userMessage;
+  final String? actionHint;
+
+  const ProcurementException(this.userMessage, {this.actionHint});
+
+  factory ProcurementException.fromFailure(Failure failure) {
+    if (failure is NetworkFailure) {
+      return const ProcurementException(
+        'Tidak ada koneksi internet',
+        actionHint: 'Periksa koneksi WiFi atau data seluler Anda',
+      );
+    }
+    if (failure is TimeoutFailure) {
+      return const ProcurementException(
+        'Server tidak merespons',
+        actionHint: 'Coba lagi dalam beberapa saat',
+      );
+    }
+    if (failure is RateLimitFailure) {
+      return const ProcurementException(
+        'Terlalu banyak permintaan',
+        actionHint: 'Tunggu sebentar lalu coba lagi',
+      );
+    }
+    if (failure is ServerFailure) {
+      return ProcurementException(
+        failure.message,
+        actionHint: 'Coba lagi atau hubungi admin',
+      );
+    }
+    return const ProcurementException(
+      'Terjadi kesalahan',
+      actionHint: 'Coba lagi',
+    );
+  }
+
+  @override
+  String toString() => userMessage;
+}
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -79,13 +153,26 @@ class _ProcurementDashboardScreenState
       ),
       body: asyncBootstrap.when(
         loading: () => _buildLoadingState(isTablet),
+        // FIX #3: Show sanitized user-friendly error message
         error: (error, _) => NeoError(
-          message: error.toString(),
+          message: _extractUserMessage(error),
           onRetry: () => ref.invalidate(_bootstrapProvider),
         ),
         data: (data) => _buildDataState(data, isTablet),
       ),
     );
+  }
+
+  /// Extract user-friendly message from error.
+  /// Never shows raw exception details, stack traces, or internal URLs.
+  String _extractUserMessage(Object error) {
+    if (error is ProcurementException) {
+      final hint = error.actionHint;
+      if (hint != null) return '${error.userMessage}\n$hint';
+      return error.userMessage;
+    }
+    // Fallback — should never reach here if provider is correct
+    return 'Terjadi kesalahan. Coba lagi.';
   }
 
   // ─── Loading State ───────────────────────────────────────────────────────
