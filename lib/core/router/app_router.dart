@@ -8,6 +8,10 @@ import '../../screens/dosen_search_screen_new.dart';
 import '../../screens/prodi_search_screen.dart';
 import '../../screens/detail_screen.dart';
 import '../../screens/dosen_detail_screen.dart';
+import '../../features/procurement/presentation/screens/procurement_dashboard_screen.dart';
+import '../../features/statistics/presentation/screens/statistics_dashboard_screen.dart';
+import '../../features/economy/presentation/screens/economy_dashboard_screen.dart';
+import '../../features/disaster/presentation/screens/disaster_dashboard_screen.dart';
 import '../../screens/prodi_detail_screen.dart';
 import '../../screens/pt_detail_screen.dart';
 
@@ -32,25 +36,21 @@ final appRouter = GoRouter(
         StatefulShellBranch(routes: [
           GoRoute(path: '/', builder: (_, __) => const HomeScreen()),
         ]),
-        // Tab 1: Procurement (placeholder)
+        // Tab 1: Procurement
         StatefulShellBranch(routes: [
-          GoRoute(path: '/procurement', builder: (_, __) => const Scaffold(
-            body: Center(child: Text('Procurement - Coming Soon')))),
+          GoRoute(path: '/procurement', builder: (_, __) => const ProcurementDashboardScreen()),
         ]),
-        // Tab 2: Statistics (placeholder)
+        // Tab 2: Statistics
         StatefulShellBranch(routes: [
-          GoRoute(path: '/statistics', builder: (_, __) => const Scaffold(
-            body: Center(child: Text('Statistics - Coming Soon')))),
+          GoRoute(path: '/statistics', builder: (_, __) => const StatisticsDashboardScreen()),
         ]),
-        // Tab 3: Economy (placeholder)
+        // Tab 3: Economy
         StatefulShellBranch(routes: [
-          GoRoute(path: '/economy', builder: (_, __) => const Scaffold(
-            body: Center(child: Text('Economy - Coming Soon')))),
+          GoRoute(path: '/economy', builder: (_, __) => const EconomyDashboardScreen()),
         ]),
-        // Tab 4: Disaster (placeholder)
+        // Tab 4: Disaster
         StatefulShellBranch(routes: [
-          GoRoute(path: '/disaster', builder: (_, __) => const Scaffold(
-            body: Center(child: Text('Disaster - Coming Soon')))),
+          GoRoute(path: '/disaster', builder: (_, __) => const DisasterDashboardScreen()),
         ]),
       ],
     ),
