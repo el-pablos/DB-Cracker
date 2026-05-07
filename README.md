@@ -1,142 +1,227 @@
-<p align="center">
-  <img src="assets/images/logo.png" alt="DB Cracker Logo" width="100"/>
-</p>
+# DB Cracker — PDDIKTI Data Explorer
 
-<h1 align="center">DB Cracker v2.0</h1>
+![Build Status](https://github.com/tamaengs/DB-Cracker/actions/workflows/ci.yml/badge.svg)
+![Version](https://img.shields.io/badge/version-3.0.0-7C3AED)
+![Flutter](https://img.shields.io/badge/Flutter-3.27+-02569B?logo=flutter)
+![License](https://img.shields.io/badge/license-MIT-green)
+![Platform](https://img.shields.io/badge/platform-Android%20%7C%20Web-blue)
 
-<p align="center">
-  <strong>Neo-Violet Academic — Pencarian Data Pendidikan Tinggi Indonesia</strong>
-</p>
-
-<p align="center">
-  <a href="https://github.com/el-pablos/DB-Cracker/actions/workflows/ci.yml"><img src="https://github.com/el-pablos/DB-Cracker/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <img src="https://img.shields.io/badge/version-2.0.0-violet?style=flat-square" alt="Version">
-  <img src="https://img.shields.io/badge/flutter-3.27-blue?style=flat-square&logo=flutter" alt="Flutter">
-  <img src="https://img.shields.io/badge/dart-%3E%3D3.6-0175C2?style=flat-square&logo=dart" alt="Dart">
-  <img src="https://img.shields.io/github/license/el-pablos/DB-Cracker?style=flat-square" alt="License MIT">
-</p>
+> Aplikasi Flutter untuk eksplorasi data pendidikan tinggi Indonesia secara real-time. Mengakses data dari PDDIKTI (Pangkalan Data Pendidikan Tinggi), BNPB, Bank Indonesia, dan berbagai sumber open data pemerintah Indonesia.
 
 ---
 
-## Tentang
+## Daftar Isi
 
-**DB Cracker** adalah aplikasi Flutter buat nyari data pendidikan tinggi Indonesia — mahasiswa, dosen, program studi, dan perguruan tinggi. Data diambil dari PDDIKTI API dan beberapa sumber publik lainnya, tanpa perlu API key atau autentikasi.
+- [Tentang Projek](#tentang-projek)
+- [Fitur Utama](#fitur-utama)
+- [Screenshots](#screenshots)
+- [Arsitektur](#arsitektur)
+- [Tech Stack](#tech-stack)
+- [Diagram Arsitektur](#diagram-arsitektur)
+- [Flowchart Pencarian](#flowchart-pencarian)
+- [Instalasi & Setup](#instalasi--setup)
+- [Struktur Folder](#struktur-folder)
+- [API Endpoints](#api-endpoints)
+- [Testing](#testing)
+- [CI/CD Pipeline](#cicd-pipeline)
+- [Kontributor](#kontributor)
+- [Lisensi](#lisensi)
 
-Versi 2.0 hadir dengan desain baru **Neo-Violet Academic** — tampilan akademik modern dengan palet violet-cyan di atas deep navy background. Goodbye ctOS hacker theme, hello clean academic aesthetic.
+---
+
+## Tentang Projek
+
+**DB Cracker** adalah aplikasi mobile dan web yang dibangun dengan Flutter untuk mengeksplorasi data pendidikan tinggi Indonesia. Aplikasi ini mengakses data dari berbagai sumber API pemerintah Indonesia secara real-time, termasuk:
+
+- **PDDIKTI** — Data mahasiswa, dosen, program studi, dan perguruan tinggi
+- **BNPB InaRISK** — Indeks Risiko Bencana Indonesia (IRBI)
+- **Bank Indonesia / Frankfurter** — Kurs mata uang real-time
+- **Kemnaker** — Data Upah Minimum Provinsi (UMP) 2025
+- **data.go.id (CKAN)** — Dataset publik Indonesia
+- **NEMESIS** — Data pengadaan barang/jasa pemerintah
+
+Aplikasi ini didesain dengan UI modern dark-theme (Neo-Violet) yang elegan dan responsif, mendukung mode multi-source untuk menggabungkan data dari berbagai API sekaligus.
+
+---
+
+## Fitur Utama
+
+### Pencarian Mahasiswa
+- Pencarian multi-source dari PDDIKTI dan sumber lain
+- Detail lengkap: biodata, akademik, riwayat semester
+- Enrichment otomatis untuk IPK, SKS, dan tahun masuk dari riwayat semester
+- Filter universitas dengan dropdown search
+
+### Pencarian Dosen
+- Data profil dosen lengkap dari PDDIKTI
+- Riwayat mengajar, penelitian, pengabdian, karya ilmiah
+- Jabatan fungsional dan penugasan
+
+### Program Studi & Perguruan Tinggi
+- Pencarian prodi dengan detail akreditasi
+- Informasi perguruan tinggi lengkap
+
+### Economy Dashboard
+- Kurs USD/IDR real-time dari Frankfurter API
+- Data UMP 2025 (Top 10 provinsi tertinggi)
+- Sumber: Keputusan Gubernur masing-masing provinsi
+
+### Disaster Dashboard
+- Cek risiko bencana berdasarkan koordinat GPS
+- **IRBI (Indeks Risiko Bencana Indonesia)** — Top 10 kabupaten berisiko tinggi
+- Data real-time dari BNPB InaRISK API
+
+### Procurement Dashboard
+- Data pengadaan barang/jasa pemerintah
+- Analisis risiko dan potensi pemborosan
+- Sumber: NEMESIS API
+
+### Statistics Dashboard
+- Pencarian dataset publik dari data.go.id (CKAN)
+- Metadata, format, dan organisasi penyedia data
+
+### Health Monitor
+- Status kesehatan semua API provider
+- Latency monitoring dan cache statistics
 
 ---
 
 ## Screenshots
 
-<p align="center">
-  <img src="assets/screenshots/01_splash_screen.jpeg" alt="Splash" width="220"/>
-  &nbsp;&nbsp;
-  <img src="assets/screenshots/02_home_screen.jpeg" alt="Home" width="220"/>
-  &nbsp;&nbsp;
-  <img src="assets/screenshots/04_search_results.jpeg" alt="Search" width="220"/>
-</p>
+| Home Screen | Pencarian Mahasiswa | Detail Mahasiswa |
+|:-----------:|:-------------------:|:----------------:|
+| ![Home](docs/screenshots/screen_1.jpeg) | ![Search](docs/screenshots/screen_2.jpeg) | ![Detail](docs/screenshots/screen_3.jpeg) |
 
-<p align="center"><em>Splash • Home • Search Results</em></p>
+| Biodata Tab | Akademik Tab | Riwayat Tab |
+|:-----------:|:------------:|:-----------:|
+| ![Biodata](docs/screenshots/screen_4.jpeg) | ![Akademik](docs/screenshots/screen_5.jpeg) | ![Riwayat](docs/screenshots/screen_6.jpeg) |
 
-> Screenshots di atas mungkin belum reflect desain v2.0. Update segera menyusul di `assets/screenshots/`.
-
----
-
-## Tech Stack
-
-| Layer | Teknologi | Keterangan |
-|-------|-----------|------------|
-| Framework | Flutter 3.27 | Multi-platform (Android & Web) |
-| Language | Dart 3.6+ | Null safety, pattern matching |
-| State Management | Provider 6.x | Lightweight, tree-based DI |
-| Networking | http 0.13 | Shared client, retry logic |
-| Typography | Inter | Body text — clean sans-serif |
-| Monospace | JetBrains Mono | Data display, kode, ID fields |
-| Internationalization | intl 0.18 | Format tanggal & angka |
+| Economy Dashboard | Disaster/IRBI | Filter Universitas |
+|:-----------------:|:-------------:|:------------------:|
+| ![Economy](docs/screenshots/screen_7.jpeg) | ![Disaster](docs/screenshots/screen_8.jpeg) | ![Filter](docs/screenshots/screen_9.jpeg) |
 
 ---
 
 ## Arsitektur
 
-Arsitektur layered dengan **Provider Chain** — kalau satu sumber data gagal, otomatis fallback ke provider berikutnya.
+Projek ini menggunakan arsitektur **Clean Architecture** yang dimodifikasi untuk Flutter, dengan pemisahan yang jelas antara:
+
+1. **Presentation Layer** — Screens, Widgets, State Management (Riverpod + Provider)
+2. **Domain Layer** — Models, Repository Interfaces
+3. **Data Layer** — API Factories, Remote Datasources, Cache
+
+### Pola Desain yang Digunakan
+
+- **Factory Pattern** — `ApiFactory` dan `MultiApiFactory` untuk abstraksi sumber data
+- **Provider Chain** — Fallback otomatis antar API provider jika satu gagal
+- **Singleton** — Instance tunggal untuk API factories
+- **Repository Pattern** — Pemisahan data source dari business logic
+- **Observer Pattern** — Riverpod untuk reactive state management
+
+### State Management
+
+- **Riverpod** — Untuk fitur-fitur baru (Economy, Disaster, Statistics, Procurement)
+- **Provider (legacy)** — Untuk fitur pencarian mahasiswa/dosen yang sudah ada
+- **FutureBuilder** — Untuk async data fetching di detail screens
+
+---
+
+## Tech Stack
+
+| Kategori | Teknologi |
+|----------|-----------|
+| Framework | Flutter 3.27+ (Dart 3.6+) |
+| State Management | Riverpod 2.x + Provider |
+| Routing | go_router |
+| HTTP Client | http + dio |
+| Caching | In-memory cache store custom |
+| UI | Material 3 + Custom Neo-Violet Design System |
+| Testing | flutter_test (435 unit tests) |
+| CI/CD | GitHub Actions |
+| Rendering | Impeller (Vulkan) |
+
+---
+
+## Diagram Arsitektur
 
 ```mermaid
-flowchart LR
-    U[User] --> S[Screens]
-    S --> AF[ApiFactory]
-    AF --> PCS[ProviderChainService]
-    PCS --> P1[PDDIKTI API]
-    PCS --> P2[Wilayah API]
-    PCS --> P3[Sekolah API]
-    PCS --> P4[Wikipedia API]
-
-    PCS --> C[(In-Memory Cache)]
-
-    style U fill:#7c3aed,color:#fff
-    style S fill:#1e1b4b,color:#fff
-    style AF fill:#1e1b4b,color:#fff
-    style PCS fill:#06b6d4,color:#fff
-    style P1 fill:#312e81,color:#fff
-    style P2 fill:#312e81,color:#fff
-    style P3 fill:#312e81,color:#fff
-    style P4 fill:#312e81,color:#fff
-    style C fill:#0f172a,color:#06b6d4
-```
-
-```
-lib/
-├── api/              # Network layer, factory, provider chain
-├── models/           # Data models (Mahasiswa, Dosen, PT, Prodi)
-├── screens/          # UI screens & pages
-├── widgets/          # Reusable components
-├── services/         # Cache, health monitor, enrichment
-└── utils/            # Constants, helpers, theme
+graph TB
+    subgraph Presentation
+        A[Screens] --> B[Widgets]
+        A --> C[State/Providers]
+    end
+    
+    subgraph Domain
+        D[Models]
+        E[Repository Interfaces]
+    end
+    
+    subgraph Data
+        F[ApiFactory] --> G[PddiktiApi]
+        F --> H[MultiApiFactory]
+        H --> I[ApiServicesIntegration]
+        H --> G
+        J[ProviderChain] --> K[CacheStore]
+        G --> J
+    end
+    
+    subgraph External APIs
+        L[PDDIKTI Proxy]
+        M[BNPB InaRISK]
+        N[Frankfurter API]
+        O[data.go.id CKAN]
+        P[NEMESIS]
+    end
+    
+    C --> F
+    C --> H
+    F --> D
+    H --> D
+    G --> L
+    I --> M
+    I --> N
+    I --> O
+    I --> P
 ```
 
 ---
 
-## Design System
+## Flowchart Pencarian
 
-**Neo-Violet Academic** — desain v2.0 yang menggantikan ctOS hacker theme.
-
-| Token | Nilai | Penggunaan |
-|-------|-------|------------|
-| Primary | `#7C3AED` (Violet 600) | Buttons, active states, accent |
-| Secondary | `#06B6D4` (Cyan 500) | Links, badges, data highlights |
-| Background | `#0F172A` (Slate 900) | Deep navy base |
-| Surface | `#1E1B4B` (Indigo 950) | Cards, containers |
-| On-Surface | `#F8FAFC` (Slate 50) | Text utama |
-| Muted | `#94A3B8` (Slate 400) | Secondary text, captions |
-
-**Prinsip desain:**
-- Clean & readable — prioritas pada keterbacaan data
-- Kontras tinggi — violet/cyan di atas navy gelap
-- Tipografi dual — Inter untuk body, JetBrains Mono untuk data
-- Spacing konsisten — 8px grid system
-
----
-
-## Fitur
-
-- **Pencarian Mahasiswa** — cari berdasarkan nama, NIM, atau universitas
-- **Pencarian Dosen** — cari berdasarkan nama, NIDN, atau program studi
-- **Pencarian Program Studi** — cari jurusan di seluruh Indonesia
-- **Pencarian Perguruan Tinggi** — universitas, institut, politeknik, akademi
-- **Multi-Source API + Failover** — provider chain dengan fallback otomatis
-- **In-Memory Cache + TTL** — fresh cache instant, stale cache sebagai fallback offline
-- **Health Monitoring** — dashboard status semua provider, latency, cache stats
-- **Responsive Design** — adaptif di berbagai ukuran layar
-- **Enrichment Links** — tautan langsung ke GARUDA, RAMA, SINTA
-- **Wikipedia Summary** — ringkasan PT/wilayah dari Wikipedia Indonesia
-- **Zero Auth** — semua fitur core jalan tanpa API key
+```mermaid
+flowchart TD
+    A[User ketik keyword] --> B{Minimal 2 karakter?}
+    B -->|Tidak| C[Tampilkan error]
+    B -->|Ya| D{Mode Multi-Source?}
+    D -->|Ya| E[searchAllSources]
+    D -->|Tidak| F[PDDIKTI only]
+    E --> G[Parallel: PDDIKTI + Education APIs]
+    G --> H[Deduplicate by nama+nim]
+    F --> H
+    H --> I[Tampilkan hasil]
+    I --> J{User pilih mahasiswa}
+    J --> K[getMahasiswaDetailLengkap]
+    K --> L[Fetch: profile + riwayat semester + nilai + kelas]
+    L --> M[Enrichment: hitung IPK/SKS dari riwayat]
+    M --> N[Tampilkan detail lengkap]
+```
 
 ---
 
-## Instalasi
+## Instalasi & Setup
+
+### Prerequisites
+
+- Flutter SDK 3.27+
+- Dart SDK 3.6+
+- Android SDK (untuk build Android)
+- Java 17 (untuk Gradle)
+
+### Langkah Instalasi
 
 ```bash
-# Clone repo
-git clone https://github.com/el-pablos/DB-Cracker.git
+# Clone repository
+git clone https://github.com/tamaengs/DB-Cracker.git
 cd DB-Cracker
 
 # Install dependencies
@@ -145,104 +230,220 @@ flutter pub get
 # Jalankan di device/emulator
 flutter run
 
-# Build release APK
+# Build APK release
 flutter build apk --release --split-per-abi
 
-# Build web
-flutter build web --release
+# Build Web
+flutter build web --release --web-renderer canvaskit
 ```
 
-**Requirements:**
-- Flutter SDK 3.27+
-- Dart SDK 3.6+
-- Android SDK (untuk build Android)
-- Chrome (untuk build Web)
+### Konfigurasi
+
+Tidak perlu API key atau konfigurasi tambahan. Semua API yang digunakan adalah **free dan public** tanpa autentikasi:
+
+- PDDIKTI Proxy: `https://pddikti.fastapicloud.dev/api/`
+- Frankfurter: `https://api.frankfurter.app/`
+- BNPB InaRISK: `https://inarisk.bnpb.go.id/api/`
+- data.go.id: `https://data.go.id/api/3/action/`
+
+---
+
+## Struktur Folder
+
+```
+lib/
+├── api/                    # API layer
+│   ├── api_factory.dart    # Main API factory (singleton)
+│   ├── multi_api_factory.dart  # Multi-source aggregator
+│   ├── pddikti_api.dart    # PDDIKTI API implementation
+│   ├── providers/          # Provider chain & registry
+│   ├── cache/              # In-memory cache system
+│   ├── enrichment/         # External links enrichment
+│   ├── health/             # Health check service
+│   ├── sekolah/            # Sekolah lookup API
+│   └── wilayah/            # Wilayah (region) API
+├── core/                   # Core utilities
+│   ├── router/             # go_router configuration
+│   ├── responsive/         # Adaptive scaffold
+│   ├── error/              # Exception classes
+│   └── network/            # Network info
+├── features/               # Feature modules (Clean Architecture)
+│   ├── economy/            # Economy dashboard (UMP, kurs)
+│   ├── disaster/           # Disaster dashboard (IRBI, risk)
+│   ├── statistics/         # Statistics (CKAN datasets)
+│   └── procurement/        # Procurement (NEMESIS)
+├── models/                 # Data models
+│   ├── mahasiswa.dart      # Mahasiswa & MahasiswaDetail
+│   ├── dosen.dart          # Dosen & DosenDetail
+│   ├── prodi.dart          # Program Studi
+│   └── pt.dart             # Perguruan Tinggi
+├── screens/                # Screen widgets
+│   ├── home_screen.dart    # Home + search
+│   ├── detail_screen.dart  # Mahasiswa detail (3 tabs)
+│   ├── dosen_search_screen_new.dart
+│   ├── dosen_detail_screen.dart
+│   ├── prodi_search_screen.dart
+│   ├── prodi_detail_screen.dart
+│   ├── pt_detail_screen.dart
+│   ├── health_screen.dart
+│   └── sekolah_screen.dart
+├── theme/                  # Design system
+│   ├── app_colors.dart     # Neo-Violet color palette
+│   ├── app_typography.dart # Typography scale
+│   ├── app_spacing.dart    # Spacing & radius tokens
+│   ├── app_gradients.dart  # Gradient definitions
+│   └── app_theme.dart      # ThemeData configuration
+├── widgets/                # Reusable widgets
+│   ├── core/               # NeoCard, NeoBadge
+│   ├── data/               # NeoDataRow, NeoStatCard
+│   ├── feedback/           # NeoSkeleton, NeoEmpty, NeoError
+│   ├── navigation/         # NeoQuickAction, NeoTabBar
+│   └── search/             # NeoSearchBar
+├── services/               # Mock services
+├── utils/                  # Constants, helpers
+└── main.dart               # App entry point
+```
+
+---
+
+## API Endpoints
+
+### PDDIKTI (via Proxy)
+
+| Endpoint | Deskripsi |
+|----------|-----------|
+| `GET /mhs/search/{keyword}` | Cari mahasiswa |
+| `GET /mhs/detail/{id}/` | Detail mahasiswa |
+| `GET /mhs/riwayat_semester/{id}/` | Riwayat semester |
+| `GET /mhs/riwayat_nilai/{id}/` | Riwayat nilai |
+| `GET /mhs/riwayat_kelas/{id}/` | Riwayat kelas |
+| `GET /dosen/search/{keyword}` | Cari dosen |
+| `GET /dosen/profile/{id}/` | Profil dosen |
+| `GET /prodi/search/{keyword}` | Cari prodi |
+| `GET /pt/search/{keyword}` | Cari perguruan tinggi |
+
+### External APIs
+
+| API | Endpoint | Deskripsi |
+|-----|----------|-----------|
+| Frankfurter | `GET /latest?from=USD&to=IDR` | Kurs real-time |
+| BNPB InaRISK | `GET /api/irbi?tahun=2024` | Data IRBI |
+| BNPB InaRISK | `GET /api/risk?lat=&lon=` | Risk score |
+| data.go.id | `GET /api/3/action/package_search` | Dataset search |
+| NEMESIS | `GET /api/bootstrap` | Procurement data |
 
 ---
 
 ## Testing
 
-Projek ini punya **184 unit tests** yang cover seluruh modul. Semua test pake mock HTTP client — deterministic, bisa jalan di CI tanpa internet.
+Projek ini memiliki **435 unit tests** yang mencakup:
+
+- Model parsing & serialization
+- API factory logic
+- Provider chain & cache
+- Widget rendering
+- Feature modules (Economy, Disaster, Statistics, Procurement)
+- Health service
+- Utility functions
 
 ```bash
-# Jalankan semua test
+# Jalankan semua tests
 flutter test
 
-# Output:
-# 00:07 +184: All tests passed!
+# Jalankan dengan coverage
+flutter test --coverage
 
-# Static analysis
-flutter analyze --fatal-infos
-
-# Format check
-dart format --set-exit-if-changed .
+# Jalankan test spesifik
+flutter test test/models/mahasiswa_test.dart
 ```
 
-| Kategori | Tests | Cakupan |
-|----------|-------|---------|
-| Provider Chain | 10 | Fallback, timeout, cache, disabled provider |
-| Cache Store | 10 | Fresh, stale, expired, eviction, TTL |
-| Models | 48 | JSON parsing, null safety, edge cases |
-| Widgets | 37 | Render, interaction, state |
-| Services | 47 | Wilayah, Sekolah, Health, Wikipedia, KBBI |
-| Utils | 14 | Constants, helpers |
-| External Links | 8 | URL encoding, link builders |
-| DataResult | 5 | Live, cached, stale, sourceLabel |
-| Registry | 5 | Provider lookup, uniqueness |
-
----
-
-## CI/CD
-
-Pipeline otomatis via GitHub Actions (`.github/workflows/ci.yml`):
-
-1. **Analyze & Test** — `flutter analyze` + `flutter test` + format check
-2. **Build Android** — APK release split per ABI
-3. **Build Web** — deploy-ready web build
-4. **Release** — auto-create GitHub Release saat push tag `v*`
-
-Trigger:
-- Push ke `main` / `develop` → analyze + test
-- Push tag `v*` → full build + release
-- Pull request ke `main` → analyze + test
-
----
-
-## Contributing
-
-Contributions welcome. Fork, buat branch, submit PR.
-
-**Format commit:**
+### Test Results
 
 ```
-type: deskripsi singkat (1 line, bahasa Indonesia kasual)
-```
-
-Types: `add`, `fix`, `update`, `remove`, `refactor`, `docs`, `test`, `chore`
-
-Contoh:
-```
-add: implementasi search filter di halaman dosen
-fix: benerin cache TTL yang ga expired
-update: improve loading state di detail mahasiswa
-refactor: pisahin logic provider chain ke service sendiri
-```
-
-**Sebelum submit PR:**
-```bash
-flutter analyze --fatal-infos
-flutter test
-dart format .
+00:30 +435: All tests passed!
 ```
 
 ---
 
-## License
+## CI/CD Pipeline
 
-MIT License — lihat [LICENSE](LICENSE) untuk detail.
+Pipeline otomatis berjalan di GitHub Actions setiap push ke `main`:
+
+```mermaid
+graph LR
+    A[Push to main] --> B[Analyze & Test]
+    B --> C[Build Android APK]
+    B --> D[Build Web]
+    C --> E[Auto Release]
+    D --> E
+    E --> F[GitHub Release + Tag]
+```
+
+### Fitur CI/CD:
+- **Auto-analyze** — Flutter analyze pada setiap push/PR
+- **Auto-test** — Jalankan 435 unit tests
+- **Auto-build** — Build APK (split per ABI) dan Web
+- **Auto-release** — Buat GitHub Release otomatis dengan versioning increment
+- **Auto-tag** — Tag version otomatis (v3.0.x)
+
+---
+
+## Kontributor
+
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://github.com/tamaengs">
+        <img src="https://github.com/tamaengs.png" width="80px;" alt="Tama El Pablo"/>
+        <br />
+        <sub><b>Tama El Pablo</b></sub>
+      </a>
+      <br />
+      <sub>Lead Developer</sub>
+    </td>
+  </tr>
+</table>
+
+---
+
+## Statistik Projek
+
+| Metrik | Nilai |
+|--------|-------|
+| Total Files | 80+ Dart files |
+| Lines of Code | 15,000+ |
+| Unit Tests | 435 |
+| Test Pass Rate | 100% |
+| API Sources | 6 (PDDIKTI, BNPB, BI, Kemnaker, CKAN, NEMESIS) |
+| Screens | 10+ |
+| Widgets | 20+ reusable components |
+| Features | 5 dashboard modules |
+
+---
+
+## Changelog (Recent)
+
+| Commit | Deskripsi |
+|--------|-----------|
+| `9a9372a` | Improve CI/CD pipeline dengan auto-release |
+| `4b468f0` | Ubah filter universitas ke dropdown search |
+| `ee0ab01` | Implementasi tab riwayat pendidikan lengkap |
+| `0676a3e` | Enrichment biodata dari riwayat semester |
+| `b0aa492` | Implementasi IRBI penuh dari BNPB InaRISK |
+| `5fec886` | UMP 2025 realtime dari Frankfurter API |
+| `58c95b1` | Fix IME keyboard spam loop |
+| `132a496` | Fix crash navigation go_router + NDK update |
+
+---
+
+## Lisensi
+
+MIT License - Lihat file [LICENSE](LICENSE) untuk detail.
 
 ---
 
 <p align="center">
-  <strong>Built with Flutter by <a href="https://github.com/el-pablos">Tamaengs</a></strong>
+  <b>DB Cracker v3.0.0</b> — Built with Flutter & Dart
+  <br/>
+  <sub>Data pendidikan Indonesia di ujung jari kamu.</sub>
 </p>
