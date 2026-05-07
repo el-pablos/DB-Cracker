@@ -238,39 +238,125 @@ class MultiApiFactory {
     }
   }
 
-  /// Mendapatkan detail mahasiswa dari berbagai sumber
+  /// Mendapatkan detail mahasiswa dari berbagai sumber (lengkap + enrichment)
   Future<MahasiswaDetail> getMahasiswaDetail(String mahasiswaId) async {
     try {
-      // Coba dapatkan dari PDDIKTI terlebih dahulu
-      final detail = await _pddiktiApi.getMahasiswaDetail(mahasiswaId);
+      // Gunakan getMahasiswaDetailLengkap untuk data lebih lengkap (termasuk riwayat)
+      final detail = await _pddiktiApi.getMahasiswaDetailLengkap(mahasiswaId);
 
-      // BUG-C2 FIX: Kemdikbud data hanya melengkapi field kosong, BUKAN menggantikan
-      // Data PDDIKTI lebih lengkap (riwayat semester, nilai, kelas) — jangan override
-      // Kemdikbud enrichment disabled karena endpoint kemungkinan sudah mati
-      // dan data yang dikembalikan lebih minim dari PDDIKTI
-
-      return detail;
+      // Enrichment: Coba lengkapi field kosong dari sumber tambahan
+      return await _enrichMahasiswaDetail(detail);
     } catch (e) {
-      if (kDebugMode) debugPrint('Error mendapatkan detail dari PDDIKTI: $e');
+      if (kDebugMode) debugPrint('Error mendapatkan detail lengkap, fallback ke basic: $e');
 
-      // Fallback to minimal detail
-      return MahasiswaDetail(
-        id: mahasiswaId,
-        namaPt: 'Data tidak tersedia (error)',
-        kodePt: '-',
-        kodeProdi: '-',
-        prodi: 'Data tidak tersedia',
-        nama: 'Data tidak tersedia (error)',
-        nim: '-',
-        jenisDaftar: '-',
-        idPt: '-',
-        idSms: '-',
-        jenisKelamin: '-',
-        jenjang: '-',
-        statusSaatIni: '-',
-        tahunMasuk: '-',
-      );
+      // Fallback ke basic detail
+      try {
+        final basicDetail = await _pddiktiApi.getMahasiswaDetail(mahasiswaId);
+        return await _enrichMahasiswaDetail(basicDetail);
+      } catch (e2) {
+        if (kDebugMode) debugPrint('Error mendapatkan detail basic: $e2');
+
+        // Fallback to minimal detail
+        return MahasiswaDetail(
+          id: mahasiswaId,
+          namaPt: 'Data tidak tersedia (error)',
+          kodePt: '-',
+          kodeProdi: '-',
+          prodi: 'Data tidak tersedia',
+          nama: 'Data tidak tersedia (error)',
+          nim: '-',
+          jenisDaftar: '-',
+          idPt: '-',
+          idSms: '-',
+          jenisKelamin: '-',
+          jenjang: '-',
+          statusSaatIni: '-',
+          tahunMasuk: '-',
+        );
+      }
     }
+  }
+
+  /// Enrichment: Lengkapi field kosong dari sumber API tambahan
+  Future<MahasiswaDetail> _enrichMahasiswaDetail(MahasiswaDetail detail) async {
+    // Hitung IPK dan total SKS dari riwayat semester jika field kosong
+    String enrichedIpk = detail.ipk;
+    String enrichedTotalSks = detail.totalSks;
+    String enrichedTahunMasuk = detail.tahunMasuk;
+
+    // Kalkulasi IPK dari riwayat semester jika belum ada
+    if (enrichedIpk.isEmpty && detail.riwayatSemester.isNotEmpty) {
+      // IPK terakhir biasanya ada di semester terakhir
+      final lastSemester = detail.riwayatSemester.last;
+      if (lastSemester.ipk.isNotEmpty) {
+        enrichedIpk = lastSemester.ipk;
+      }
+    }
+
+    // Kalkulasi total SKS dari riwayat semester jika belum ada
+    if (enrichedTotalSks.isEmpty && detail.riwayatSemester.isNotEmpty) {
+      int totalSks = 0;
+      for (var sem in detail.riwayatSemester) {
+        final sks = int.tryParse(sem.sksLulus) ?? 0;
+        totalSks += sks;
+      }
+      if (totalSks > 0) enrichedTotalSks = totalSks.toString();
+
+      // Atau ambil dari semester terakhir jika ada sksTotal
+      if (enrichedTotalSks.isEmpty) {
+        final lastSem = detail.riwayatSemester.last;
+        if (lastSem.sksTotal.isNotEmpty) enrichedTotalSks = lastSem.sksTotal;
+      }
+    }
+
+    // Estimasi tahun masuk dari tanggal_masuk jika belum ada
+    if (enrichedTahunMasuk.isEmpty && detail.riwayatSemester.isNotEmpty) {
+      // Coba parse dari nama semester pertama (format: "20211" = 2021 ganjil)
+      final firstSem = detail.riwayatSemester.first;
+      if (firstSem.namaSemester.length >= 4) {
+        final yearStr = firstSem.namaSemester.substring(0, 4);
+        if (int.tryParse(yearStr) != null) {
+          enrichedTahunMasuk = yearStr;
+        }
+      }
+    }
+
+    // Return enriched detail
+    return MahasiswaDetail(
+      id: detail.id,
+      nama: detail.nama,
+      nim: detail.nim,
+      jenisKelamin: detail.jenisKelamin,
+      statusSaatIni: detail.statusSaatIni,
+      semesterSaatIni: detail.semesterSaatIni,
+      tempatLahir: detail.tempatLahir,
+      tanggalLahir: detail.tanggalLahir,
+      agama: detail.agama,
+      alamat: detail.alamat,
+      namaPt: detail.namaPt,
+      kodePt: detail.kodePt,
+      idPt: detail.idPt,
+      prodi: detail.prodi,
+      kodeProdi: detail.kodeProdi,
+      idSms: detail.idSms,
+      jenjang: detail.jenjang,
+      akreditasiProdi: detail.akreditasiProdi,
+      jenisDaftar: detail.jenisDaftar,
+      jalurMasuk: detail.jalurMasuk,
+      tahunMasuk: enrichedTahunMasuk.isNotEmpty ? enrichedTahunMasuk : detail.tahunMasuk,
+      tahunLulus: detail.tahunLulus,
+      semesterAktifTerakhir: detail.semesterAktifTerakhir,
+      statusAkhir: detail.statusAkhir,
+      tanggalLulus: detail.tanggalLulus,
+      nomorIjazah: detail.nomorIjazah,
+      ipk: enrichedIpk.isNotEmpty ? enrichedIpk : detail.ipk,
+      totalSks: enrichedTotalSks.isNotEmpty ? enrichedTotalSks : detail.totalSks,
+      predikatKelulusan: detail.predikatKelulusan,
+      judulSkripsi: detail.judulSkripsi,
+      riwayatSemester: detail.riwayatSemester,
+      riwayatNilai: detail.riwayatNilai,
+      riwayatKelas: detail.riwayatKelas,
+    );
   }
 
   /// Mendapatkan detail dosen lengkap dari berbagai sumber

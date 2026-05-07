@@ -77,7 +77,7 @@ class ApiFactory {
     }
   }
 
-  /// Detail mahasiswa
+  /// Detail mahasiswa (basic)
   Future<MahasiswaDetail> getMahasiswaDetail(String mahasiswaId) async {
     if (_useMockData) {
       return _mockService.getMahasiswaDetail(mahasiswaId);
@@ -88,6 +88,21 @@ class ApiFactory {
       } catch (e) {
         if (kDebugMode) debugPrint('Error with real API: $e');
         // FACTORY-FIX: Tidak fallback ke mock diam-diam — user harus lihat error state
+        rethrow;
+      }
+    }
+  }
+
+  /// Detail mahasiswa lengkap (termasuk riwayat semester, nilai, kelas)
+  Future<MahasiswaDetail> getMahasiswaDetailLengkap(String mahasiswaId) async {
+    if (_useMockData) {
+      return _mockService.getMahasiswaDetail(mahasiswaId);
+    } else {
+      try {
+        if (kDebugMode) debugPrint('Requesting mahasiswa detail lengkap from real API for id: $mahasiswaId');
+        return await _realApi.getMahasiswaDetailLengkap(mahasiswaId);
+      } catch (e) {
+        if (kDebugMode) debugPrint('Error with real API lengkap: $e');
         rethrow;
       }
     }
