@@ -507,31 +507,65 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Column(
       children: [
-        // Filter chips row
+        // Filter dropdown/search universitas
         if (_universities.isNotEmpty)
           Container(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
             child: Column(
               children: [
-                SizedBox(
-                  height: 36,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: _universities.length + 1,
-                    separatorBuilder: (_, __) => const SizedBox(width: 8),
-                    itemBuilder: (context, index) {
-                      if (index == 0) {
-                        final isActive = _selectedUniversity == null;
-                        return _buildFilterChip('Semua', isActive, () => _clearFilter());
-                      }
-                      final uni = _universities[index - 1];
-                      final isActive = _selectedUniversity == uni;
-                      return _buildFilterChip(
-                        uni.length > 20 ? '${uni.substring(0, 18)}...' : uni,
-                        isActive,
-                        () => _filterResults(uni),
-                      );
-                    },
+                Container(
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceHigh,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.border),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String?>(
+                      value: _selectedUniversity,
+                      isExpanded: true,
+                      hint: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Text(
+                          'Filter berdasarkan universitas...',
+                          style: AppTypography.bodyMedium.copyWith(color: AppColors.textTertiary),
+                        ),
+                      ),
+                      icon: Padding(
+                        padding: const EdgeInsets.only(right: 12),
+                        child: Icon(Icons.filter_list_rounded, size: 20, color: AppColors.textSecondary),
+                      ),
+                      dropdownColor: AppColors.surface,
+                      borderRadius: BorderRadius.circular(12),
+                      items: [
+                        DropdownMenuItem<String?>(
+                          value: null,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            child: Text('Semua Universitas', style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
+                          ),
+                        ),
+                        ..._universities.map((uni) => DropdownMenuItem<String?>(
+                          value: uni,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            child: Text(
+                              uni,
+                              style: AppTypography.bodyMedium,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        )),
+                      ],
+                      onChanged: (value) {
+                        if (value == null) {
+                          _clearFilter();
+                        } else {
+                          _filterResults(value);
+                        }
+                      },
+                    ),
                   ),
                 ),
                 if (_selectedUniversity != null)
