@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../models/dosen.dart';
 import '../utils/constants.dart';
 import 'flexible_text.dart';
@@ -18,15 +19,7 @@ class DosenNavigationButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        // Navigasi ke detail dosen
-        // Gunakan pushNamed agar lebih konsisten dengan navigasi lainnya
-        Navigator.pushNamed(
-          context,
-          '/dosen/detail/${dosen.id}',
-          arguments: {
-            'dosenName': dosen.nama,
-          },
-        );
+        context.push('/dosen/${Uri.encodeComponent(dosen.id)}?name=${Uri.encodeComponent(dosen.nama)}');
       },
       child: Container(
         margin: EdgeInsets.symmetric(

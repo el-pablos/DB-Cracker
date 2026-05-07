@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../models/prodi.dart';
 import '../utils/constants.dart';
 import 'flexible_text.dart';
@@ -18,14 +19,7 @@ class ProdiNavigationButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        // Gunakan named routes untuk navigasi
-        Navigator.pushNamed(
-          context,
-          '/prodi/detail/${prodi.id}',
-          arguments: {
-            'prodiName': prodi.nama,
-          },
-        );
+        context.push('/prodi/${Uri.encodeComponent(prodi.id)}?name=${Uri.encodeComponent(prodi.nama)}');
       },
       child: Container(
         margin: EdgeInsets.symmetric(

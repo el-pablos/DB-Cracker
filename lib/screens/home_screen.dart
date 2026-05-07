@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../api/api_factory.dart';
 import '../api/multi_api_factory.dart';
@@ -203,14 +204,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _viewMahasiswaDetail(BuildContext context, Mahasiswa mahasiswa) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => DetailScreen(
-          mahasiswaId: mahasiswa.id,
-          subjectName: mahasiswa.nama,
-        ),
-      ),
+    context.push(
+      '/mahasiswa/${Uri.encodeComponent(mahasiswa.id)}?name=${Uri.encodeComponent(mahasiswa.nama)}',
     );
   }
 
@@ -394,34 +389,31 @@ class _HomeScreenState extends State<HomeScreen> {
                 icon: Icons.person_rounded,
                 label: 'Dosen',
                 color: AppColors.secondary,
-                // fix: route /dosen tidak ada, yang benar /dosen/search - 2026-05-05
-                onTap: () => Navigator.pushNamed(context, '/dosen/search'),
+                onTap: () => context.push('/dosen/search'),
               ),
               NeoQuickAction(
                 icon: Icons.menu_book_rounded,
                 label: 'Prodi',
                 color: AppColors.success,
-                // fix: route /prodi tidak ada, yang benar /prodi/search - 2026-05-05
-                onTap: () => Navigator.pushNamed(context, '/prodi/search'),
+                onTap: () => context.push('/prodi/search'),
               ),
               NeoQuickAction(
                 icon: Icons.account_balance_rounded,
                 label: 'Kampus',
                 color: AppColors.warning,
-                // fix: route /kampus tidak ada, gunakan /sekolah yang merupakan lookup kampus - 2026-05-05
-                onTap: () => Navigator.pushNamed(context, '/sekolah'),
+                onTap: () => context.push('/sekolah'),
               ),
               NeoQuickAction(
                 icon: Icons.monitor_heart_rounded,
                 label: 'Health',
                 color: AppColors.error,
-                onTap: () => Navigator.pushNamed(context, '/health'),
+                onTap: () => context.push('/health'),
               ),
               NeoQuickAction(
                 icon: Icons.domain_rounded,
                 label: 'Sekolah',
                 color: AppColors.info,
-                onTap: () => Navigator.pushNamed(context, '/sekolah'),
+                onTap: () => context.push('/sekolah'),
               ),
             ],
           ),
